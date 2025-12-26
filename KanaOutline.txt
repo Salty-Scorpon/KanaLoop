@@ -1,0 +1,352 @@
+# ============================================================
+# HIRAGANA STROKE-WRITING SPEC (for Codex implementation)
+# Target set: 46 modern hiragana (あ-ん) = 5 vowels + K/S/T/N/H/M/Y/R/W + ん
+# ============================================================
+
+# ----------------------------
+# 1) Coordinate & Rendering Model
+# ----------------------------
+# All stroke guides live in a normalized square "glyph box":
+#   x,y ∈ [0..1], origin at top-left, y increases downward.
+#
+# Each kana is stored as:
+#   KanaDef {
+#     kana: "あ",
+#     romaji: "a",
+#     stroke_count: 3,
+#     strokes: [StrokeDef...]
+#   }
+#
+# Each stroke is stored as:
+#   StrokeDef {
+#     id: 1-based index,
+#     start_hint: {x,y, radius},   # where user should begin
+#     end_hint:   {x,y, radius},   # where user should end
+#     path_hint:  [Segment...],    # for ghost + distance checks
+#     arrow_hints:[ArrowHint...],  # for UI arrows along the stroke
+#     rules: {
+#        direction_enforced: true, # require progress along path
+#        corridor_radius: r,       # tolerance around path
+#        start_must_be_near: s,     # start proximity threshold
+#        end_must_be_near: e        # end proximity threshold
+#     }
+#   }
+#
+# Segment types (choose one):
+#   Line(p0 -> p1)
+#   Quad(p0 -> p1 -> p2)           # quadratic bezier
+#   Cubic(p0 -> p1 -> p2 -> p3)    # cubic bezier
+#
+# NOTE: For the outline/shadow visuals, render:
+#   - FULL_GLYPH_GHOST: union of all strokes (very low alpha)
+#   - ACTIVE_STROKE_GLOW: ONLY the current stroke (soft glow)
+#
+# ----------------------------
+# 2) Difficulty Toggles (Corner Menu)
+# ----------------------------
+# Two independent toggles in a small menu box (top-right recommended):
+#
+#   Toggle A: "Stroke Outline"
+#     - ON: show ACTIVE_STROKE_GLOW for current stroke only
+#     - OFF: do not highlight current stroke (can still show full ghost unless Blackout)
+#
+#   Toggle B: "Blackout"
+#     - ON: hide FULL_GLYPH_GHOST entirely (no full kana shadow)
+#           (Optionally keep only ACTIVE_STROKE_GLOW if Stroke Outline is ON.)
+#     - OFF: show FULL_GLYPH_GHOST at low alpha
+#
+# ----------------------------
+# 3) Input Validation Rules (Mouse / Stylus)
+# ----------------------------
+# You are validating per-stroke. The player draws one stroke at a time.
+#
+# On pointer down:
+#   - If distance(pointer, currentStroke.start_hint) > start_must_be_near:
+#       reject immediately (optional), or allow but require passing start gate soon.
+#
+# On pointer move:
+#   - Sample points into a polyline "userStroke".
+#   - Compute min distance from each sampled point to stroke.path_hint (the path curve).
+#   - If ANY sample is outside corridor_radius:
+#       set ink_color = RED (feedback); keep sampling though.
+#     else:
+#       set ink_color = NORMAL (e.g., black/ink color).
+#
+# On pointer up:
+#   - If ink_color was RED at any time OR
+#     end not near end_hint OR
+#     drawn length too short OR
+#     direction progression test fails:
+#         reject: erase this stroke; do not advance stroke index.
+#   - Else:
+#         accept: commit stroke; advance to next stroke.
+#
+# Direction progression test (recommended):
+#   - Project user samples onto path parameter t ∈ [0..1] (closest-point parameter).
+#   - Require t to be mostly non-decreasing (allow small jitter).
+#   - Require final t >= 0.85 (or near end_hint).
+#
+# Completion:
+#   - When all strokes accepted:
+#       play kana audio one more time;
+#       pick next kana from available pool; reset stroke index = 1.
+#
+# ----------------------------
+# 4) Stroke Authoritativeness / QA Reference
+# ----------------------------
+# Use Wikimedia stroke-order animations as a QA reference and/or asset library:
+#   Category: "Hiragana stroke order (animated image set)" (includes all modern kana).
+# :contentReference[oaicite:1]{index=1}
+#
+# ----------------------------
+# 5) Per-Kana Stroke Order Descriptions (46 modern hiragana)
+# ----------------------------
+# IMPORTANT: The descriptions below are written so a programmer can:
+#   (a) author path_hint curves manually, OR
+#   (b) verify authored curves against standard stroke order.
+#
+# Descriptions use:
+#   - "horizontal" = left→right
+#   - "vertical"   = top→bottom
+#   - "diag"       = diagonal
+#   - "hook"       = small terminal flick
+#   - "loop"       = enclosed/near-enclosed curve
+#   - "sweep"      = long curved motion
+#
+# ============================================================
+# VOWELS
+# ============================================================
+
+Kana あ (a) strokes=3
+  1) Short horizontal near top, left→right.
+  2) Vertical-ish stroke descending through/near the first stroke, slight curve, finish with a small hook.
+  3) Curved sweep starting mid-left, curving down and around to form the right-side loop-like body; finish with a gentle upward tail.
+
+Kana い (i) strokes=2
+  1) Left stroke: short downward curve (top→bottom), slight inward bow.
+  2) Right stroke: longer downward curve (top→bottom), finish with a slight outward sweep.
+
+Kana う (u) strokes=2
+  1) Short curved mark near top (a small “cap”), left→right with slight curve.
+  2) Main body: start below cap, curve down then around into a rounded loop-like sweep; end with a small upward tail to the right.
+
+Kana え (e) strokes=2
+  1) Short horizontal near top, left→right.
+  2) Long stroke beginning under the first: moves left→right then curves down and around, forming an open loop; finish with a rightward tail.
+
+Kana お (o) strokes=3
+  1) Short horizontal near top, left→right.
+  2) Vertical stroke descending under the first (top→bottom), slight curve, small hook.
+  3) Separate right-side stroke: start mid-right, draw a curved sweep downward then around to form the rounded component; finish with a tail.
+
+# ============================================================
+# K-row
+# ============================================================
+
+Kana か (ka) strokes=3
+  1) Left vertical stroke: top→bottom with slight curve.
+  2) Short horizontal stroke near upper-middle, left→right (crossing/meeting left stroke).
+  3) Right sweeping stroke: start near top-right of the cross area, curve down and left then back right, ending with a hook/tail.
+
+Kana き (ki) strokes=3
+  1) Top horizontal, left→right.
+  2) Middle horizontal, left→right (slightly shorter).
+  3) Long curved stroke starting under the middle, sweeping down and around to the right with a tail (gives the “ki” body).
+
+Kana く (ku) strokes=1
+  1) Single angled curve: start upper-left, move down-right then curve back slightly, like a bent “<” shape; finish lower-right.
+
+Kana け (ke) strokes=3
+  1) Left vertical: top→bottom.
+  2) Upper horizontal: left→right, crossing from the left stroke.
+  3) Right vertical: start near the crossing area and draw down; finish with a slight hook.
+
+Kana こ (ko) strokes=2
+  1) Top horizontal, left→right.
+  2) Bottom horizontal, left→right (separated; typically longer).
+
+# ============================================================
+# S-row
+# ============================================================
+
+Kana さ (sa) strokes=3
+  1) Short horizontal near top, left→right.
+  2) Short vertical-ish stroke descending near center (often slightly curved), top→bottom.
+  3) Large sweeping curve starting mid-left, sweeping down then around to the right, ending with a tail.
+
+Kana し (shi) strokes=1
+  1) Single long curve: start upper-left, sweep down and right in an S-like arc; finish with a slight upward/forward tail.
+
+Kana す (su) strokes=2
+  1) Short curved cap near top, left→right.
+  2) Main stroke: start below cap, sweep down and around forming a loop-like body; finish with a long rightward tail.
+
+Kana せ (se) strokes=3
+  1) Left vertical: top→bottom.
+  2) Upper horizontal crossing from left, left→right.
+  3) Curved finishing stroke on right side: start mid-right, curve down and around; finish with a tail.
+
+Kana そ (so) strokes=1
+  1) One continuous stroke: start near top, move left→right then curve down into a long sweeping tail.
+
+# ============================================================
+# T-row
+# ============================================================
+
+Kana た (ta) strokes=4
+  1) Short horizontal near top, left→right.
+  2) Vertical stroke descending through/near stroke 1, top→bottom, slight hook.
+  3) Short diagonal stroke near mid-right, down-left or down-right (small accent stroke).
+  4) Large curved sweep forming the lower body: start mid-left, curve down and around to the right, ending with a tail.
+
+Kana ち (chi) strokes=2
+  1) Top horizontal, left→right.
+  2) Long stroke: begin under top line, move down with curve and form a rounded turn/loop-ish sweep; finish with a tail.
+
+Kana つ (tsu) strokes=1
+  1) Single curved stroke: start upper-left, curve down and around to the right, ending with a small upward tail.
+
+Kana て (te) strokes=1
+  1) Single stroke: start upper-left, move right then curve down-left and finish with a light tail (a “bent arm” curve).
+
+Kana と (to) strokes=2
+  1) Short horizontal near top, left→right.
+  2) Long curved vertical-ish stroke: start under/near stroke 1, sweep down and left then curve right, ending with a hook/tail.
+
+# ============================================================
+# N-row
+# ============================================================
+
+Kana な (na) strokes=4
+  1) Short vertical at left, top→bottom.
+  2) Short horizontal near upper-middle, left→right (meeting the left stroke region).
+  3) Vertical/curved stroke descending near center, top→bottom (forms the central spine).
+  4) Curved sweep forming the right-side body: start mid-right, curve down and around, ending with a tail.
+
+Kana に (ni) strokes=3
+  1) Left vertical, top→bottom.
+  2) Upper short horizontal, left→right (to the right of the left stroke).
+  3) Lower longer horizontal, left→right.
+
+Kana ぬ (nu) strokes=2
+  1) Long looping stroke: start upper-left, curve down and around creating a loop, then sweep to the right.
+  2) Small finishing stroke/dot-like tail: a short diagonal/curved flick near the right side (the “nu” accent).
+
+Kana ね (ne) strokes=2
+  1) Left vertical stroke, top→bottom with a slight curve and a small hook at the end.
+  2) Long right-side looping stroke: start near upper-middle/right, curve down and around into a loop; finish with a tail.
+
+Kana の (no) strokes=1
+  1) Single oval curve: start upper-left, draw a smooth clockwise-like loop, ending near the start (not fully closed).
+
+# ============================================================
+# H-row
+# ============================================================
+
+Kana は (ha) strokes=3
+  1) Left vertical stroke, top→bottom.
+  2) Middle vertical stroke, top→bottom (slightly to the right).
+  3) Right sweeping stroke: start near upper-right, curve down and around with a tail.
+
+Kana ひ (hi) strokes=1
+  1) Single complex curve: start upper-left, sweep right then down into a loop-like turn; finish with a tail.
+
+Kana ふ (fu) strokes=3
+  1) Small top-left stroke (short curved tick).
+  2) Small top-right stroke (short curved tick).
+  3) Main body stroke: start below, sweep down and around forming a rounded curve; finish with tail.
+
+Kana へ (he) strokes=1
+  1) Simple “V” curve: start upper-left, go down then back up to upper-right (a single continuous angled curve).
+
+Kana ほ (ho) strokes=4
+  1) Left vertical, top→bottom.
+  2) Upper horizontal crossing from left, left→right.
+  3) Middle horizontal (shorter), left→right.
+  4) Right sweeping stroke: start mid-right, curve down and around; finish with tail.
+
+# ============================================================
+# M-row
+# ============================================================
+
+Kana ま (ma) strokes=3
+  1) Top horizontal, left→right.
+  2) Short vertical/curve descending near left-center, top→bottom.
+  3) Large rounded stroke forming the main body: start mid-left, curve down and around to the right; finish with tail.
+
+Kana み (mi) strokes=2
+  1) Long sweeping curve: start upper-left, curve down and right with a wave-like motion.
+  2) Second sweeping curve: start mid-left, curve down and right, ending with a tail (stacked wave feel).
+
+Kana む (mu) strokes=3
+  1) Short vertical stroke near left, top→bottom.
+  2) Long curved stroke creating a loop/body: start upper-middle, curve down and around.
+  3) Finishing tail stroke: continue or add a final sweep to the right with a hook-like ending.
+
+Kana め (me) strokes=2
+  1) Long looping stroke: start upper-left, curve down and around forming a loop body.
+  2) Second stroke intersects/threads the loop: start near upper-right, curve down through, finishing with a tail.
+
+Kana も (mo) strokes=3
+  1) Top horizontal, left→right.
+  2) Middle horizontal, left→right.
+  3) Long vertical/curved stroke: start near top, pass through the horizontals and sweep down, ending with a hook/tail.
+
+# ============================================================
+# Y-row
+# ============================================================
+
+Kana や (ya) strokes=3
+  1) Short vertical/curve near left, top→bottom.
+  2) Short horizontal/curve near upper-middle, left→right.
+  3) Long sweeping curve: start mid-right, curve down and around; finish with a tail.
+
+Kana ゆ (yu) strokes=2
+  1) Left vertical stroke, top→bottom.
+  2) Large looping stroke on right: start upper-right, curve down and around forming a loop; finish with tail.
+
+Kana よ (yo) strokes=2
+  1) Short vertical/curve near left, top→bottom.
+  2) Longer stroke: start upper-right, move left→right then curve down forming the lower body; end with tail.
+
+# ============================================================
+# R-row
+# ============================================================
+
+Kana ら (ra) strokes=2
+  1) Short horizontal near top, left→right.
+  2) Long curved stroke: start under top line, sweep down and around to right; finish with tail.
+
+Kana り (ri) strokes=2
+  1) Left short downward stroke, top→bottom.
+  2) Right longer downward stroke, top→bottom with a slight curve; finish with tail.
+
+Kana る (ru) strokes=1
+  1) Single looping curve: start upper-left, curve down and around into a loop, then finish with a tail to the right.
+
+Kana れ (re) strokes=2
+  1) Left vertical stroke, top→bottom with a hook.
+  2) Right sweeping stroke: start upper-right, curve down and around; finish with tail.
+
+Kana ろ (ro) strokes=1
+  1) Single “box-like” curve: start upper-left, go right then down then left then slightly up (rounded corners), ending with an opening (not fully closed).
+
+# ============================================================
+# W-row + N
+# ============================================================
+
+Kana わ (wa) strokes=2
+  1) Left vertical stroke, top→bottom with a small hook.
+  2) Right sweeping stroke: start upper-right, curve down and around to form the rounded body; finish with tail.
+
+Kana を (wo) strokes=3
+  1) Short horizontal near top, left→right.
+  2) Long curved stroke: start below, sweep down and around forming the main body with tail.
+  3) Small short stroke/dot-like accent near upper-right portion of the body.
+
+Kana ん (n) strokes=1
+  1) Single stroke: start upper-left, sweep down and right in a curve; finish with a slight hook/tail.
+
+# ============================================================
+# END OF SPEC
+# ============================================================
