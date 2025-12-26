@@ -52,20 +52,20 @@ func _on_drawing_canvas_input(event: InputEvent) -> void:
 		if active_line != null:
 			_add_point(event.position)
 
-func _start_stroke(position: Vector2) -> void:
+func _start_stroke(point: Vector2) -> void:
 	active_line = Line2D.new()
 	active_line.width = 6.0
 	active_line.default_color = Color(0.2, 0.4, 0.9, 0.9)
 	active_line.joint_mode = Line2D.LINE_JOINT_ROUND
 	active_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	active_line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	active_line.add_point(position)
+	active_line.add_point(point)
 	strokes_layer.add_child(active_line)
 
-func _add_point(position: Vector2) -> void:
+func _add_point(point: Vector2) -> void:
 	if active_line == null:
 		return
-	active_line.add_point(position)
+	active_line.add_point(point)
 
 func _end_stroke() -> void:
 	active_line = null

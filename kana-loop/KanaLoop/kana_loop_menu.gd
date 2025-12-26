@@ -61,7 +61,7 @@ func _ready() -> void:
 	voice_selector.item_selected.connect(_on_voice_selected)
 	var selected_voice := KanaState.get_selected_voice()
 	var selected_index := 0
-	for index in voice_selector.item_count:
+	for index in range(voice_selector.item_count):
 		if voice_selector.get_item_text(index) == selected_voice:
 			selected_index = index
 			break
