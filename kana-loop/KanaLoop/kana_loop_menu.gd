@@ -56,9 +56,17 @@ func _ready() -> void:
 
 	volume_slider.value_changed.connect(_on_volume_changed)
 	voice_selector.clear()
-	voice_selector.add_item("Voice 1")
-	voice_selector.add_item("Voice 2")
-	voice_selector.select(0)
+	for voice in KanaAudio.get_voice_names():
+		voice_selector.add_item(voice)
+	voice_selector.item_selected.connect(_on_voice_selected)
+	var selected_voice := KanaState.get_selected_voice()
+	var selected_index := 0
+	for index in voice_selector.item_count:
+		if voice_selector.get_item_text(index) == selected_voice:
+			selected_index = index
+			break
+	voice_selector.select(selected_index)
+	_on_voice_selected(selected_index)
 
 	_apply_custom_mix_state(custom_mix_toggle.button_pressed)
 	_update_kana_selection()
@@ -154,6 +162,10 @@ func _apply_highlight_color(color: Color) -> void:
 
 func _on_volume_changed(value: float) -> void:
 	AudioServer.set_bus_volume_db(0, linear_to_db(value))
+
+func _on_voice_selected(index: int) -> void:
+	var voice := voice_selector.get_item_text(index)
+	KanaState.set_selected_voice(voice)
 
 func _on_practice_visual_delay() -> void:
 	_open_practice_scene(VISUAL_DELAY_SCENE)
