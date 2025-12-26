@@ -127,14 +127,15 @@ func _load_kana_outline_data() -> void:
 		push_error("Unable to open kana outline data at %s" % OUTLINE_DATA_PATH)
 		return
 	var json_text := file.get_as_text()
-	var parsed := JSON.parse_string(json_text)
+	var parsed: Variant = JSON.parse_string(json_text)
 	if typeof(parsed) != TYPE_ARRAY:
 		push_error("Kana outline JSON is not an array.")
 		return
-	for entry in parsed:
+	var entries: Array = parsed
+	for entry in entries:
 		if typeof(entry) != TYPE_DICTIONARY:
 			continue
-		var kana_value := entry.get("kana", "")
+		var kana_value: String = String(entry.get("kana", ""))
 		if kana_value != "":
 			kana_outline_data[kana_value] = entry
 
@@ -396,7 +397,7 @@ func _build_path_samples(segments: Array, origin: Vector2, glyph_size: float, sa
 	var samples := PackedVector2Array()
 	if segments.is_empty():
 		return samples
-	var segment_sample_count := max(2, int(ceil(float(samples_per_stroke) / float(segments.size()))))
+	var segment_sample_count: int = int(max(2.0, ceil(float(samples_per_stroke) / float(segments.size()))))
 	for segment in segments:
 		if typeof(segment) != TYPE_DICTIONARY:
 			continue
@@ -419,8 +420,8 @@ func _sample_segment(segment: Dictionary, origin: Vector2, glyph_size: float, sa
 		var t := 0.0
 		if sample_count > 1:
 			t = float(index) / float(sample_count - 1)
-		var normalized_point := _evaluate_segment(segment_type, points, t)
-		var canvas_point := origin + normalized_point * glyph_size
+		var normalized_point: Vector2 = _evaluate_segment(segment_type, points, t)
+		var canvas_point: Vector2 = origin + normalized_point * glyph_size
 		samples.append(canvas_point)
 	return samples
 
@@ -439,13 +440,20 @@ func _evaluate_segment(segment_type: String, points: Array, t: float) -> Vector2
 		var q1 := _lerp_point(p1, p2, t)
 		return _lerp_point(q0, q1, t)
 	if points.size() >= 1:
-		return _point_from_dict(points[0])
+		return _point_from_variant(points[0])
 	return Vector2.ZERO
 
-func _lerp_point(a: Dictionary, b: Dictionary, t: float) -> Vector2:
-	var p0 := _point_from_dict(a)
-	var p1 := _point_from_dict(b)
+func _lerp_point(a: Variant, b: Variant, t: float) -> Vector2:
+	var p0: Vector2 = _point_from_variant(a)
+	var p1: Vector2 = _point_from_variant(b)
 	return p0.lerp(p1, t)
+
+func _point_from_variant(point: Variant) -> Vector2:
+	if point is Vector2:
+		return point
+	if typeof(point) == TYPE_DICTIONARY:
+		return _point_from_dict(point)
+	return Vector2.ZERO
 
 func _point_from_dict(point: Dictionary) -> Vector2:
 	return Vector2(float(point.get("x", 0.0)), float(point.get("y", 0.0)))
@@ -463,7 +471,7 @@ func _get_glyph_origin() -> Vector2:
 	if drawing_canvas == null:
 		return Vector2.ZERO
 	var canvas_size := drawing_canvas.size
-	var glyph_size := min(canvas_size.x, canvas_size.y)
+	var glyph_size: float = min(canvas_size.x, canvas_size.y)
 	return (canvas_size - Vector2(glyph_size, glyph_size)) * 0.5
 
 func _build_cumulative_lengths(points: PackedVector2Array) -> PackedFloat32Array:
