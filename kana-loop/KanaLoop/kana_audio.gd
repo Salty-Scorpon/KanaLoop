@@ -1,5 +1,7 @@
 extends Node
 
+static var _instance: KanaAudio
+
 const DEFAULT_VOICE := "Voice 1"
 const VOICE_NAMES := ["Voice 1", "Voice 2"]
 const KANA_LIST := [
