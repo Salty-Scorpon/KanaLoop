@@ -110,6 +110,7 @@ func _update_kana_selection() -> void:
 		for child in custom_grid.get_children():
 			if child is CheckBox and child.button_pressed:
 				selected_kana.append(child.text)
+		KanaState.set_selected_kana(selected_kana)
 		return
 
 	if vowels_toggle.button_pressed:
@@ -118,6 +119,7 @@ func _update_kana_selection() -> void:
 		selected_kana.append_array(["か", "き", "く", "け", "こ"])
 	if s_row_toggle.button_pressed:
 		selected_kana.append_array(["さ", "し", "す", "せ", "そ"])
+	KanaState.set_selected_kana(selected_kana)
 
 func _ensure_kana_selection() -> void:
 	if not selected_kana.is_empty():
@@ -128,6 +130,7 @@ func _ensure_kana_selection() -> void:
 			if child is CheckBox:
 				child.button_pressed = true
 				selected_kana.append(child.text)
+				KanaState.set_selected_kana(selected_kana)
 				break
 		return
 
