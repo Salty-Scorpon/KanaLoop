@@ -7,6 +7,31 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_02qph")
 
+[node name="TogglePanel" type="PanelContainer" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 120.0
+
+[node name="ToggleMargin" type="MarginContainer" parent="TogglePanel"]
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="ToggleVBox" type="VBoxContainer" parent="TogglePanel/ToggleMargin"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StrokeOutlineToggle" type="CheckBox" parent="TogglePanel/ToggleMargin/ToggleVBox"]
+text = "Stroke Outline"
+button_pressed = true
+
+[node name="BlackoutToggle" type="CheckBox" parent="TogglePanel/ToggleMargin/ToggleVBox"]
+text = "Blackout"
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -69,7 +94,9 @@ theme_override_font_sizes/font_size = 220
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GuideLines" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+[node name="GhostLines" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+
+[node name="OutlineLines" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
 
 [node name="Strokes" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
 

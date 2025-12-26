@@ -14,14 +14,24 @@ signal back_requested
 	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes",
 	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes",
 ]) as Node2D
+@onready var ghost_lines_container: Node2D = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/GhostLines",
+	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/GhostLines",
+]) as Node2D
+@onready var outline_lines_container: Node2D = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/OutlineLines",
+	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/OutlineLines",
+]) as Node2D
 @onready var target_kana_label: Label = _find_node_with_fallback([
 	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana",
 	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana",
 ]) as Label
-@onready var guide_lines_container: Node2D = _find_node_with_fallback([
-	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines",
-	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines",
-]) as Node2D
+@onready var stroke_outline_toggle: CheckBox = _find_node_with_fallback([
+	"TogglePanel/ToggleMargin/ToggleVBox/StrokeOutlineToggle",
+]) as CheckBox
+@onready var blackout_toggle: CheckBox = _find_node_with_fallback([
+	"TogglePanel/ToggleMargin/ToggleVBox/BlackoutToggle",
+]) as CheckBox
 @onready var progress_label: Label = _find_node_with_fallback([
 	"MarginContainer/ScrollContainer/VBoxContainer/ProgressLabel",
 	"MarginContainer/VBoxContainer/ProgressLabel",
@@ -36,12 +46,15 @@ var active_line: Line2D
 var current_stroke_points: PackedVector2Array = PackedVector2Array()
 var current_stroke_index := 0
 var stroke_runtimes: Array[Dictionary] = []
-var guide_lines: Array[Line2D] = []
+var ghost_lines: Array[Line2D] = []
+var outline_lines: Array[Line2D] = []
 var kana_outline_data: Dictionary = {}
 var stroke_has_red := false
 var stroke_start_gate_met := false
 var stroke_last_t := 0.0
 var stroke_direction_failed := false
+var stroke_outline_enabled := true
+var blackout_enabled := false
 
 const OUTLINE_DATA_PATH := "res://assets/data/kana_outline.json"
 const GUIDE_SAMPLE_COUNT := 192
@@ -54,6 +67,8 @@ func _ready() -> void:
 	if target_kana_label == null or progress_label == null or completion_label == null:
 		push_error("Guided writing UI nodes are missing. Check the GuidedWriting scene structure.")
 		return
+	if target_kana_label != null:
+		target_kana_label.visible = false
 	_load_kana_outline_data()
 	_update_target_kana()
 	_load_guide_definition()
@@ -61,6 +76,12 @@ func _ready() -> void:
 		back_button.pressed.connect(_on_back_pressed)
 	if drawing_canvas != null:
 		drawing_canvas.gui_input.connect(_on_drawing_canvas_input)
+	if stroke_outline_toggle != null:
+		stroke_outline_toggle.button_pressed = stroke_outline_enabled
+		stroke_outline_toggle.toggled.connect(_on_stroke_outline_toggled)
+	if blackout_toggle != null:
+		blackout_toggle.button_pressed = blackout_enabled
+		blackout_toggle.toggled.connect(_on_blackout_toggled)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
@@ -283,24 +304,47 @@ func _distance_to_segment(point: Vector2, start: Vector2, end: Vector2) -> float
 	return point.distance_to(projection)
 
 func _build_guides() -> void:
-	if guide_lines_container == null:
+	if ghost_lines_container == null or outline_lines_container == null:
 		return
-	for child in guide_lines_container.get_children():
+	for child in ghost_lines_container.get_children():
 		child.queue_free()
-	guide_lines.clear()
+	for child in outline_lines_container.get_children():
+		child.queue_free()
+	ghost_lines.clear()
+	outline_lines.clear()
 	for runtime in stroke_runtimes:
-		var line := Line2D.new()
-		line.width = 6.0
-		line.default_color = Color(0.2, 0.2, 0.2, 0.25)
-		line.round_precision = 8
-		line.points = runtime.get("path_samples", PackedVector2Array())
-		guide_lines_container.add_child(line)
-		guide_lines.append(line)
+		var ghost_line := Line2D.new()
+		ghost_line.width = 10.0
+		ghost_line.default_color = Color(0.1, 0.1, 0.1, 0.18)
+		ghost_line.round_precision = 8
+		ghost_line.points = runtime.get("path_samples", PackedVector2Array())
+		ghost_lines_container.add_child(ghost_line)
+		ghost_lines.append(ghost_line)
+
+		var outline_line := Line2D.new()
+		outline_line.width = 8.0
+		outline_line.default_color = Color(0.2, 0.6, 1.0, 0.6)
+		outline_line.round_precision = 8
+		outline_line.points = runtime.get("path_samples", PackedVector2Array())
+		outline_lines_container.add_child(outline_line)
+		outline_lines.append(outline_line)
 
 func _update_guides_visibility() -> void:
-	for index in range(guide_lines.size()):
-		var line := guide_lines[index]
-		line.visible = index == current_stroke_index
+	var has_current_stroke := current_stroke_index >= 0 and current_stroke_index < outline_lines.size()
+	for index in range(ghost_lines.size()):
+		var line := ghost_lines[index]
+		line.visible = not blackout_enabled
+	for index in range(outline_lines.size()):
+		var line := outline_lines[index]
+		line.visible = stroke_outline_enabled and has_current_stroke and index == current_stroke_index
+
+func _on_stroke_outline_toggled(enabled: bool) -> void:
+	stroke_outline_enabled = enabled
+	_update_guides_visibility()
+
+func _on_blackout_toggled(enabled: bool) -> void:
+	blackout_enabled = enabled
+	_update_guides_visibility()
 
 func _build_path_samples(segments: Array, origin: Vector2, glyph_size: float, samples_per_stroke: int) -> PackedVector2Array:
 	var samples := PackedVector2Array()
