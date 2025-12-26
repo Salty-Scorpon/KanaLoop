@@ -79,6 +79,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 visible = false
 
+[node name="PracticeContainer" type="Control" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+visible = false
+
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options"]
 anchor_right = 1.0
 anchor_bottom = 1.0
