@@ -3,7 +3,10 @@ extends Node
 static var _instance: KanaAudio
 
 const DEFAULT_VOICE := "Voice 1"
+# Expected audio layout: res://assets/audio/<voice>/<kana>.ogg
+# Example: res://assets/audio/Voice 1/あ.ogg
 const VOICE_NAMES := ["Voice 1", "Voice 2"]
+const AUDIO_BASE_PATH := "res://assets/audio"
 const KANA_LIST := [
 	"あ", "い", "う", "え", "お",
 	"か", "き", "く", "け", "こ",
@@ -22,13 +25,13 @@ func _ready() -> void:
 func _build_voice_catalogs() -> Dictionary:
 	var catalog: Dictionary = {}
 	for voice in VOICE_NAMES:
-		catalog[voice] = _build_kana_catalog()
+		catalog[voice] = _build_kana_catalog(voice)
 	return catalog
 
-func _build_kana_catalog() -> Dictionary:
+func _build_kana_catalog(voice: String) -> Dictionary:
 	var catalog: Dictionary = {}
 	for kana in KANA_LIST:
-		catalog[kana] = _create_placeholder_stream()
+		catalog[kana] = _load_kana_stream(kana, voice)
 	return catalog
 
 func _create_placeholder_stream() -> AudioStream:
@@ -36,6 +39,20 @@ func _create_placeholder_stream() -> AudioStream:
 	stream.mix_rate = 44100
 	stream.buffer_length = 0.1
 	return stream
+
+func _load_kana_stream(kana: String, voice: String) -> AudioStream:
+	var path := _get_kana_audio_path(kana, voice)
+	if not ResourceLoader.exists(path):
+		push_warning("Missing kana audio file: %s" % path)
+		return _create_placeholder_stream()
+	var stream := ResourceLoader.load(path)
+	if stream == null or not (stream is AudioStream):
+		push_warning("Failed to load kana audio file: %s" % path)
+		return _create_placeholder_stream()
+	return stream
+
+func _get_kana_audio_path(kana: String, voice: String) -> String:
+	return "%s/%s/%s.ogg" % [AUDIO_BASE_PATH, voice, kana]
 
 func get_voice_names() -> Array[String]:
 	var names: Array[String] = []
