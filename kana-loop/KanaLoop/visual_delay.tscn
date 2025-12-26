@@ -39,7 +39,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-alignment = 1
+alignment = 0
 
 [node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
 text = "Visual Delay Practice"
