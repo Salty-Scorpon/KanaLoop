@@ -15,58 +15,64 @@ theme_override_constants/margin_top = 48
 theme_override_constants/margin_right = 48
 theme_override_constants/margin_bottom = 48
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 alignment = 1
 
-[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 text = "Guided Writing Practice"
 theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 
-[node name="Description" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="Description" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 text = "Trace guided kana strokes with visual cues. Press Space to hear the audio."
 horizontal_alignment = 1
 
-[node name="ProgressLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="ProgressLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 text = "Stroke 1/2"
 horizontal_alignment = 1
 
-[node name="CompletionLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="CompletionLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 visible = false
 text = "Completed!"
 horizontal_alignment = 1
 theme_override_colors/font_color = Color(0.2, 0.6, 0.3, 1)
 
-[node name="DrawingArea" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="DrawingArea" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 custom_minimum_size = Vector2(480, 480)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="DrawingCanvas" type="Control" parent="MarginContainer/VBoxContainer/DrawingArea"]
+[node name="DrawingCanvas" type="Control" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 0
 
-[node name="TargetContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+[node name="TargetContainer" type="CenterContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="TargetKana" type="Label" parent="MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer"]
+[node name="TargetKana" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer"]
 text = "あ"
 modulate = Color(0.2, 0.2, 0.2, 0.15)
 theme_override_font_sizes/font_size = 220
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GuideLines" type="Node2D" parent="MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+[node name="GuideLines" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
 
-[node name="Strokes" type="Node2D" parent="MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+[node name="Strokes" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
 
-[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
+[node name="BackButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 text = "Back to Main Menu"
 size_flags_horizontal = 3
