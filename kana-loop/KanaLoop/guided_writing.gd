@@ -420,8 +420,8 @@ func _sample_segment(segment: Dictionary, origin: Vector2, glyph_size: float, sa
 		var t := 0.0
 		if sample_count > 1:
 			t = float(index) / float(sample_count - 1)
-	var normalized_point: Vector2 = _evaluate_segment(segment_type, points, t)
-	var canvas_point: Vector2 = origin + normalized_point * glyph_size
+		var normalized_point: Vector2 = _evaluate_segment(segment_type, points, t)
+		var canvas_point: Vector2 = origin + normalized_point * glyph_size
 		samples.append(canvas_point)
 	return samples
 
