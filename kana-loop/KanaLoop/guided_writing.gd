@@ -2,13 +2,34 @@ extends Control
 
 signal back_requested
 
-@onready var back_button: Button = $MarginContainer/ScrollContainer/VBoxContainer/BackButton
-@onready var drawing_canvas: Control = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas
-@onready var strokes_layer: Node2D = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes
-@onready var target_kana_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana
-@onready var guide_lines_container: Node2D = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines
-@onready var progress_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/ProgressLabel
-@onready var completion_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/CompletionLabel
+@onready var back_button: Button = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/BackButton",
+	"MarginContainer/VBoxContainer/BackButton",
+]) as Button
+@onready var drawing_canvas: Control = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas",
+	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas",
+]) as Control
+@onready var strokes_layer: Node2D = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes",
+	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes",
+]) as Node2D
+@onready var target_kana_label: Label = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana",
+	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana",
+]) as Label
+@onready var guide_lines_container: Node2D = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines",
+	"MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines",
+]) as Node2D
+@onready var progress_label: Label = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/ProgressLabel",
+	"MarginContainer/VBoxContainer/ProgressLabel",
+]) as Label
+@onready var completion_label: Label = _find_node_with_fallback([
+	"MarginContainer/ScrollContainer/VBoxContainer/CompletionLabel",
+	"MarginContainer/VBoxContainer/CompletionLabel",
+]) as Label
 
 var selected_kana: Array[String] = []
 var active_line: Line2D
@@ -31,16 +52,23 @@ const GUIDE_DEFINITIONS := {
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
+	if target_kana_label == null or progress_label == null or completion_label == null:
+		push_error("Guided writing UI nodes are missing. Check the GuidedWriting scene structure.")
+		return
 	_update_target_kana()
 	_load_guide_definition()
-	back_button.pressed.connect(_on_back_pressed)
-	drawing_canvas.gui_input.connect(_on_drawing_canvas_input)
+	if back_button != null:
+		back_button.pressed.connect(_on_back_pressed)
+	if drawing_canvas != null:
+		drawing_canvas.gui_input.connect(_on_drawing_canvas_input)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 		_play_current_kana()
 
 func _update_target_kana() -> void:
+	if target_kana_label == null:
+		return
 	if selected_kana.is_empty():
 		target_kana_label.text = "あ"
 		return
@@ -52,7 +80,8 @@ func _load_guide_definition() -> void:
 		kana_key = selected_kana[0]
 	guide_definition = _build_guide_definition(GUIDE_DEFINITIONS.get(kana_key, GUIDE_DEFINITIONS["default"]))
 	current_stroke_index = 0
-	completion_label.visible = false
+	if completion_label != null:
+		completion_label.visible = false
 	if guide_definition.is_empty():
 		progress_label.text = "No guide available"
 	else:
@@ -98,6 +127,8 @@ func _on_drawing_canvas_input(event: InputEvent) -> void:
 func _start_stroke(point: Vector2) -> void:
 	if current_stroke_index >= guide_definition.size():
 		return
+	if strokes_layer == null:
+		return
 	active_line = Line2D.new()
 	active_line.width = 6.0
 	active_line.default_color = Color(0.2, 0.4, 0.9, 0.9)
@@ -129,7 +160,8 @@ func _evaluate_stroke(stroke_points: PackedVector2Array) -> void:
 	if _stroke_matches_guide(stroke_points, guide_points):
 		current_stroke_index += 1
 		if current_stroke_index >= guide_definition.size():
-			completion_label.visible = true
+			if completion_label != null:
+				completion_label.visible = true
 			progress_label.text = "Completed"
 		else:
 			progress_label.text = "Stroke %d/%d" % [current_stroke_index + 1, guide_definition.size()]
@@ -168,6 +200,8 @@ func _distance_to_segment(point: Vector2, start: Vector2, end: Vector2) -> float
 	return point.distance_to(projection)
 
 func _build_guides() -> void:
+	if guide_lines_container == null:
+		return
 	for child in guide_lines_container.get_children():
 		child.queue_free()
 	guide_lines.clear()
@@ -184,6 +218,13 @@ func _update_guides_visibility() -> void:
 	for index in range(guide_lines.size()):
 		var line := guide_lines[index]
 		line.visible = index == current_stroke_index
+
+func _find_node_with_fallback(paths: Array[String]) -> Node:
+	for node_path in paths:
+		var node := get_node_or_null(node_path)
+		if node != null:
+			return node
+	return null
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
