@@ -423,20 +423,21 @@ func _draw() -> void:
 	var end_gate_radius: float = runtime.get("end_gate_radius", 0.0)
 	var path_samples: PackedVector2Array = runtime.get("path_samples", PackedVector2Array())
 	var inverse_global: Transform2D = get_global_transform().affine_inverse()
-	var local_start: Vector2 = inverse_global * drawing_canvas.to_global(start_point)
-	var local_end: Vector2 = inverse_global * drawing_canvas.to_global(end_point)
+	var canvas_global: Transform2D = drawing_canvas.get_global_transform()
+	var local_start: Vector2 = inverse_global * (canvas_global * start_point)
+	var local_end: Vector2 = inverse_global * (canvas_global * end_point)
 	draw_arc(local_start, start_gate_radius, 0.0, TAU, 64, DEBUG_START_COLOR, DEBUG_CIRCLE_WIDTH)
 	draw_arc(local_end, end_gate_radius, 0.0, TAU, 64, DEBUG_END_COLOR, DEBUG_CIRCLE_WIDTH)
 	if path_samples.size() > 1:
 		var transformed_samples := PackedVector2Array()
 		transformed_samples.resize(path_samples.size())
 		for index in range(path_samples.size()):
-			transformed_samples[index] = inverse_global * drawing_canvas.to_global(path_samples[index])
+			transformed_samples[index] = inverse_global * (canvas_global * path_samples[index])
 		draw_polyline(transformed_samples, DEBUG_PATH_COLOR, DEBUG_PATH_WIDTH, true)
 	if debug_last_t_visible:
 		var font := get_theme_default_font()
 		var font_size := get_theme_default_font_size()
-		var label_position: Vector2 = inverse_global * drawing_canvas.to_global(debug_last_t_position) + Vector2(8, -8)
+		var label_position: Vector2 = inverse_global * (canvas_global * debug_last_t_position) + Vector2(8, -8)
 		draw_string(font, label_position, "t=%.2f" % debug_last_t_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, DEBUG_LABEL_COLOR)
 
 func _on_stroke_outline_toggled(enabled: bool) -> void:
