@@ -1,7 +1,4 @@
 extends Node
-class_name KanaAudio
-
-static var _instance: KanaAudio
 
 const DEFAULT_VOICE := "Voice 1"
 const VOICE_NAMES := ["Voice 1", "Voice 2"]
@@ -13,13 +10,6 @@ const KANA_LIST := [
 
 var voice_catalog: Dictionary = {}
 var audio_player: AudioStreamPlayer
-
-func _enter_tree() -> void:
-	_instance = self
-
-func _exit_tree() -> void:
-	if _instance == self:
-		_instance = null
 
 func _ready() -> void:
 	audio_player = AudioStreamPlayer.new()
@@ -45,18 +35,13 @@ func _create_placeholder_stream() -> AudioStream:
 	stream.buffer_length = 0.1
 	return stream
 
-static func get_voice_names() -> Array[String]:
-	return VOICE_NAMES.duplicate()
+func get_voice_names() -> Array[String]:
+	var names: Array[String] = []
+	for voice in VOICE_NAMES:
+		names.append(voice)
+	return names
 
-static func get_instance() -> KanaAudio:
-	return _instance
-
-static func play_kana_audio(kana: String, voice: String = "") -> void:
-	if _instance == null:
-		return
-	_instance._play_kana_audio(kana, voice)
-
-func _play_kana_audio(kana: String, voice: String = "") -> void:
+func play_kana_audio(kana: String, voice: String = "") -> void:
 	var voice_key := voice
 	if voice_key == "":
 		voice_key = KanaState.get_selected_voice()
