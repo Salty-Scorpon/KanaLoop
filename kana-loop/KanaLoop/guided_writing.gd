@@ -58,6 +58,7 @@ var stroke_direction_failed := false
 var stroke_outline_enabled := true
 var blackout_enabled := false
 var rng := RandomNumberGenerator.new()
+var current_stroke_runtime: Dictionary = {}
 
 const OUTLINE_DATA_PATH := "res://assets/data/kana_outline.json"
 const GUIDE_SAMPLE_COUNT := 192
@@ -156,16 +157,24 @@ func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
 		var path_samples := _build_path_samples(path_segments, glyph_origin, glyph_size, GUIDE_SAMPLE_COUNT)
 		var cumulative_lengths := _build_cumulative_lengths(path_samples)
 		var total_length := cumulative_lengths[cumulative_lengths.size() - 1] if cumulative_lengths.size() > 0 else 0.0
+		var segment_vectors := _build_segment_vectors(path_samples)
+		var segment_length_squareds := _build_segment_length_squareds(segment_vectors)
+		var path_bounds := _build_path_bounds(path_samples)
+		var corridor_radius := float(rules.get("corridor_radius", 0.05)) * glyph_size
 		runtimes.append({
 			"start_point": start_point,
 			"end_point": end_point,
 			"start_gate_radius": float(rules.get("start_must_be_near", 0.08)) * glyph_size,
 			"end_gate_radius": float(rules.get("end_must_be_near", 0.08)) * glyph_size,
-			"corridor_radius": float(rules.get("corridor_radius", 0.05)) * glyph_size,
+			"corridor_radius": corridor_radius,
 			"direction_enforced": bool(rules.get("direction_enforced", true)),
 			"path_samples": path_samples,
 			"cumulative_lengths": cumulative_lengths,
 			"total_length": total_length,
+			"segment_vectors": segment_vectors,
+			"segment_length_squareds": segment_length_squareds,
+			"path_bounds": path_bounds,
+			"expanded_bounds": path_bounds.grow(corridor_radius),
 		})
 	return runtimes
 
@@ -202,6 +211,7 @@ func _start_stroke(point: Vector2) -> void:
 		return
 	stroke_start_gate_met = false
 	var runtime: Dictionary = stroke_runtimes[current_stroke_index]
+	current_stroke_runtime = runtime
 	var start_point: Vector2 = runtime.get("start_point", Vector2.ZERO)
 	var start_gate_radius: float = runtime.get("start_gate_radius", 0.0)
 	if point.distance_to(start_point) > start_gate_radius:
@@ -230,13 +240,26 @@ func _add_point(point: Vector2) -> void:
 	current_stroke_points.append(point)
 	if current_stroke_index >= stroke_runtimes.size():
 		return
-	var runtime: Dictionary = stroke_runtimes[current_stroke_index]
-	var corridor_radius: float = runtime.get("corridor_radius", 0.0)
-	var distance := _distance_to_polyline(point, runtime.get("path_samples", PackedVector2Array()))
-	if distance > corridor_radius:
-		stroke_has_red = true
+	var runtime := current_stroke_runtime
+	if runtime.is_empty():
+		runtime = stroke_runtimes[current_stroke_index]
+		current_stroke_runtime = runtime
+	if not stroke_has_red:
+		var expanded_bounds: Rect2 = runtime.get("expanded_bounds", Rect2())
+		if expanded_bounds.size != Vector2.ZERO and not expanded_bounds.has_point(point):
+			stroke_has_red = true
+		else:
+			var corridor_radius: float = runtime.get("corridor_radius", 0.0)
+			var distance := _distance_to_polyline_cached(
+				point,
+				runtime.get("path_samples", PackedVector2Array()),
+				runtime.get("segment_vectors", PackedVector2Array()),
+				runtime.get("segment_length_squareds", PackedFloat32Array())
+			)
+			if distance > corridor_radius:
+				stroke_has_red = true
 	active_line.default_color = Color(0.9, 0.2, 0.2, 0.9) if stroke_has_red else Color(0.2, 0.4, 0.9, 0.9)
-	if runtime.get("direction_enforced", true):
+	if not stroke_has_red and runtime.get("direction_enforced", true):
 		var t := _project_t_on_path(point, runtime)
 		if t + DIRECTION_JITTER < stroke_last_t:
 			stroke_direction_failed = true
@@ -249,6 +272,7 @@ func _end_stroke() -> void:
 	var finished_points := current_stroke_points
 	active_line = null
 	current_stroke_points = PackedVector2Array()
+	current_stroke_runtime = {}
 	_evaluate_stroke(finished_line, finished_points)
 
 func _evaluate_stroke(finished_line: Line2D, stroke_points: PackedVector2Array) -> void:
@@ -290,23 +314,40 @@ func _stroke_is_valid(stroke_points: PackedVector2Array, runtime: Dictionary) ->
 			return false
 	return true
 
-func _distance_to_polyline(point: Vector2, polyline: PackedVector2Array) -> float:
+func _distance_to_polyline_cached(
+	point: Vector2,
+	polyline: PackedVector2Array,
+	segment_vectors: PackedVector2Array,
+	segment_length_squareds: PackedFloat32Array
+) -> float:
 	var best_distance := INF
-	for index in range(polyline.size() - 1):
+	var segment_count := polyline.size() - 1
+	if segment_vectors.size() < segment_count or segment_length_squareds.size() < segment_count:
+		for index in range(segment_count):
+			var start := polyline[index]
+			var end := polyline[index + 1]
+			var segment := end - start
+			var length_squared := segment.length_squared()
+			if length_squared == 0.0:
+				best_distance = min(best_distance, point.distance_to(start))
+				continue
+			var t := (point - start).dot(segment) / length_squared
+			t = clamp(t, 0.0, 1.0)
+			var projection := start + segment * t
+			best_distance = min(best_distance, point.distance_to(projection))
+		return best_distance
+	for index in range(segment_count):
 		var start := polyline[index]
-		var end := polyline[index + 1]
-		best_distance = min(best_distance, _distance_to_segment(point, start, end))
+		var segment := segment_vectors[index]
+		var length_squared := segment_length_squareds[index]
+		if length_squared == 0.0:
+			best_distance = min(best_distance, point.distance_to(start))
+			continue
+		var t := (point - start).dot(segment) / length_squared
+		t = clamp(t, 0.0, 1.0)
+		var projection := start + segment * t
+		best_distance = min(best_distance, point.distance_to(projection))
 	return best_distance
-
-func _distance_to_segment(point: Vector2, start: Vector2, end: Vector2) -> float:
-	var segment := end - start
-	var length_squared := segment.length_squared()
-	if length_squared == 0.0:
-		return point.distance_to(start)
-	var t := (point - start).dot(segment) / length_squared
-	t = clamp(t, 0.0, 1.0)
-	var projection := start + segment * t
-	return point.distance_to(projection)
 
 func _build_guides() -> void:
 	if ghost_lines_container == null or outline_lines_container == null:
@@ -435,18 +476,50 @@ func _build_cumulative_lengths(points: PackedVector2Array) -> PackedFloat32Array
 		lengths[index] = lengths[index - 1] + points[index].distance_to(points[index - 1])
 	return lengths
 
+func _build_segment_vectors(points: PackedVector2Array) -> PackedVector2Array:
+	var vectors := PackedVector2Array()
+	if points.size() < 2:
+		return vectors
+	vectors.resize(points.size() - 1)
+	for index in range(points.size() - 1):
+		vectors[index] = points[index + 1] - points[index]
+	return vectors
+
+func _build_segment_length_squareds(vectors: PackedVector2Array) -> PackedFloat32Array:
+	var lengths := PackedFloat32Array()
+	if vectors.is_empty():
+		return lengths
+	lengths.resize(vectors.size())
+	for index in range(vectors.size()):
+		lengths[index] = vectors[index].length_squared()
+	return lengths
+
+func _build_path_bounds(points: PackedVector2Array) -> Rect2:
+	if points.is_empty():
+		return Rect2()
+	var min_point := points[0]
+	var max_point := points[0]
+	for point in points:
+		min_point.x = min(min_point.x, point.x)
+		min_point.y = min(min_point.y, point.y)
+		max_point.x = max(max_point.x, point.x)
+		max_point.y = max(max_point.y, point.y)
+	return Rect2(min_point, max_point - min_point)
+
 func _project_t_on_path(point: Vector2, runtime: Dictionary) -> float:
 	var samples: PackedVector2Array = runtime.get("path_samples", PackedVector2Array())
 	var lengths: PackedFloat32Array = runtime.get("cumulative_lengths", PackedFloat32Array())
+	var segment_vectors: PackedVector2Array = runtime.get("segment_vectors", PackedVector2Array())
+	var segment_length_squareds: PackedFloat32Array = runtime.get("segment_length_squareds", PackedFloat32Array())
 	if samples.size() < 2 or lengths.size() != samples.size():
 		return 0.0
 	var best_distance := INF
 	var best_length := 0.0
-	for index in range(samples.size() - 1):
+	var segment_count := samples.size() - 1
+	for index in range(segment_count):
 		var start := samples[index]
-		var end := samples[index + 1]
-		var segment := end - start
-		var length_squared := segment.length_squared()
+		var segment := segment_vectors[index] if segment_vectors.size() > index else samples[index + 1] - samples[index]
+		var length_squared := segment_length_squareds[index] if segment_length_squareds.size() > index else segment.length_squared()
 		if length_squared == 0.0:
 			continue
 		var t := (point - start).dot(segment) / length_squared
