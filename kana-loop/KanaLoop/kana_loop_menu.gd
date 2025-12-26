@@ -12,13 +12,13 @@ extends Control
 @onready var custom_grid: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid
 
 @onready var background_rect: ColorRect = $Background
-@onready var background_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/BackgroundPicker
-@onready var kana_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/KanaPicker
-@onready var highlight_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/HighlightPicker
+@onready var background_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/BackgroundRow/BackgroundPicker
+@onready var kana_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/KanaRow/KanaPicker
+@onready var highlight_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/HighlightRow/HighlightPicker
 @onready var kana_preview: Label = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/KanaPreview
 
-@onready var volume_slider: HSlider = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VolumeSlider
-@onready var voice_selector: OptionButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VoiceSelector
+@onready var volume_slider: HSlider = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VolumeRow/VolumeSlider
+@onready var voice_selector: OptionButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VoiceRow/VoiceSelector
 
 var selected_kana: Array[String] = []
 
