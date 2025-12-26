@@ -155,6 +155,7 @@ func _on_highlight_color_changed(color: Color) -> void:
 	_apply_highlight_color(color)
 
 func _apply_highlight_color(color: Color) -> void:
+	KanaState.set_highlight_color(color)
 	for button in get_tree().get_nodes_in_group("menu_buttons"):
 		if button is Button:
 			button.add_theme_color_override("font_hover_color", color)
