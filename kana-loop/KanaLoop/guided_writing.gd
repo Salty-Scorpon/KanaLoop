@@ -57,6 +57,10 @@ var stroke_last_t := 0.0
 var stroke_direction_failed := false
 var stroke_outline_enabled := true
 var blackout_enabled := false
+var debug_overlay_enabled := false
+var debug_last_t_label := 0.0
+var debug_last_t_position := Vector2.ZERO
+var debug_last_t_visible := false
 var rng := RandomNumberGenerator.new()
 var current_stroke_runtime: Dictionary = {}
 
@@ -65,6 +69,12 @@ const GUIDE_SAMPLE_COUNT := 192
 const MIN_DRAWN_LENGTH_RATIO := 0.35
 const DIRECTION_JITTER := 0.05
 const FINAL_T_THRESHOLD := 0.85
+const DEBUG_PATH_COLOR := Color(0.9, 0.2, 0.9, 0.9)
+const DEBUG_START_COLOR := Color(0.2, 0.9, 0.4, 0.9)
+const DEBUG_END_COLOR := Color(0.9, 0.4, 0.2, 0.9)
+const DEBUG_LABEL_COLOR := Color(1.0, 1.0, 1.0, 0.9)
+const DEBUG_CIRCLE_WIDTH := 2.0
+const DEBUG_PATH_WIDTH := 3.0
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
@@ -93,6 +103,10 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 		_play_current_kana()
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_D:
+		debug_overlay_enabled = not debug_overlay_enabled
+		queue_redraw()
 
 func _update_target_kana() -> void:
 	if target_kana_label == null:
@@ -112,6 +126,7 @@ func _load_guide_definition() -> void:
 	_clear_strokes()
 	stroke_runtimes = _build_stroke_runtimes(kana_def)
 	current_stroke_index = 0
+	debug_last_t_visible = false
 	if completion_label != null:
 		completion_label.visible = false
 	if stroke_runtimes.is_empty():
@@ -120,6 +135,7 @@ func _load_guide_definition() -> void:
 		progress_label.text = "Stroke 1/%d" % stroke_runtimes.size()
 	_build_guides()
 	_update_guides_visibility()
+	queue_redraw()
 
 func _load_kana_outline_data() -> void:
 	var file := FileAccess.open(OUTLINE_DATA_PATH, FileAccess.READ)
@@ -274,6 +290,11 @@ func _end_stroke() -> void:
 	active_line = null
 	current_stroke_points = PackedVector2Array()
 	current_stroke_runtime = {}
+	if debug_overlay_enabled and finished_points.size() > 0:
+		debug_last_t_label = stroke_last_t
+		debug_last_t_position = finished_points[finished_points.size() - 1]
+		debug_last_t_visible = true
+		queue_redraw()
 	_evaluate_stroke(finished_line, finished_points)
 
 func _evaluate_stroke(finished_line: Line2D, stroke_points: PackedVector2Array) -> void:
@@ -384,6 +405,38 @@ func _update_guides_visibility() -> void:
 	for index in range(outline_lines.size()):
 		var line := outline_lines[index]
 		line.visible = stroke_outline_enabled and has_current_stroke and index == current_stroke_index
+	queue_redraw()
+
+func _draw() -> void:
+	if not debug_overlay_enabled:
+		return
+	if drawing_canvas == null:
+		return
+	if current_stroke_index < 0 or current_stroke_index >= stroke_runtimes.size():
+		return
+	var runtime: Dictionary = stroke_runtimes[current_stroke_index]
+	if runtime.is_empty():
+		return
+	var start_point: Vector2 = runtime.get("start_point", Vector2.ZERO)
+	var end_point: Vector2 = runtime.get("end_point", Vector2.ZERO)
+	var start_gate_radius: float = runtime.get("start_gate_radius", 0.0)
+	var end_gate_radius: float = runtime.get("end_gate_radius", 0.0)
+	var path_samples: PackedVector2Array = runtime.get("path_samples", PackedVector2Array())
+	var local_start := to_local(drawing_canvas.to_global(start_point))
+	var local_end := to_local(drawing_canvas.to_global(end_point))
+	draw_arc(local_start, start_gate_radius, 0.0, TAU, 64, DEBUG_START_COLOR, DEBUG_CIRCLE_WIDTH)
+	draw_arc(local_end, end_gate_radius, 0.0, TAU, 64, DEBUG_END_COLOR, DEBUG_CIRCLE_WIDTH)
+	if path_samples.size() > 1:
+		var transformed_samples := PackedVector2Array()
+		transformed_samples.resize(path_samples.size())
+		for index in range(path_samples.size()):
+			transformed_samples[index] = to_local(drawing_canvas.to_global(path_samples[index]))
+		draw_polyline(transformed_samples, DEBUG_PATH_COLOR, DEBUG_PATH_WIDTH, true)
+	if debug_last_t_visible:
+		var font := get_theme_default_font()
+		var font_size := get_theme_default_font_size()
+		var label_position := to_local(drawing_canvas.to_global(debug_last_t_position)) + Vector2(8, -8)
+		draw_string(font, label_position, "t=%.2f" % debug_last_t_label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, DEBUG_LABEL_COLOR)
 
 func _on_stroke_outline_toggled(enabled: bool) -> void:
 	stroke_outline_enabled = enabled
