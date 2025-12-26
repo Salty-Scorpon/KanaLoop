@@ -2,13 +2,13 @@ extends Control
 
 signal back_requested
 
-@onready var back_button: Button = $MarginContainer/VBoxContainer/BackButton
-@onready var drawing_canvas: Control = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas
-@onready var strokes_layer: Node2D = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes
-@onready var target_kana_label: Label = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana
-@onready var guide_lines_container: Node2D = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines
-@onready var progress_label: Label = $MarginContainer/VBoxContainer/ProgressLabel
-@onready var completion_label: Label = $MarginContainer/VBoxContainer/CompletionLabel
+@onready var back_button: Button = $MarginContainer/ScrollContainer/VBoxContainer/BackButton
+@onready var drawing_canvas: Control = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas
+@onready var strokes_layer: Node2D = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes
+@onready var target_kana_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana
+@onready var guide_lines_container: Node2D = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines
+@onready var progress_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/ProgressLabel
+@onready var completion_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/CompletionLabel
 
 var selected_kana: Array[String] = []
 var active_line: Line2D
@@ -20,12 +20,12 @@ var guide_lines: Array[Line2D] = []
 const GUIDE_TOLERANCE := 24.0
 const GUIDE_DEFINITIONS := {
 	"あ": [
-		PackedVector2Array([Vector2(120, 140), Vector2(240, 140), Vector2(300, 200)]),
-		PackedVector2Array([Vector2(300, 200), Vector2(240, 280), Vector2(140, 280)]),
+		[Vector2(120, 140), Vector2(240, 140), Vector2(300, 200)],
+		[Vector2(300, 200), Vector2(240, 280), Vector2(140, 280)],
 	],
 	"default": [
-		PackedVector2Array([Vector2(120, 140), Vector2(240, 140), Vector2(300, 200)]),
-		PackedVector2Array([Vector2(300, 200), Vector2(240, 280), Vector2(140, 280)]),
+		[Vector2(120, 140), Vector2(240, 140), Vector2(300, 200)],
+		[Vector2(300, 200), Vector2(240, 280), Vector2(140, 280)],
 	],
 }
 
@@ -50,7 +50,7 @@ func _load_guide_definition() -> void:
 	var kana_key := "default"
 	if not selected_kana.is_empty():
 		kana_key = selected_kana[0]
-	guide_definition = GUIDE_DEFINITIONS.get(kana_key, GUIDE_DEFINITIONS["default"])
+	guide_definition = _build_guide_definition(GUIDE_DEFINITIONS.get(kana_key, GUIDE_DEFINITIONS["default"]))
 	current_stroke_index = 0
 	completion_label.visible = false
 	if guide_definition.is_empty():
@@ -59,6 +59,15 @@ func _load_guide_definition() -> void:
 		progress_label.text = "Stroke 1/%d" % guide_definition.size()
 	_build_guides()
 	_update_guides_visibility()
+
+func _build_guide_definition(raw_definition: Array) -> Array[PackedVector2Array]:
+	var built: Array[PackedVector2Array] = []
+	for stroke in raw_definition:
+		var points := PackedVector2Array()
+		for point in stroke:
+			points.append(point)
+		built.append(points)
+	return built
 
 func _play_current_kana() -> void:
 	if selected_kana.is_empty():
