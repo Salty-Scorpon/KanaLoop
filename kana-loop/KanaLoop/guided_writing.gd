@@ -2,13 +2,13 @@ extends Control
 
 signal back_requested
 
-@onready var back_button: Button = $MarginContainer/VBoxContainer/BackButton
-@onready var drawing_canvas: Control = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas
-@onready var strokes_layer: Node2D = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes
-@onready var target_kana_label: Label = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana
-@onready var guide_lines_container: Node2D = $MarginContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines
-@onready var progress_label: Label = $MarginContainer/VBoxContainer/ProgressLabel
-@onready var completion_label: Label = $MarginContainer/VBoxContainer/CompletionLabel
+@onready var back_button: Button = $MarginContainer/ScrollContainer/VBoxContainer/BackButton
+@onready var drawing_canvas: Control = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas
+@onready var strokes_layer: Node2D = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/Strokes
+@onready var target_kana_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer/TargetKana
+@onready var guide_lines_container: Node2D = $MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/GuideLines
+@onready var progress_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/ProgressLabel
+@onready var completion_label: Label = $MarginContainer/ScrollContainer/VBoxContainer/CompletionLabel
 
 var selected_kana: Array[String] = []
 var active_line: Line2D
