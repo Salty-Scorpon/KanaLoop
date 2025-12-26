@@ -1,0 +1,253 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" uid="uid://dg1b24k5igb02" path="res://KanaLoop/kana_loop_menu.gd" id="1_8fqjp"]
+
+[node name="KanaLoop" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_8fqjp")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.07, 0.08, 0.1, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "Kana Loop"
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 12)
+
+[node name="PanelContainer" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PageContainer" type="Control" parent="MarginContainer/VBoxContainer/PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MainMenu" type="Control" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Menu" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="PracticeVisualDelay" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=[&"menu_buttons"]]
+text = "Practice: Visual Delay (視覚遅延)"
+size_flags_horizontal = 3
+
+[node name="PracticeRandomChains" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=[&"menu_buttons"]]
+text = "Practice: Random Chains (無作為連結)"
+size_flags_horizontal = 3
+
+[node name="PracticeAudioSymbol" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=[&"menu_buttons"]]
+text = "Practice: Audio → Symbol (音声連想)"
+size_flags_horizontal = 3
+
+[node name="PracticeGuidedWriting" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=[&"menu_buttons"]]
+text = "Practice: Guided Writing (書字誘導)"
+size_flags_horizontal = 3
+
+[node name="OptionsButton" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=[&"menu_buttons"]]
+text = "Options (設定)"
+size_flags_horizontal = 3
+
+[node name="Options" type="Control" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+visible = false
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="OptionsLayout" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 0
+
+[node name="OptionsTitle" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
+text = "Options"
+theme_override_font_sizes/font_size = 24
+
+[node name="KanaSelection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
+size_flags_horizontal = 3
+
+[node name="KanaSelectionLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection"]
+text = "Kana Selection"
+
+[node name="RowToggles" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection"]
+size_flags_horizontal = 3
+
+[node name="VowelsCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+text = "Vowels (あ い う え お)"
+button_pressed = true
+
+[node name="KRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+text = "K-Row (か き く け こ)"
+
+[node name="SRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+text = "S-Row (さ し す せ そ)"
+
+[node name="CustomMixCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+text = "Custom Mix"
+
+[node name="CustomMixGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection"]
+visible = false
+columns = 5
+
+[node name="KanaA" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "あ"
+disabled = true
+
+[node name="KanaI" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "い"
+disabled = true
+
+[node name="KanaU" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "う"
+disabled = true
+
+[node name="KanaE" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "え"
+disabled = true
+
+[node name="KanaO" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "お"
+disabled = true
+
+[node name="KanaKa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "か"
+disabled = true
+
+[node name="KanaKi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "き"
+disabled = true
+
+[node name="KanaKu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "く"
+disabled = true
+
+[node name="KanaKe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "け"
+disabled = true
+
+[node name="KanaKo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "こ"
+disabled = true
+
+[node name="KanaSa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "さ"
+disabled = true
+
+[node name="KanaShi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "し"
+disabled = true
+
+[node name="KanaSu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "す"
+disabled = true
+
+[node name="KanaSe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "せ"
+disabled = true
+
+[node name="KanaSo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+text = "そ"
+disabled = true
+
+[node name="VisualOptions" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
+size_flags_horizontal = 3
+
+[node name="VisualOptionsLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions"]
+text = "Visual Options"
+
+[node name="KanaPreview" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions"]
+text = "あ い う え お"
+horizontal_alignment = 1
+
+[node name="BackgroundRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions"]
+
+[node name="BackgroundLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/BackgroundRow"]
+text = "Background"
+size_flags_horizontal = 3
+
+[node name="BackgroundPicker" type="ColorPickerButton" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/BackgroundRow"]
+color = Color(0.07, 0.08, 0.1, 1)
+size_flags_horizontal = 3
+
+[node name="KanaRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions"]
+
+[node name="KanaLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/KanaRow"]
+text = "Kana"
+size_flags_horizontal = 3
+
+[node name="KanaPicker" type="ColorPickerButton" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/KanaRow"]
+color = Color(0.95, 0.95, 0.96, 1)
+size_flags_horizontal = 3
+
+[node name="HighlightRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions"]
+
+[node name="HighlightLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/HighlightRow"]
+text = "Highlight"
+size_flags_horizontal = 3
+
+[node name="HighlightPicker" type="ColorPickerButton" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/HighlightRow"]
+color = Color(0.85, 0.2, 0.2, 1)
+size_flags_horizontal = 3
+
+[node name="AudioOptions" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
+size_flags_horizontal = 3
+
+[node name="AudioOptionsLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions"]
+text = "Audio Options"
+
+[node name="VolumeRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions"]
+
+[node name="VolumeLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VolumeRow"]
+text = "Volume"
+size_flags_horizontal = 3
+
+[node name="VolumeSlider" type="HSlider" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VolumeRow"]
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 0.85
+size_flags_horizontal = 3
+
+[node name="VoiceRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions"]
+
+[node name="VoiceLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VoiceRow"]
+text = "Voice"
+size_flags_horizontal = 3
+
+[node name="VoiceSelector" type="OptionButton" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VoiceRow"]
+size_flags_horizontal = 3
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout" groups=[&"menu_buttons"]]
+text = "Back"
+size_flags_horizontal = 3
