@@ -31,6 +31,53 @@ horizontal_alignment = 1
 text = "Follow randomized kana chains and build recall speed."
 horizontal_alignment = 1
 
+[node name="LengthRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="LengthLabel" type="Label" parent="MarginContainer/VBoxContainer/LengthRow"]
+text = "Chain Length"
+size_flags_horizontal = 3
+
+[node name="LengthButtons" type="HBoxContainer" parent="MarginContainer/VBoxContainer/LengthRow"]
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="SingleToggle" type="Button" parent="MarginContainer/VBoxContainer/LengthRow/LengthButtons"]
+text = "Single"
+toggle_mode = true
+
+[node name="DoubleToggle" type="Button" parent="MarginContainer/VBoxContainer/LengthRow/LengthButtons"]
+text = "Double"
+toggle_mode = true
+
+[node name="TripleToggle" type="Button" parent="MarginContainer/VBoxContainer/LengthRow/LengthButtons"]
+text = "Triple"
+toggle_mode = true
+
+[node name="KanaRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="KanaButton1" type="Button" parent="MarginContainer/VBoxContainer/KanaRow"]
+text = "あ"
+flat = true
+theme_override_font_sizes/font_size = 120
+size_flags_horizontal = 3
+
+[node name="KanaButton2" type="Button" parent="MarginContainer/VBoxContainer/KanaRow"]
+text = "い"
+flat = true
+theme_override_font_sizes/font_size = 120
+size_flags_horizontal = 3
+
+[node name="KanaButton3" type="Button" parent="MarginContainer/VBoxContainer/KanaRow"]
+text = "う"
+flat = true
+theme_override_font_sizes/font_size = 120
+size_flags_horizontal = 3
+
 [node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
 text = "Back to Main Menu"
 size_flags_horizontal = 3
