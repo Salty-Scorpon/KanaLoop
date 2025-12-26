@@ -42,6 +42,8 @@ signal back_requested
 ]) as Label
 
 var selected_kana: Array[String] = []
+var remaining_kana_pool: Array[String] = []
+var current_kana := ""
 var active_line: Line2D
 var current_stroke_points: PackedVector2Array = PackedVector2Array()
 var current_stroke_index := 0
@@ -55,6 +57,7 @@ var stroke_last_t := 0.0
 var stroke_direction_failed := false
 var stroke_outline_enabled := true
 var blackout_enabled := false
+var rng := RandomNumberGenerator.new()
 
 const OUTLINE_DATA_PATH := "res://assets/data/kana_outline.json"
 const GUIDE_SAMPLE_COUNT := 192
@@ -64,14 +67,17 @@ const FINAL_T_THRESHOLD := 0.85
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
+	if selected_kana.is_empty():
+		selected_kana = KanaState.DEFAULT_KANA.duplicate()
+	rng.randomize()
 	if target_kana_label == null or progress_label == null or completion_label == null:
 		push_error("Guided writing UI nodes are missing. Check the GuidedWriting scene structure.")
 		return
 	if target_kana_label != null:
 		target_kana_label.visible = false
 	_load_kana_outline_data()
-	_update_target_kana()
-	_load_guide_definition()
+	_refill_remaining_pool()
+	_advance_to_next_kana()
 	if back_button != null:
 		back_button.pressed.connect(_on_back_pressed)
 	if drawing_canvas != null:
@@ -90,18 +96,19 @@ func _unhandled_input(event: InputEvent) -> void:
 func _update_target_kana() -> void:
 	if target_kana_label == null:
 		return
-	if selected_kana.is_empty():
+	if current_kana == "":
 		target_kana_label.text = "あ"
 		return
-	target_kana_label.text = selected_kana[0]
+	target_kana_label.text = current_kana
 
 func _load_guide_definition() -> void:
-	var kana_key := "あ"
-	if not selected_kana.is_empty():
-		kana_key = selected_kana[0]
+	var kana_key := current_kana
+	if kana_key == "":
+		kana_key = "あ"
 	var kana_def: Dictionary = kana_outline_data.get(kana_key, {})
 	if kana_def.is_empty() and not kana_outline_data.is_empty():
 		kana_def = kana_outline_data.values()[0]
+	_clear_strokes()
 	stroke_runtimes = _build_stroke_runtimes(kana_def)
 	current_stroke_index = 0
 	if completion_label != null:
@@ -163,9 +170,9 @@ func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
 	return runtimes
 
 func _play_current_kana() -> void:
-	if selected_kana.is_empty():
+	if current_kana == "":
 		return
-	KanaAudio.play_kana_audio(selected_kana[0])
+	KanaAudio.play_kana_audio(current_kana)
 
 func _on_drawing_canvas_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -252,9 +259,7 @@ func _evaluate_stroke(finished_line: Line2D, stroke_points: PackedVector2Array) 
 	if is_valid:
 		current_stroke_index += 1
 		if current_stroke_index >= stroke_runtimes.size():
-			if completion_label != null:
-				completion_label.visible = true
-			progress_label.text = "Completed"
+			_handle_kana_completed()
 		else:
 			progress_label.text = "Stroke %d/%d" % [current_stroke_index + 1, stroke_runtimes.size()]
 		_update_guides_visibility()
@@ -472,3 +477,41 @@ func _find_node_with_fallback(paths: Array[String]) -> Node:
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
+
+func _handle_kana_completed() -> void:
+	if completion_label != null:
+		completion_label.visible = true
+	progress_label.text = "Completed"
+	_play_current_kana()
+	call_deferred("_advance_to_next_kana")
+
+func _advance_to_next_kana() -> void:
+	if remaining_kana_pool.is_empty():
+		_refill_remaining_pool()
+	current_kana = ""
+	if not remaining_kana_pool.is_empty():
+		current_kana = remaining_kana_pool.pop_back()
+	_update_target_kana()
+	_load_guide_definition()
+
+func _refill_remaining_pool() -> void:
+	selected_kana = KanaState.get_selected_kana()
+	if selected_kana.is_empty():
+		selected_kana = KanaState.DEFAULT_KANA.duplicate()
+	remaining_kana_pool = selected_kana.duplicate()
+	_shuffle_remaining_pool()
+
+func _shuffle_remaining_pool() -> void:
+	for index in range(remaining_kana_pool.size() - 1, 0, -1):
+		var swap_index := rng.randi_range(0, index)
+		var temp := remaining_kana_pool[index]
+		remaining_kana_pool[index] = remaining_kana_pool[swap_index]
+		remaining_kana_pool[swap_index] = temp
+
+func _clear_strokes() -> void:
+	if strokes_layer == null:
+		return
+	for child in strokes_layer.get_children():
+		child.queue_free()
+	active_line = null
+	current_stroke_points = PackedVector2Array()
