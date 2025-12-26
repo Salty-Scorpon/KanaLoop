@@ -11,10 +11,10 @@ var shuffled_kana: Array[String] = []
 var kana_index := 0
 var running := false
 
-const AUDIO_PAUSE_SECONDS := 0.6
-const KANA_DISPLAY_SECONDS := 0.7
-const FADE_OUT_SECONDS := 0.2
-const INTER_STIMULUS_DELAY_SECONDS := 0.2
+const AUDIO_PAUSE_SECONDS := 0.0
+const KANA_DISPLAY_SECONDS := 2.0
+const FADE_OUT_SECONDS := 0.0
+const INTER_STIMULUS_DELAY_SECONDS := 0.0
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
