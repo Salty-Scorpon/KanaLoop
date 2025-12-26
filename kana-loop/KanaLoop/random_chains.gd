@@ -50,7 +50,7 @@ func _apply_highlight_color() -> void:
 		toggle.add_theme_color_override("font_pressed_color", highlight_color)
 
 func _connect_kana_buttons() -> void:
-	for index in kana_buttons.size():
+	for index in range(kana_buttons.size()):
 		kana_buttons[index].pressed.connect(_on_kana_pressed.bind(index))
 
 func _on_length_toggled(pressed: bool, length: int) -> void:
@@ -63,11 +63,11 @@ func _regenerate_chain() -> void:
 	current_chain.clear()
 	if selected_kana.is_empty():
 		return
-	for index in chain_length:
+	for index in range(chain_length):
 		var kana := selected_kana[rng.randi_range(0, selected_kana.size() - 1)]
 		current_chain.append(kana)
 
-	for index in kana_buttons.size():
+	for index in range(kana_buttons.size()):
 		var button := kana_buttons[index]
 		if index < current_chain.size():
 			button.text = current_chain[index]

@@ -1,5 +1,4 @@
 extends Node
-class_name KanaAudio
 
 static var _instance: KanaAudio
 
