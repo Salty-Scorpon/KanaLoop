@@ -15,6 +15,10 @@ const AUDIO_PAUSE_SECONDS := 0.0
 const KANA_DISPLAY_SECONDS := 2.0
 const FADE_OUT_SECONDS := 0.0
 const INTER_STIMULUS_DELAY_SECONDS := 0.0
+const KANA_LABEL_FONT_SIZE := 120
+const KANA_LABEL_MULTI_FONT_SIZE := 96
+const FULLSCREEN_KANA_FONT_SIZE := 180
+const FULLSCREEN_KANA_MULTI_FONT_SIZE := 150
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
@@ -61,6 +65,7 @@ func _show_blank() -> void:
 	_set_fade_alpha(1.0)
 
 func _show_kana(kana: String) -> void:
+	_apply_kana_font_sizes(kana)
 	fullscreen_kana.text = kana
 	_set_fade_alpha(0.0)
 	await get_tree().create_timer(KANA_DISPLAY_SECONDS).timeout
@@ -77,3 +82,18 @@ func _set_fade_alpha(alpha: float) -> void:
 	var color := fade_overlay.color
 	color.a = clampf(alpha, 0.0, 1.0)
 	fade_overlay.color = color
+
+func _apply_kana_font_sizes(kana: String) -> void:
+	if kana_label != null:
+		kana_label.add_theme_font_size_override(
+			"font_size",
+			_font_size_for_kana(kana, KANA_LABEL_FONT_SIZE, KANA_LABEL_MULTI_FONT_SIZE)
+		)
+	if fullscreen_kana != null:
+		fullscreen_kana.add_theme_font_size_override(
+			"font_size",
+			_font_size_for_kana(kana, FULLSCREEN_KANA_FONT_SIZE, FULLSCREEN_KANA_MULTI_FONT_SIZE)
+		)
+
+func _font_size_for_kana(kana: String, base_size: int, multi_size: int) -> int:
+	return multi_size if kana.length() > 1 else base_size

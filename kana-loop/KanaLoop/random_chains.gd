@@ -17,6 +17,9 @@ var chain_length := 1
 var rng := RandomNumberGenerator.new()
 var highlight_color: Color
 
+const KANA_FONT_SIZE := 120
+const KANA_MULTI_FONT_SIZE := 96
+
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
 	if selected_kana.is_empty():
@@ -71,6 +74,7 @@ func _regenerate_chain() -> void:
 		var button := kana_buttons[index]
 		if index < current_chain.size():
 			button.text = current_chain[index]
+			_apply_kana_button_font_size(button, current_chain[index])
 			button.visible = true
 			button.disabled = false
 		else:
@@ -81,6 +85,10 @@ func _on_kana_pressed(index: int) -> void:
 	if index >= current_chain.size():
 		return
 	KanaAudio.play_kana_audio(current_chain[index])
+
+func _apply_kana_button_font_size(button: Button, kana: String) -> void:
+	var font_size := KANA_FONT_SIZE if kana.length() <= 1 else KANA_MULTI_FONT_SIZE
+	button.add_theme_font_size_override("font_size", font_size)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:

@@ -13,6 +13,8 @@ var awaiting_answer := false
 var choice_buttons: Array[Button] = []
 
 const FEEDBACK_SECONDS := 1.0
+const CHOICE_FONT_SIZE := 64
+const CHOICE_MULTI_FONT_SIZE := 52
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
@@ -29,6 +31,7 @@ func _build_choice_buttons() -> void:
 	for kana in selected_kana:
 		var button := Button.new()
 		button.text = kana
+		_apply_choice_font_size(button, kana)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(_on_choice_pressed.bind(kana))
@@ -71,6 +74,10 @@ func _on_choice_pressed(kana: String) -> void:
 		feedback_label.text = "Not quite. It was %s." % active_prompt
 	await get_tree().create_timer(FEEDBACK_SECONDS).timeout
 	_start_round()
+
+func _apply_choice_font_size(button: Button, kana: String) -> void:
+	var font_size := CHOICE_FONT_SIZE if kana.length() <= 1 else CHOICE_MULTI_FONT_SIZE
+	button.add_theme_font_size_override("font_size", font_size)
 
 func _on_back_pressed() -> void:
 	awaiting_answer = false
