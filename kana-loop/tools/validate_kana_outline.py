@@ -23,6 +23,16 @@ def validate(kana_outline_path: Path) -> int:
     kana_defs = load_kana_data(kana_outline_path)
     kana_lookup = {kana_def.get("kana"): kana_def for kana_def in kana_defs}
 
+    def compute_svg_stroke_count(kana: str) -> int:
+        yoon_parts = split_yoon_kana(kana)
+        if yoon_parts:
+            base_kana, small_kana = yoon_parts
+            base_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{base_kana}.svg")
+            small_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{small_kana}.svg")
+            return len(base_paths) + len(small_paths)
+        stroke_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{kana}.svg")
+        return len(stroke_paths)
+
     for kana in HIRAGANA_ORDER:
         kana_def = kana_lookup.get(kana)
         if kana_def is None:
@@ -40,16 +50,7 @@ def validate(kana_outline_path: Path) -> int:
             if not stroke.get("path_hint"):
                 errors.append(f"Kana {kana} stroke {stroke.get('id')} has empty path_hint.")
 
-        yoon_parts = split_yoon_kana(kana)
-        if yoon_parts:
-            base_kana, small_kana = yoon_parts
-            base_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{base_kana}.svg")
-            small_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{small_kana}.svg")
-            svg_stroke_count = len(base_paths) + len(small_paths)
-        else:
-            svg_path = strokesvg_dir() / f"{kana}.svg"
-            stroke_paths, _ = collect_stroke_paths(svg_path)
-            svg_stroke_count = len(stroke_paths)
+        svg_stroke_count = compute_svg_stroke_count(kana)
         if kana_def.get("stroke_count") != svg_stroke_count:
             errors.append(
                 f"Kana {kana} stroke_count ({kana_def.get('stroke_count')}) does not match SVG ({svg_stroke_count})."
