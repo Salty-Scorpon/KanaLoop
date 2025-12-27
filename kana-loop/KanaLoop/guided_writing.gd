@@ -77,6 +77,8 @@ const DEBUG_END_COLOR := Color(0.9, 0.4, 0.2, 0.9)
 const DEBUG_LABEL_COLOR := Color(1.0, 1.0, 1.0, 0.9)
 const DEBUG_CIRCLE_WIDTH := 2.0
 const DEBUG_PATH_WIDTH := 3.0
+const TARGET_KANA_FONT_SIZE := 220
+const TARGET_KANA_MULTI_FONT_SIZE := 180
 
 func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
@@ -115,8 +117,10 @@ func _update_target_kana() -> void:
 		return
 	if current_kana == "":
 		target_kana_label.text = "あ"
+		_apply_target_kana_font_size("あ")
 		return
 	target_kana_label.text = current_kana
+	_apply_target_kana_font_size(current_kana)
 
 func _load_guide_definition() -> void:
 	var kana_key := current_kana
@@ -677,6 +681,12 @@ func _find_node_with_fallback(paths: Array[String]) -> Node:
 		if node != null:
 			return node
 	return null
+
+func _apply_target_kana_font_size(kana: String) -> void:
+	if target_kana_label == null:
+		return
+	var font_size := TARGET_KANA_FONT_SIZE if kana.length() <= 1 else TARGET_KANA_MULTI_FONT_SIZE
+	target_kana_label.add_theme_font_size_override("font_size", font_size)
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
