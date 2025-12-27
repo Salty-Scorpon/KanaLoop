@@ -11,12 +11,12 @@
         "y": 0.5
       },
       "base_center_offset": {
-        "x": -0.35,
+        "x": -0.15,
         "y": 0.0
       },
       "additive_center_offset": {
-        "x": 0.35,
-        "y": 0.2
+        "x": 0.15,
+        "y": 0.0
       }
     }
   },
