@@ -65,6 +65,8 @@ var rng := RandomNumberGenerator.new()
 var current_stroke_runtime: Dictionary = {}
 
 const OUTLINE_DATA_PATH := "res://assets/data/kana_outline.json"
+const OUTLINE_OVERRIDES_PATH := "res://assets/data/kana_outline_overrides.json"
+const OUTLINE_OVERRIDES_DIR := "res://assets/data/overrides"
 const GUIDE_SAMPLE_COUNT := 192
 const MIN_DRAWN_LENGTH_RATIO := 0.35
 const DIRECTION_JITTER := 1.0
@@ -154,6 +156,69 @@ func _load_kana_outline_data() -> void:
 		var kana_value: String = String(entry.get("kana", ""))
 		if kana_value != "":
 			kana_outline_data[kana_value] = entry
+	_load_kana_outline_overrides()
+
+func _load_kana_outline_overrides() -> void:
+	if FileAccess.file_exists(OUTLINE_OVERRIDES_PATH):
+		_apply_override_payload(_read_json_payload(OUTLINE_OVERRIDES_PATH), OUTLINE_OVERRIDES_PATH)
+	if DirAccess.dir_exists_absolute(OUTLINE_OVERRIDES_DIR):
+		_load_override_directory(OUTLINE_OVERRIDES_DIR)
+
+func _read_json_payload(path: String) -> Variant:
+	var override_file := FileAccess.open(path, FileAccess.READ)
+	if override_file == null:
+		push_warning("Unable to open kana outline override data at %s" % path)
+		return null
+	var override_text := override_file.get_as_text()
+	var parsed: Variant = JSON.parse_string(override_text)
+	if parsed == null:
+		push_warning("Kana outline override JSON could not be parsed at %s" % path)
+	return parsed
+
+func _apply_override_payload(payload: Variant, source_label: String) -> void:
+	if payload == null:
+		return
+	if typeof(payload) == TYPE_ARRAY:
+		for entry in payload:
+			_apply_kana_override(entry, source_label)
+		return
+	if typeof(payload) == TYPE_DICTIONARY:
+		if payload.has("kana"):
+			_apply_kana_override(payload, source_label)
+			return
+		for kana_key in payload.keys():
+			var entry := payload[kana_key]
+			if typeof(entry) != TYPE_DICTIONARY:
+				continue
+			var merged_entry := entry.duplicate()
+			merged_entry["kana"] = String(kana_key)
+			_apply_kana_override(merged_entry, source_label)
+		return
+	push_warning("Kana outline override data in %s must be an array or dictionary." % source_label)
+
+func _apply_kana_override(entry: Variant, source_label: String) -> void:
+	if typeof(entry) != TYPE_DICTIONARY:
+		return
+	var kana_value: String = String(entry.get("kana", ""))
+	if kana_value == "":
+		push_warning("Kana outline override entry missing kana in %s" % source_label)
+		return
+	kana_outline_data[kana_value] = entry
+
+func _load_override_directory(directory_path: String) -> void:
+	var dir := DirAccess.open(directory_path)
+	if dir == null:
+		push_warning("Unable to open override directory at %s" % directory_path)
+		return
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.get_extension().to_lower() == "json":
+			var file_path := "%s/%s" % [directory_path, file_name]
+			var payload := _read_json_payload(file_path)
+			_apply_override_payload(payload, file_path)
+		file_name = dir.get_next()
+	dir.list_dir_end()
 
 func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
 	var runtimes: Array[Dictionary] = []
