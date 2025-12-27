@@ -6,9 +6,6 @@
     <clipPath id="304af">
       <use href="#304ab"/>
     </clipPath>
-    <clipPath id="304ag">
-      <use href="#304ac"/>
-    </clipPath>
     <clipPath id="304ah">
       <use href="#304ad"/>
     </clipPath>
@@ -25,7 +22,6 @@
     <path style="--i:0" d="m85 444 456-97" clip-path="url(#304ae)"/>
     <g style="--i:1">
       <path d="m361 57 11 852-197-88s322-309 530-245c174 54 150 192 74 251-151 115-267 13-267 13" clip-path="url(#304af)"/>
-      <path d="M1126 1306 372 909l-197-88s322-309 530-245c174 54 150 192 74 251-151 115-267 13-267 13" clip-path="url(#304ag)"/>
     </g>
     <path style="--i:2" d="m591 223 244 151" clip-path="url(#304ah)"/>
   </g>
