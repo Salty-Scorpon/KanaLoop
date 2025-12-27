@@ -4,6 +4,20 @@
     "offset": {
       "x": 0.4,
       "y": 0.35
+    },
+    "composite": {
+      "composite_center": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "base_center_offset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "additive_center_offset": {
+        "x": 0.0,
+        "y": 0.0
+      }
     }
   },
   "rows": [

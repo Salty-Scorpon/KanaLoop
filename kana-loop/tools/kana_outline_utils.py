@@ -400,34 +400,48 @@ def normalize_segment(segment: dict, view_box: ViewBox) -> dict:
     }
 
 
+def normalize_segments(segments: list[dict], view_box: ViewBox) -> list[dict]:
+    return [normalize_segment(segment, view_box) for segment in segments]
+
+
 def split_yoon_kana(kana: str) -> tuple[str, str] | None:
     if len(kana) == 2 and kana[1] in YOON_SMALL_KANA:
         return kana[0], kana[1]
     return None
 
 
-def transform_point(
-    point: dict,
-    view_box: ViewBox,
-    scale: float,
-    translate: tuple[float, float],
-) -> dict:
-    return {
-        "x": (point["x"] - view_box.min_x) * scale + view_box.min_x + translate[0] * view_box.width,
-        "y": (point["y"] - view_box.min_y) * scale + view_box.min_y + translate[1] * view_box.height,
-    }
-
-
-def transform_segments(
+def translate_normalized_segments(
     segments: list[dict],
-    view_box: ViewBox,
-    scale: float,
-    translate: tuple[float, float],
+    offset: tuple[float, float],
 ) -> list[dict]:
     return [
         {
             "type": segment["type"],
-            "points": [transform_point(point, view_box, scale, translate) for point in segment["points"]],
+            "points": [
+                {"x": point["x"] + offset[0], "y": point["y"] + offset[1]}
+                for point in segment["points"]
+            ],
+        }
+        for segment in segments
+    ]
+
+
+def transform_normalized_segments(
+    segments: list[dict],
+    scale: float,
+    translate: tuple[float, float],
+    center: tuple[float, float],
+) -> list[dict]:
+    return [
+        {
+            "type": segment["type"],
+            "points": [
+                {
+                    "x": (point["x"] - center[0]) * scale + center[0] + translate[0],
+                    "y": (point["y"] - center[1]) * scale + center[1] + translate[1],
+                }
+                for point in segment["points"]
+            ],
         }
         for segment in segments
     ]
@@ -439,11 +453,19 @@ def _load_yoon_layouts() -> dict:
     return json.loads(YOON_LAYOUTS_PATH.read_text(encoding="utf-8"))
 
 
-def _resolve_yoon_layout(base_kana: str, addon_kana: str) -> tuple[float, tuple[float, float]]:
+def _resolve_yoon_layout(base_kana: str, addon_kana: str) -> dict:
     data = _load_yoon_layouts()
     defaults = data.get("defaults", {})
     default_scale = defaults.get("scale", 0.6)
     default_offset = defaults.get("offset", {"x": 0.4, "y": 0.35})
+    default_composite = defaults.get(
+        "composite",
+        {
+            "composite_center": {"x": 0.5, "y": 0.5},
+            "base_center_offset": {"x": 0.0, "y": 0.0},
+            "additive_center_offset": {"x": 0.0, "y": 0.0},
+        },
+    )
     rows = {row["id"]: row for row in data.get("rows", []) if "id" in row}
     base_to_row = {}
     for row in rows.values():
@@ -465,17 +487,51 @@ def _resolve_yoon_layout(base_kana: str, addon_kana: str) -> tuple[float, tuple[
 
     scale = layout.get("scale") or (row.get("scale") if row else None) or default_scale
     offset = layout.get("offset") or (row.get("offset") if row else None) or default_offset
-    return scale, (offset["x"], offset["y"])
+    composite = (
+        layout.get("composite")
+        or (row.get("composite") if row else None)
+        or default_composite
+    )
+    return {
+        "scale": scale,
+        "offset": (offset["x"], offset["y"]),
+        "composite_center": (
+            composite.get("composite_center", {}).get("x", 0.5),
+            composite.get("composite_center", {}).get("y", 0.5),
+        ),
+        "base_center_offset": (
+            composite.get("base_center_offset", {}).get("x", 0.0),
+            composite.get("base_center_offset", {}).get("y", 0.0),
+        ),
+        "additive_center_offset": (
+            composite.get("additive_center_offset", {}).get("x", 0.0),
+            composite.get("additive_center_offset", {}).get("y", 0.0),
+        ),
+    }
 
 
 def apply_yoon_transform(
     segments: list[dict],
-    view_box: ViewBox,
     base_kana: str,
     addon_kana: str,
 ) -> list[dict]:
-    scale, translate = _resolve_yoon_layout(base_kana, addon_kana)
-    return transform_segments(segments, view_box, scale, translate)
+    layout = _resolve_yoon_layout(base_kana, addon_kana)
+    transformed = transform_normalized_segments(
+        segments,
+        layout["scale"],
+        layout["offset"],
+        layout["composite_center"],
+    )
+    return translate_normalized_segments(transformed, layout["additive_center_offset"])
+
+
+def apply_yoon_base_offset(
+    segments: list[dict],
+    base_kana: str,
+    addon_kana: str,
+) -> list[dict]:
+    layout = _resolve_yoon_layout(base_kana, addon_kana)
+    return translate_normalized_segments(segments, layout["base_center_offset"])
 
 
 def save_json(path: Path, data: object) -> None:
