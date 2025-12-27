@@ -92,11 +92,12 @@ func _ready() -> void:
 		target_kana_label.visible = false
 	_load_kana_outline_data()
 	_refill_remaining_pool()
-	_advance_to_next_kana()
+	call_deferred("_advance_to_next_kana")
 	if back_button != null:
 		back_button.pressed.connect(_on_back_pressed)
 	if drawing_canvas != null:
 		drawing_canvas.gui_input.connect(_on_drawing_canvas_input)
+		drawing_canvas.resized.connect(_on_drawing_canvas_resized)
 	if stroke_outline_toggle != null:
 		stroke_outline_toggle.button_pressed = stroke_outline_enabled
 		stroke_outline_toggle.toggled.connect(_on_stroke_outline_toggled)
@@ -123,6 +124,8 @@ func _update_target_kana() -> void:
 	_apply_target_kana_font_size(current_kana)
 
 func _load_guide_definition() -> void:
+	if drawing_canvas != null and drawing_canvas.size == Vector2.ZERO:
+		return
 	var kana_key := current_kana
 	if kana_key == "":
 		kana_key = "あ"
@@ -291,6 +294,15 @@ func _on_drawing_canvas_input(event: InputEvent) -> void:
 	if event is InputEventScreenDrag:
 		if active_line != null:
 			_add_point(event.position)
+
+func _on_drawing_canvas_resized() -> void:
+	if drawing_canvas == null:
+		return
+	if drawing_canvas.size == Vector2.ZERO:
+		return
+	if current_kana == "":
+		return
+	_load_guide_definition()
 
 func _start_stroke(point: Vector2) -> void:
 	if current_stroke_index >= stroke_runtimes.size():
