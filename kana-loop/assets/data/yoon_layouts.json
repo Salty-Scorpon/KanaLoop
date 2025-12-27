@@ -1,0 +1,88 @@
+{
+  "defaults": {
+    "scale": 0.6,
+    "offset": {
+      "x": 0.4,
+      "y": 0.35
+    }
+  },
+  "rows": [
+    {
+      "id": "k-row",
+      "bases": ["き", "ぎ"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    },
+    {
+      "id": "s-row",
+      "bases": ["し", "じ"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    },
+    {
+      "id": "t-row",
+      "bases": ["ち"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    },
+    {
+      "id": "n-row",
+      "bases": ["に"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    },
+    {
+      "id": "h-row",
+      "bases": ["ひ", "び", "ぴ"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    },
+    {
+      "id": "m-row",
+      "bases": ["み"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    },
+    {
+      "id": "r-row",
+      "bases": ["り"],
+      "scale": 0.6,
+      "offset": {"x": 0.4, "y": 0.35}
+    }
+  ],
+  "layouts": [
+    {"base": "き", "addon": "ゃ", "row": "k-row"},
+    {"base": "き", "addon": "ゅ", "row": "k-row"},
+    {"base": "き", "addon": "ょ", "row": "k-row"},
+    {"base": "ぎ", "addon": "ゃ", "row": "k-row"},
+    {"base": "ぎ", "addon": "ゅ", "row": "k-row"},
+    {"base": "ぎ", "addon": "ょ", "row": "k-row"},
+    {"base": "し", "addon": "ゃ", "row": "s-row"},
+    {"base": "し", "addon": "ゅ", "row": "s-row"},
+    {"base": "し", "addon": "ょ", "row": "s-row"},
+    {"base": "じ", "addon": "ゃ", "row": "s-row"},
+    {"base": "じ", "addon": "ゅ", "row": "s-row"},
+    {"base": "じ", "addon": "ょ", "row": "s-row"},
+    {"base": "ち", "addon": "ゃ", "row": "t-row"},
+    {"base": "ち", "addon": "ゅ", "row": "t-row"},
+    {"base": "ち", "addon": "ょ", "row": "t-row"},
+    {"base": "に", "addon": "ゃ", "row": "n-row"},
+    {"base": "に", "addon": "ゅ", "row": "n-row"},
+    {"base": "に", "addon": "ょ", "row": "n-row"},
+    {"base": "ひ", "addon": "ゃ", "row": "h-row"},
+    {"base": "ひ", "addon": "ゅ", "row": "h-row"},
+    {"base": "ひ", "addon": "ょ", "row": "h-row"},
+    {"base": "び", "addon": "ゃ", "row": "h-row"},
+    {"base": "び", "addon": "ゅ", "row": "h-row"},
+    {"base": "び", "addon": "ょ", "row": "h-row"},
+    {"base": "ぴ", "addon": "ゃ", "row": "h-row"},
+    {"base": "ぴ", "addon": "ゅ", "row": "h-row"},
+    {"base": "ぴ", "addon": "ょ", "row": "h-row"},
+    {"base": "み", "addon": "ゃ", "row": "m-row"},
+    {"base": "み", "addon": "ゅ", "row": "m-row"},
+    {"base": "み", "addon": "ょ", "row": "m-row"},
+    {"base": "り", "addon": "ゃ", "row": "r-row"},
+    {"base": "り", "addon": "ゅ", "row": "r-row"},
+    {"base": "り", "addon": "ょ", "row": "r-row"}
+  ]
+}

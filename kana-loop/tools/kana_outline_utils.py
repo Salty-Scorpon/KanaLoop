@@ -38,8 +38,7 @@ HIRAGANA_ORDER = [
 ]
 
 YOON_SMALL_KANA = {"ゃ", "ゅ", "ょ"}
-YOON_ADDON_SCALE = 0.6
-YOON_ADDON_TRANSLATION = (0.4, 0.35)
+YOON_LAYOUTS_PATH = Path(__file__).resolve().parents[1] / "assets" / "data" / "yoon_layouts.json"
 
 ROMAJI_MAP = {
     "あ": "a",
@@ -434,8 +433,49 @@ def transform_segments(
     ]
 
 
-def apply_yoon_transform(segments: list[dict], view_box: ViewBox) -> list[dict]:
-    return transform_segments(segments, view_box, YOON_ADDON_SCALE, YOON_ADDON_TRANSLATION)
+def _load_yoon_layouts() -> dict:
+    if not YOON_LAYOUTS_PATH.exists():
+        raise FileNotFoundError(f"Missing yoon layouts config at {YOON_LAYOUTS_PATH}.")
+    return json.loads(YOON_LAYOUTS_PATH.read_text(encoding="utf-8"))
+
+
+def _resolve_yoon_layout(base_kana: str, addon_kana: str) -> tuple[float, tuple[float, float]]:
+    data = _load_yoon_layouts()
+    defaults = data.get("defaults", {})
+    default_scale = defaults.get("scale", 0.6)
+    default_offset = defaults.get("offset", {"x": 0.4, "y": 0.35})
+    rows = {row["id"]: row for row in data.get("rows", []) if "id" in row}
+    base_to_row = {}
+    for row in rows.values():
+        for base in row.get("bases", []):
+            base_to_row[base] = row
+    layout_index = {}
+    for entry in data.get("layouts", []):
+        base = entry.get("base")
+        addon = entry.get("addon")
+        if base and addon:
+            layout_index[(base, addon)] = entry
+
+    layout = layout_index.get((base_kana, addon_kana), {})
+    row = None
+    if "row" in layout:
+        row = rows.get(layout["row"])
+    if row is None:
+        row = base_to_row.get(base_kana)
+
+    scale = layout.get("scale") or (row.get("scale") if row else None) or default_scale
+    offset = layout.get("offset") or (row.get("offset") if row else None) or default_offset
+    return scale, (offset["x"], offset["y"])
+
+
+def apply_yoon_transform(
+    segments: list[dict],
+    view_box: ViewBox,
+    base_kana: str,
+    addon_kana: str,
+) -> list[dict]:
+    scale, translate = _resolve_yoon_layout(base_kana, addon_kana)
+    return transform_segments(segments, view_box, scale, translate)
 
 
 def save_json(path: Path, data: object) -> None:

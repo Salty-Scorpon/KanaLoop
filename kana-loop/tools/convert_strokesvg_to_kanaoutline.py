@@ -70,7 +70,7 @@ def build_kana_def(kana: str, svg_root: Path) -> dict:
             segments = parse_path_segments(d_path)
             if not segments:
                 raise ValueError(f"Small kana stroke missing segments in {small_path}.")
-            transformed_segments = apply_yoon_transform(segments, view_box)
+            transformed_segments = apply_yoon_transform(segments, view_box, base_kana, small_kana)
             strokes.append(
                 build_stroke_definition(
                     len(strokes) + 1,
