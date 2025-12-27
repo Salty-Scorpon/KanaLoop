@@ -136,6 +136,102 @@ text = "K-Row (か き く け こ)"
 layout_mode = 2
 text = "S-Row (さ し す せ そ)"
 
+[node name="TRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "T-Row (た ち つ て と)"
+
+[node name="NRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "N-Row (な に ぬ ね の)"
+
+[node name="HRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "H-Row (は ひ ふ へ ほ)"
+
+[node name="MRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "M-Row (ま み む め も)"
+
+[node name="YRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Y-Row (や ゆ よ)"
+
+[node name="RRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "R-Row (ら り る れ ろ)"
+
+[node name="WRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "W-Row (わ を)"
+
+[node name="NCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "ん"
+
+[node name="GRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "G-Row (が ぎ ぐ げ ご)"
+
+[node name="ZRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Z-Row (ざ じ ず ぜ ぞ)"
+
+[node name="DRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "D-Row (だ ぢ づ で ど)"
+
+[node name="BRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "B-Row (ば び ぶ べ ぼ)"
+
+[node name="PRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "P-Row (ぱ ぴ ぷ ぺ ぽ)"
+
+[node name="KyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Kya-Row (きゃ きゅ きょ)"
+
+[node name="GyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Gya-Row (ぎゃ ぎゅ ぎょ)"
+
+[node name="ShaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Sha-Row (しゃ しゅ しょ)"
+
+[node name="JaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Ja-Row (じゃ じゅ じょ)"
+
+[node name="ChaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Cha-Row (ちゃ ちゅ ちょ)"
+
+[node name="NyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Nya-Row (にゃ にゅ にょ)"
+
+[node name="HyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Hya-Row (ひゃ ひゅ ひょ)"
+
+[node name="ByaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Bya-Row (びゃ びゅ びょ)"
+
+[node name="PyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Pya-Row (ぴゃ ぴゅ ぴょ)"
+
+[node name="MyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Mya-Row (みゃ みゅ みょ)"
+
+[node name="RyaRowCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
+layout_mode = 2
+text = "Rya-Row (りゃ りゅ りょ)"
+
 [node name="CustomMixCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles"]
 layout_mode = 2
 text = "Custom Mix"
@@ -219,6 +315,451 @@ text = "せ"
 layout_mode = 2
 disabled = true
 text = "そ"
+
+[node name="KanaTa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "た"
+
+[node name="KanaChi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ち"
+
+[node name="KanaTsu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "つ"
+
+[node name="KanaTe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "て"
+
+[node name="KanaTo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "と"
+
+[node name="KanaNa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "な"
+
+[node name="KanaNi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "に"
+
+[node name="KanaNu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぬ"
+
+[node name="KanaNe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ね"
+
+[node name="KanaNo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "の"
+
+[node name="KanaHa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "は"
+
+[node name="KanaHi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ひ"
+
+[node name="KanaFu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ふ"
+
+[node name="KanaHe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "へ"
+
+[node name="KanaHo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ほ"
+
+[node name="KanaMa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ま"
+
+[node name="KanaMi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "み"
+
+[node name="KanaMu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "む"
+
+[node name="KanaMe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "め"
+
+[node name="KanaMo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "も"
+
+[node name="KanaYa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "や"
+
+[node name="KanaYu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ゆ"
+
+[node name="KanaYo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "よ"
+
+[node name="KanaRa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ら"
+
+[node name="KanaRi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "り"
+
+[node name="KanaRu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "る"
+
+[node name="KanaRe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "れ"
+
+[node name="KanaRo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ろ"
+
+[node name="KanaWa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "わ"
+
+[node name="KanaWo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "を"
+
+[node name="KanaN" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ん"
+
+[node name="KanaGa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "が"
+
+[node name="KanaGi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぎ"
+
+[node name="KanaGu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぐ"
+
+[node name="KanaGe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "げ"
+
+[node name="KanaGo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ご"
+
+[node name="KanaZa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ざ"
+
+[node name="KanaJi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "じ"
+
+[node name="KanaZu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ず"
+
+[node name="KanaZe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぜ"
+
+[node name="KanaZo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぞ"
+
+[node name="KanaDa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "だ"
+
+[node name="KanaDi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぢ"
+
+[node name="KanaDu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "づ"
+
+[node name="KanaDe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "で"
+
+[node name="KanaDo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ど"
+
+[node name="KanaBa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ば"
+
+[node name="KanaBi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "び"
+
+[node name="KanaBu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぶ"
+
+[node name="KanaBe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "べ"
+
+[node name="KanaBo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぼ"
+
+[node name="KanaPa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぱ"
+
+[node name="KanaPi" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぴ"
+
+[node name="KanaPu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぷ"
+
+[node name="KanaPe" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぺ"
+
+[node name="KanaPo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぽ"
+
+[node name="KanaKya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "きゃ"
+
+[node name="KanaKyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "きゅ"
+
+[node name="KanaKyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "きょ"
+
+[node name="KanaGya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぎゃ"
+
+[node name="KanaGyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぎゅ"
+
+[node name="KanaGyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぎょ"
+
+[node name="KanaSha" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "しゃ"
+
+[node name="KanaShu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "しゅ"
+
+[node name="KanaSho" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "しょ"
+
+[node name="KanaJa" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "じゃ"
+
+[node name="KanaJu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "じゅ"
+
+[node name="KanaJo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "じょ"
+
+[node name="KanaCha" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ちゃ"
+
+[node name="KanaChu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ちゅ"
+
+[node name="KanaCho" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ちょ"
+
+[node name="KanaNya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "にゃ"
+
+[node name="KanaNyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "にゅ"
+
+[node name="KanaNyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "にょ"
+
+[node name="KanaHya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ひゃ"
+
+[node name="KanaHyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ひゅ"
+
+[node name="KanaHyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ひょ"
+
+[node name="KanaBya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "びゃ"
+
+[node name="KanaByu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "びゅ"
+
+[node name="KanaByo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "びょ"
+
+[node name="KanaPya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぴゃ"
+
+[node name="KanaPyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぴゅ"
+
+[node name="KanaPyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "ぴょ"
+
+[node name="KanaMya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "みゃ"
+
+[node name="KanaMyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "みゅ"
+
+[node name="KanaMyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "みょ"
+
+[node name="KanaRya" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "りゃ"
+
+[node name="KanaRyu" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "りゅ"
+
+[node name="KanaRyo" type="CheckBox" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid"]
+layout_mode = 2
+disabled = true
+text = "りょ"
 
 [node name="VisualOptions" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
 layout_mode = 2

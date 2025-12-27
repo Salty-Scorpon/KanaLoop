@@ -14,8 +14,61 @@ extends Control
 @onready var vowels_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/VowelsCheckBox
 @onready var k_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/KRowCheckBox
 @onready var s_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/SRowCheckBox
+@onready var t_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/TRowCheckBox
+@onready var n_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/NRowCheckBox
+@onready var h_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/HRowCheckBox
+@onready var m_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/MRowCheckBox
+@onready var y_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/YRowCheckBox
+@onready var r_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/RRowCheckBox
+@onready var w_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/WRowCheckBox
+@onready var n_char_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/NCheckBox
+@onready var g_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/GRowCheckBox
+@onready var z_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/ZRowCheckBox
+@onready var d_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/DRowCheckBox
+@onready var b_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/BRowCheckBox
+@onready var p_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/PRowCheckBox
+@onready var kya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/KyaRowCheckBox
+@onready var gya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/GyaRowCheckBox
+@onready var sha_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/ShaRowCheckBox
+@onready var ja_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/JaRowCheckBox
+@onready var cha_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/ChaRowCheckBox
+@onready var nya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/NyaRowCheckBox
+@onready var hya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/HyaRowCheckBox
+@onready var bya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/ByaRowCheckBox
+@onready var pya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/PyaRowCheckBox
+@onready var mya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/MyaRowCheckBox
+@onready var rya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/RyaRowCheckBox
 @onready var custom_mix_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/CustomMixCheckBox
 @onready var custom_grid: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid
+@onready var row_toggles: Array[CheckBox] = [
+	vowels_toggle,
+	k_row_toggle,
+	s_row_toggle,
+	t_row_toggle,
+	n_row_toggle,
+	h_row_toggle,
+	m_row_toggle,
+	y_row_toggle,
+	r_row_toggle,
+	w_row_toggle,
+	n_char_toggle,
+	g_row_toggle,
+	z_row_toggle,
+	d_row_toggle,
+	b_row_toggle,
+	p_row_toggle,
+	kya_row_toggle,
+	gya_row_toggle,
+	sha_row_toggle,
+	ja_row_toggle,
+	cha_row_toggle,
+	nya_row_toggle,
+	hya_row_toggle,
+	bya_row_toggle,
+	pya_row_toggle,
+	mya_row_toggle,
+	rya_row_toggle,
+]
 
 @onready var background_rect: ColorRect = $Background
 @onready var background_picker: ColorPickerButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/VisualOptions/BackgroundRow/BackgroundPicker
@@ -41,9 +94,8 @@ func _ready() -> void:
 	practice_audio_symbol_button.pressed.connect(_on_practice_audio_symbol)
 	practice_guided_writing_button.pressed.connect(_on_practice_guided_writing)
 
-	vowels_toggle.toggled.connect(_on_row_toggle)
-	k_row_toggle.toggled.connect(_on_row_toggle)
-	s_row_toggle.toggled.connect(_on_row_toggle)
+	for toggle in row_toggles:
+		toggle.toggled.connect(_on_row_toggle)
 	custom_mix_toggle.toggled.connect(_on_custom_mix_toggle)
 
 	for child in custom_grid.get_children():
@@ -105,7 +157,7 @@ func _on_custom_kana_toggle(_pressed: bool) -> void:
 
 func _apply_custom_mix_state(pressed: bool) -> void:
 	custom_grid.visible = pressed
-	for toggle in [vowels_toggle, k_row_toggle, s_row_toggle]:
+	for toggle in row_toggles:
 		toggle.disabled = pressed
 	for child in custom_grid.get_children():
 		if child is CheckBox:
@@ -127,6 +179,54 @@ func _update_kana_selection() -> void:
 		selected_kana.append_array(["か", "き", "く", "け", "こ"])
 	if s_row_toggle.button_pressed:
 		selected_kana.append_array(["さ", "し", "す", "せ", "そ"])
+	if t_row_toggle.button_pressed:
+		selected_kana.append_array(["た", "ち", "つ", "て", "と"])
+	if n_row_toggle.button_pressed:
+		selected_kana.append_array(["な", "に", "ぬ", "ね", "の"])
+	if h_row_toggle.button_pressed:
+		selected_kana.append_array(["は", "ひ", "ふ", "へ", "ほ"])
+	if m_row_toggle.button_pressed:
+		selected_kana.append_array(["ま", "み", "む", "め", "も"])
+	if y_row_toggle.button_pressed:
+		selected_kana.append_array(["や", "ゆ", "よ"])
+	if r_row_toggle.button_pressed:
+		selected_kana.append_array(["ら", "り", "る", "れ", "ろ"])
+	if w_row_toggle.button_pressed:
+		selected_kana.append_array(["わ", "を"])
+	if n_char_toggle.button_pressed:
+		selected_kana.append("ん")
+	if g_row_toggle.button_pressed:
+		selected_kana.append_array(["が", "ぎ", "ぐ", "げ", "ご"])
+	if z_row_toggle.button_pressed:
+		selected_kana.append_array(["ざ", "じ", "ず", "ぜ", "ぞ"])
+	if d_row_toggle.button_pressed:
+		selected_kana.append_array(["だ", "ぢ", "づ", "で", "ど"])
+	if b_row_toggle.button_pressed:
+		selected_kana.append_array(["ば", "び", "ぶ", "べ", "ぼ"])
+	if p_row_toggle.button_pressed:
+		selected_kana.append_array(["ぱ", "ぴ", "ぷ", "ぺ", "ぽ"])
+	if kya_row_toggle.button_pressed:
+		selected_kana.append_array(["きゃ", "きゅ", "きょ"])
+	if gya_row_toggle.button_pressed:
+		selected_kana.append_array(["ぎゃ", "ぎゅ", "ぎょ"])
+	if sha_row_toggle.button_pressed:
+		selected_kana.append_array(["しゃ", "しゅ", "しょ"])
+	if ja_row_toggle.button_pressed:
+		selected_kana.append_array(["じゃ", "じゅ", "じょ"])
+	if cha_row_toggle.button_pressed:
+		selected_kana.append_array(["ちゃ", "ちゅ", "ちょ"])
+	if nya_row_toggle.button_pressed:
+		selected_kana.append_array(["にゃ", "にゅ", "にょ"])
+	if hya_row_toggle.button_pressed:
+		selected_kana.append_array(["ひゃ", "ひゅ", "ひょ"])
+	if bya_row_toggle.button_pressed:
+		selected_kana.append_array(["びゃ", "びゅ", "びょ"])
+	if pya_row_toggle.button_pressed:
+		selected_kana.append_array(["ぴゃ", "ぴゅ", "ぴょ"])
+	if mya_row_toggle.button_pressed:
+		selected_kana.append_array(["みゃ", "みゅ", "みょ"])
+	if rya_row_toggle.button_pressed:
+		selected_kana.append_array(["りゃ", "りゅ", "りょ"])
 	KanaState.set_selected_kana(selected_kana)
 
 func _ensure_kana_selection() -> void:
