@@ -7,9 +7,11 @@ import json
 from kana_outline_utils import (
     HIRAGANA_ORDER,
     ROMAJI_MAP,
+    apply_yoon_base_offset,
     apply_yoon_transform,
     collect_stroke_paths,
     normalize_segment,
+    normalize_segments,
     parse_path_segments,
     save_json,
     split_yoon_kana,
@@ -51,6 +53,24 @@ def build_stroke_definition(
     }
 
 
+def build_stroke_definition_from_segments(
+    stroke_id: int,
+    segments: list[dict],
+) -> dict:
+    if not segments:
+        raise ValueError(f"Stroke {stroke_id} contains no drawable segments.")
+    start_point = segments[0]["points"][0]
+    end_point = segments[-1]["points"][-1]
+    return {
+        "id": stroke_id,
+        "start_hint": {"x": start_point["x"], "y": start_point["y"], "radius": START_HINT_RADIUS},
+        "end_hint": {"x": end_point["x"], "y": end_point["y"], "radius": END_HINT_RADIUS},
+        "path_hint": segments,
+        "arrow_hints": [],
+        "rules": DEFAULT_RULES,
+    }
+
+
 def build_kana_def(kana: str, svg_root: Path) -> dict:
     yoon_parts = split_yoon_kana(kana)
     if yoon_parts:
@@ -65,18 +85,22 @@ def build_kana_def(kana: str, svg_root: Path) -> dict:
             raise ValueError(f"No stroke paths found in {small_path}.")
         strokes = []
         for d_path in base_paths:
-            strokes.append(build_stroke_definition(len(strokes) + 1, d_path, view_box))
+            segments = parse_path_segments(d_path)
+            if not segments:
+                raise ValueError(f"Base kana stroke missing segments in {base_path}.")
+            normalized = normalize_segments(segments, view_box)
+            adjusted = apply_yoon_base_offset(normalized, base_kana, small_kana)
+            strokes.append(build_stroke_definition_from_segments(len(strokes) + 1, adjusted))
         for d_path in small_paths:
             segments = parse_path_segments(d_path)
             if not segments:
                 raise ValueError(f"Small kana stroke missing segments in {small_path}.")
-            transformed_segments = apply_yoon_transform(segments, view_box, base_kana, small_kana)
+            normalized = normalize_segments(segments, view_box)
+            transformed_segments = apply_yoon_transform(normalized, base_kana, small_kana)
             strokes.append(
-                build_stroke_definition(
+                build_stroke_definition_from_segments(
                     len(strokes) + 1,
-                    None,
-                    view_box,
-                    segments=transformed_segments,
+                    transformed_segments,
                 )
             )
     else:
