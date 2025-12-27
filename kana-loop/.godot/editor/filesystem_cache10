@@ -1,0 +1,25 @@
+63f7b34db8d8cdea90c76aacccf841ec
+::res://::1766795074
+icon.svg::CompressedTexture2D::7614869125433276389::1766795058::1766795075::1::::<><><>0<>0<>b3fe1ac2586fd8906f9a173561140d66<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
+KanaLoop.tscn::PackedScene::-1::1766795058::0::1::::<><><>0<>0<><>::uid://dg1b24k5igb02::::res://KanaLoop/kana_loop_menu.gd
+::res://assets/::1766795058
+README.md::TextFile::-1::1766795058::0::1::::<><><>0<>0<><>::
+::res://assets/audio/::1766795058
+README.md::TextFile::-1::1766795052::0::1::::<><><>0<>0<><>::
+::res://assets/audio/Voice 1/::1766795058
+::res://assets/audio/Voice 2/::1766795058
+::res://assets/data/::1766795031
+kana_outline.json::JSON::-1::1766795031::0::1::::<><><>0<>0<><>::
+::res://KanaLoop/::1766795058
+audio_symbol.gd::GDScript::1389130219153009396::1766795058::0::1::::<>Control<><>0<>0<><>::
+audio_symbol.tscn::PackedScene::-1::1766795058::0::1::::<><><>0<>0<><>::res://KanaLoop/audio_symbol.gd
+guided_writing.gd::GDScript::3640236483870555823::1766795058::0::1::::<>Control<><>0<>0<><>::
+guided_writing.tscn::PackedScene::-1::1766795058::0::1::::<><><>0<>0<><>::res://KanaLoop/guided_writing.gd
+kana_audio.gd::GDScript::4780703013892684984::1766795058::0::1::::<>Node<><>0<>0<><>::
+kana_loop_menu.gd::GDScript::7634179407940439905::1766795058::0::1::::<>Control<><>0<>0<><>::
+kana_state.gd::GDScript::5429060707090247199::1766795058::0::1::::<>Node<><>0<>0<><>::
+random_chains.gd::GDScript::378620435305918052::1766795058::0::1::::<>Control<><>0<>0<><>::
+random_chains.tscn::PackedScene::-1::1766795058::0::1::::<><><>0<>0<><>::res://KanaLoop/random_chains.gd
+visual_delay.gd::GDScript::6863952049257696410::1766795058::0::1::::<>Control<><>0<>0<><>::
+visual_delay.tscn::PackedScene::-1::1766795058::0::1::::<><><>0<>0<><>::res://KanaLoop/visual_delay.gd
+::res://tools/::1766795058
