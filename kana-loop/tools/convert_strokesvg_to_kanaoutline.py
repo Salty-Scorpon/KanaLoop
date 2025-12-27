@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import argparse
+import json
 
 from kana_outline_utils import (
     HIRAGANA_ORDER,
@@ -66,8 +68,52 @@ def convert(output_path: Path) -> None:
     save_json(output_path, kana_defs)
 
 
+def update_single_kana(output_path: Path, kana: str) -> None:
+    if kana not in ROMAJI_MAP:
+        raise ValueError(f"Unsupported kana: {kana}")
+    if not output_path.exists():
+        raise FileNotFoundError(
+            f"Missing {output_path}. Run the full converter once before updating a single kana."
+        )
+    svg_root = strokesvg_dir()
+    svg_path = svg_root / f"{kana}.svg"
+    if not svg_path.exists():
+        raise FileNotFoundError(f"Missing SVG for {kana}: {svg_path}")
+
+    kana_def = build_kana_def(kana, svg_path)
+    existing = json.loads(output_path.read_text(encoding="utf-8"))
+    if not isinstance(existing, list):
+        raise ValueError(f"Expected {output_path} to contain a list of kana entries.")
+
+    updated = False
+    for index, entry in enumerate(existing):
+        if entry.get("kana") == kana:
+            existing[index] = kana_def
+            updated = True
+            break
+
+    if not updated:
+        raise ValueError(f"Could not find kana {kana} in {output_path}.")
+
+    save_json(output_path, existing)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Convert StrokeSVG hiragana to kana outline JSON.")
+    parser.add_argument(
+        "--kana",
+        help="Regenerate only a single kana entry (e.g., --kana お).",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
     repo_root = Path(__file__).resolve().parents[2]
     output_file = repo_root / "kana-loop" / "assets" / "data" / "kana_outline.json"
-    convert(output_file)
-    print(f"Wrote {output_file}")
+    args = parse_args()
+    if args.kana:
+        update_single_kana(output_file, args.kana)
+        print(f"Updated {args.kana} in {output_file}")
+    else:
+        convert(output_file)
+        print(f"Wrote {output_file}")
