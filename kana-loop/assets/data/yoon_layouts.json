@@ -1,9 +1,9 @@
 {
   "defaults": {
-    "scale": 0.6,
+    "scale": 1.0,
     "offset": {
       "x": 0.4,
-      "y": 0.35
+      "y": 0.0
     },
     "composite": {
       "composite_center": {
@@ -11,12 +11,12 @@
         "y": 0.5
       },
       "base_center_offset": {
-        "x": 0.0,
+        "x": -0.35,
         "y": 0.0
       },
       "additive_center_offset": {
-        "x": 0.0,
-        "y": 0.0
+        "x": 0.35,
+        "y": 0.2
       }
     }
   },
@@ -24,44 +24,44 @@
     {
       "id": "k-row",
       "bases": ["き", "ぎ"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     },
     {
       "id": "s-row",
       "bases": ["し", "じ"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     },
     {
       "id": "t-row",
       "bases": ["ち"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     },
     {
       "id": "n-row",
       "bases": ["に"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     },
     {
       "id": "h-row",
       "bases": ["ひ", "び", "ぴ"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     },
     {
       "id": "m-row",
       "bases": ["み"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     },
     {
       "id": "r-row",
       "bases": ["り"],
-      "scale": 0.6,
-      "offset": {"x": 0.4, "y": 0.35}
+      "scale": 1.0,
+      "offset": {"x": 0.4, "y": 0.0}
     }
   ],
   "layouts": [
