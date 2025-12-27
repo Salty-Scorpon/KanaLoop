@@ -12,6 +12,10 @@ The guided writing outline data is generated from the StrokeSVG hiragana set.
    python3 kana-loop/tools/convert_strokesvg_to_kanaoutline.py
    ```
    This writes `kana-loop/assets/data/kana_outline.json`.
+   - To regenerate a single kana entry in-place (for example, after editing `strokesvg/dist/hiragana/お.svg`):
+     ```bash
+     python3 kana-loop/tools/convert_strokesvg_to_kanaoutline.py --kana お
+     ```
 3. Validate the output:
    ```bash
    python3 kana-loop/tools/validate_kana_outline.py
