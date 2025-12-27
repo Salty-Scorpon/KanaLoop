@@ -3,7 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
-from kana_outline_utils import HIRAGANA_ORDER, collect_stroke_paths, strokesvg_dir
+from kana_outline_utils import (
+    HIRAGANA_ORDER,
+    collect_stroke_paths,
+    split_yoon_kana,
+    strokesvg_dir,
+)
 
 
 def load_kana_data(path: Path) -> list[dict]:
@@ -35,9 +40,16 @@ def validate(kana_outline_path: Path) -> int:
             if not stroke.get("path_hint"):
                 errors.append(f"Kana {kana} stroke {stroke.get('id')} has empty path_hint.")
 
-        svg_path = strokesvg_dir() / f"{kana}.svg"
-        stroke_paths, _ = collect_stroke_paths(svg_path)
-        svg_stroke_count = len(stroke_paths)
+        yoon_parts = split_yoon_kana(kana)
+        if yoon_parts:
+            base_kana, small_kana = yoon_parts
+            base_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{base_kana}.svg")
+            small_paths, _ = collect_stroke_paths(strokesvg_dir() / f"{small_kana}.svg")
+            svg_stroke_count = len(base_paths) + len(small_paths)
+        else:
+            svg_path = strokesvg_dir() / f"{kana}.svg"
+            stroke_paths, _ = collect_stroke_paths(svg_path)
+            svg_stroke_count = len(stroke_paths)
         if kana_def.get("stroke_count") != svg_stroke_count:
             errors.append(
                 f"Kana {kana} stroke_count ({kana_def.get('stroke_count')}) does not match SVG ({svg_stroke_count})."

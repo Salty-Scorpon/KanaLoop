@@ -37,6 +37,10 @@ HIRAGANA_ORDER = [
     "ゃ", "ゅ", "ょ",
 ]
 
+YOON_SMALL_KANA = {"ゃ", "ゅ", "ょ"}
+YOON_ADDON_SCALE = 0.6
+YOON_ADDON_TRANSLATION = (0.4, 0.35)
+
 ROMAJI_MAP = {
     "あ": "a",
     "い": "i",
@@ -395,6 +399,43 @@ def normalize_segment(segment: dict, view_box: ViewBox) -> dict:
         "type": segment["type"],
         "points": [normalize_point(point, view_box) for point in segment["points"]],
     }
+
+
+def split_yoon_kana(kana: str) -> tuple[str, str] | None:
+    if len(kana) == 2 and kana[1] in YOON_SMALL_KANA:
+        return kana[0], kana[1]
+    return None
+
+
+def transform_point(
+    point: dict,
+    view_box: ViewBox,
+    scale: float,
+    translate: tuple[float, float],
+) -> dict:
+    return {
+        "x": (point["x"] - view_box.min_x) * scale + view_box.min_x + translate[0] * view_box.width,
+        "y": (point["y"] - view_box.min_y) * scale + view_box.min_y + translate[1] * view_box.height,
+    }
+
+
+def transform_segments(
+    segments: list[dict],
+    view_box: ViewBox,
+    scale: float,
+    translate: tuple[float, float],
+) -> list[dict]:
+    return [
+        {
+            "type": segment["type"],
+            "points": [transform_point(point, view_box, scale, translate) for point in segment["points"]],
+        }
+        for segment in segments
+    ]
+
+
+def apply_yoon_transform(segments: list[dict], view_box: ViewBox) -> list[dict]:
+    return transform_segments(segments, view_box, YOON_ADDON_SCALE, YOON_ADDON_TRANSLATION)
 
 
 def save_json(path: Path, data: object) -> None:
