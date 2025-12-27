@@ -179,7 +179,8 @@ func _apply_override_payload(payload: Variant, source_label: String) -> void:
 	if payload == null:
 		return
 	if typeof(payload) == TYPE_ARRAY:
-		for entry in payload:
+		var entries: Array = payload
+		for entry: Variant in entries:
 			_apply_kana_override(entry, source_label)
 		return
 	if typeof(payload) == TYPE_DICTIONARY:
@@ -187,10 +188,11 @@ func _apply_override_payload(payload: Variant, source_label: String) -> void:
 			_apply_kana_override(payload, source_label)
 			return
 		for kana_key in payload.keys():
-			var entry := payload[kana_key]
-			if typeof(entry) != TYPE_DICTIONARY:
+			var entry_value: Variant = payload[kana_key]
+			if typeof(entry_value) != TYPE_DICTIONARY:
 				continue
-			var merged_entry := entry.duplicate()
+			var entry_dict: Dictionary = entry_value
+			var merged_entry: Dictionary = entry_dict.duplicate()
 			merged_entry["kana"] = String(kana_key)
 			_apply_kana_override(merged_entry, source_label)
 		return
@@ -212,12 +214,12 @@ func _load_override_directory(directory_path: String) -> void:
 		return
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
-	while file_name != "":
-		if not dir.current_is_dir() and file_name.get_extension().to_lower() == "json":
-			var file_path := "%s/%s" % [directory_path, file_name]
-			var payload := _read_json_payload(file_path)
-			_apply_override_payload(payload, file_path)
-		file_name = dir.get_next()
+		while file_name != "":
+			if not dir.current_is_dir() and file_name.get_extension().to_lower() == "json":
+				var file_path := "%s/%s" % [directory_path, file_name]
+				var payload: Variant = _read_json_payload(file_path)
+				_apply_override_payload(payload, file_path)
+			file_name = dir.get_next()
 	dir.list_dir_end()
 
 func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
