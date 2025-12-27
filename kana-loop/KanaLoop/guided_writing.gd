@@ -214,12 +214,12 @@ func _load_override_directory(directory_path: String) -> void:
 		return
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
-		while file_name != "":
-			if not dir.current_is_dir() and file_name.get_extension().to_lower() == "json":
-				var file_path := "%s/%s" % [directory_path, file_name]
-				var payload: Variant = _read_json_payload(file_path)
-				_apply_override_payload(payload, file_path)
-			file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.get_extension().to_lower() == "json":
+			var file_path := "%s/%s" % [directory_path, file_name]
+			var payload: Variant = _read_json_payload(file_path)
+			_apply_override_payload(payload, file_path)
+		file_name = dir.get_next()
 	dir.list_dir_end()
 
 func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
