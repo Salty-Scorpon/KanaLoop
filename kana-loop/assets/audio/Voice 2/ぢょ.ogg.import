@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dkw4kqeu7h327"
+path="res://.godot/imported/ぢょ.ogg-c5937eb6193fa5393bf285c4e73ec25c.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/Voice 2/ぢょ.ogg"
+dest_files=["res://.godot/imported/ぢょ.ogg-c5937eb6193fa5393bf285c4e73ec25c.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

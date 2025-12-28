@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dspm0x5hv6661"
+path="res://.godot/imported/じゃ.ogg-3ed63f11a312220dcc8308d5f54e66bc.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/Voice 2/じゃ.ogg"
+dest_files=["res://.godot/imported/じゃ.ogg-3ed63f11a312220dcc8308d5f54e66bc.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

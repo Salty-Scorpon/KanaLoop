@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bd262x8j5w65d"
+path="res://.godot/imported/しゃ.ogg-4d321876b1387bf404859b4b2f640d09.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/audio/Voice 2/しゃ.ogg"
+dest_files=["res://.godot/imported/しゃ.ogg-4d321876b1387bf404859b4b2f640d09.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
