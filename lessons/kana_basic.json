@@ -1,0 +1,21 @@
+{
+  "id": "kana-basic",
+  "title": "Kana Basics",
+  "items": [
+    { "kana": "あ" },
+    { "kana": "い" },
+    { "kana": "う" },
+    { "kana": "え" },
+    { "kana": "お" },
+    { "kana": "か" },
+    { "kana": "き" },
+    { "kana": "く" },
+    { "kana": "け" },
+    { "kana": "こ" },
+    { "kana": "さ" },
+    { "kana": "し" },
+    { "kana": "す" },
+    { "kana": "せ" },
+    { "kana": "そ" }
+  ]
+}
