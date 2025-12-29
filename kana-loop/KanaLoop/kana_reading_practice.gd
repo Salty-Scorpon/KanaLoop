@@ -74,7 +74,7 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 func _set_kana_from_context(context: Dictionary) -> void:
 	if kana_label == null:
 		return
-	var item := context.get("item", {})
+	var item: Variant = context.get("item", {})
 	var kana := ""
 	if typeof(item) == TYPE_DICTIONARY:
 		kana = str(item.get("kana", ""))
@@ -160,11 +160,11 @@ func _play_animation(name: String) -> void:
 		animation_player.play(name)
 
 func _build_grammar(context: Dictionary) -> Array[String]:
-	var item := context.get("item", null)
+	var item: Variant = context.get("item", null)
 	if typeof(item) == TYPE_DICTIONARY:
-		var grammar_value := item.get("grammar", null)
+		var grammar_value: Variant = item.get("grammar", null)
 		if typeof(grammar_value) == TYPE_ARRAY:
-			return grammar_value
+			return Array(grammar_value, TYPE_STRING, "", null)
 		var kana := str(item.get("kana", "")).strip_edges()
 		if not kana.is_empty():
 			return [kana]

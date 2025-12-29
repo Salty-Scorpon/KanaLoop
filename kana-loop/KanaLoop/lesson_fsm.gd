@@ -126,7 +126,7 @@ func set_error(error_state: LessonState, message: String = "") -> void:
 	_transition_to(error_state, _build_context())
 
 func _build_context() -> Dictionary:
-	var attempts_remaining := max(0, max_attempts - attempt_count)
+	var attempts_remaining: int = max(0, max_attempts - attempt_count)
 	return {
 		"item": current_item,
 		"index": current_index,
