@@ -78,8 +78,8 @@ tracks/0/keys = {
 "values": [Color(0.6, 0.9, 1.0, 0.12), Color(0.6, 0.9, 1.0, 0.28), Color(0.6, 0.9, 1.0, 0.12)]
 }
 
-[node name="CorrectFeedback" type="Animation" parent="AnimationPlayer"]
-resource_name = "CorrectFeedback"
+[node name="feedback_correct" type="Animation" parent="AnimationPlayer"]
+resource_name = "feedback_correct"
 length = 0.6
 tracks/0/type = "value"
 tracks/0/path = NodePath("../GlowRect:color")
@@ -91,8 +91,8 @@ tracks/0/keys = {
 "values": [Color(0.5, 1.0, 0.6, 0.15), Color(0.5, 1.0, 0.6, 0.35), Color(0.5, 1.0, 0.6, 0.15)]
 }
 
-[node name="TryAgainFeedback" type="Animation" parent="AnimationPlayer"]
-resource_name = "TryAgainFeedback"
+[node name="feedback_incorrect" type="Animation" parent="AnimationPlayer"]
+resource_name = "feedback_incorrect"
 length = 0.6
 tracks/0/type = "value"
 tracks/0/path = NodePath("../GlowRect:color")
