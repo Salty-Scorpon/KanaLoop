@@ -6,6 +6,14 @@ import os
 import sys
 from pathlib import Path
 
+def make_recognizer(grammar=None):
+    if grammar:
+        grammar_json = json.dumps(grammar, ensure_ascii=False)
+        logging.info("Setting grammar: %s", grammar_json)
+        return KaldiRecognizer(MODEL, SAMPLE_RATE, grammar_json)
+    return KaldiRecognizer(MODEL, SAMPLE_RATE)
+
+
 if getattr(sys, "frozen", False):
     bundle_dir = Path(sys._MEIPASS)
     for candidate in [
@@ -36,16 +44,26 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 async def handle_connection(websocket):
-    recognizer = KaldiRecognizer(MODEL, SAMPLE_RATE)
+    recognizer = make_recognizer()
     async for message in websocket:
         if isinstance(message, str):
+            try:
+                msg = json.loads(message)
+            except json.JSONDecodeError:
+                continue
+
+            if msg.get("type") == "set_grammar":
+                grammar = msg.get("grammar", [])
+                recognizer = make_recognizer(grammar)
             continue
+
         if recognizer.AcceptWaveform(message):
             result = json.loads(recognizer.Result())
             await websocket.send(json.dumps({"type": "final", "result": result}))
         else:
             result = json.loads(recognizer.PartialResult())
             await websocket.send(json.dumps({"type": "partial", "result": result}))
+
 
 
 def resolve_model_path() -> Path:

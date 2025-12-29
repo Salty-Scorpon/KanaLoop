@@ -17,7 +17,7 @@ async def send_audio(ws):
         print("🎤 Speak into the mic. Ctrl+C to stop.")
         while True:
             data, _ = stream.read(BLOCKSIZE)
-            await ws.send(data.tobytes())
+            await ws.send(bytes(data))
 
 async def receive_messages(ws):
     async for message in ws:

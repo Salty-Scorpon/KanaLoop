@@ -98,10 +98,26 @@ S2.T3 — Microphone capture
 
 
 
-S2.T4 — End-to-end test
+S2.T4 — grammar constraint support
 
-* Speak Japanese
-* See transcript in Godot debug log
+* Add set_grammar message handling to Vosk service
+* Allow recognizer to be recreated with grammar
+* Handle grammar update safely while idle
+
+
+
+S2.T5 — Godot grammar sender 
+
+*Send grammar before starting listening
+*Grammar derived from lesson content
+
+
+
+S2.T6 — Grammar test cases
+
+* Single kana grammar
+* Multi-kana grammar
+* Word grammar (“かたな”)
 
 
 
