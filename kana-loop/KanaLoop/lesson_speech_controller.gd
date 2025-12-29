@@ -59,22 +59,26 @@ func _submit_grade(grade: Dictionary) -> void:
 	fsm.submit_grade(grade)
 
 func _request_grade(text: String) -> Dictionary:
+	var normalized := GradingUtils.normalize_transcript(text)
 	if grading_target and grading_target.has_method(grading_method):
-		var result: Variant = grading_target.call(grading_method, text, _get_context())
+		var result: Variant = grading_target.call(grading_method, normalized, _get_context())
 		if typeof(result) == TYPE_DICTIONARY:
 			return result
-	return _default_grade(text)
+	return _default_grade(text, normalized)
 
-func _default_grade(text: String) -> Dictionary:
+func _default_grade(text: String, normalized_text: String) -> Dictionary:
 	var context := _get_context()
 	var item := context.get("item", {})
 	var expected := ""
 	if typeof(item) == TYPE_DICTIONARY:
 		expected = str(item.get("kana", ""))
+	var normalized_expected := GradingUtils.normalize_transcript(expected)
 	return {
 		"transcript": text,
+		"transcript_normalized": normalized_text,
 		"expected": expected,
-		"is_correct": text == expected,
+		"expected_normalized": normalized_expected,
+		"is_correct": normalized_text == normalized_expected,
 	}
 
 func _get_context() -> Dictionary:
