@@ -141,14 +141,14 @@ func _resample_to_target(input_samples: PackedFloat32Array) -> PackedFloat32Arra
 		for i in range(input_samples.size()):
 			output[i] = input_samples[i]
 		return output
-	for sample in input_samples:
+	for sample: float in input_samples:
 		_resample_buffer.append(sample)
 	var step := float(_input_sample_rate) / float(target_sample_rate)
 	while _resample_pos + 1.0 < _resample_buffer.size():
 		var index := int(_resample_pos)
 		var next_index := index + 1
 		var frac := _resample_pos - float(index)
-		var sample := lerp(_resample_buffer[index], _resample_buffer[next_index], frac)
+		var sample: float = lerp(_resample_buffer[index], _resample_buffer[next_index], frac)
 		output.append(sample)
 		_resample_pos += step
 	var drop := int(_resample_pos)
@@ -161,7 +161,7 @@ func _to_pcm16le(samples: PackedFloat32Array) -> PackedByteArray:
 	var pcm := PackedByteArray()
 	pcm.resize(samples.size() * 2)
 	for i in range(samples.size()):
-		var clamped := clamp(samples[i], -1.0, 1.0)
+		var clamped: float = clamp(samples[i], -1.0, 1.0)
 		var value := int(round(clamped * 32767.0))
 		pcm.encode_s16(i * 2, value)
 	return pcm
