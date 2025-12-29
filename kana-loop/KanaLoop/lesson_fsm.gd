@@ -1,3 +1,4 @@
+class_name LessonFSM
 extends Node
 
 signal state_changed(previous_state: int, new_state: int)
@@ -18,6 +19,9 @@ func get_state() -> LessonState:
 
 func get_state_name() -> String:
 	return LessonState.keys()[state]
+
+func get_context() -> Dictionary:
+	return _build_context()
 
 func start_lesson(items: Array) -> void:
 	lesson_items = items.duplicate()
