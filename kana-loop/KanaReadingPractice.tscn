@@ -1,4 +1,6 @@
-[gd_scene format=3]
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://KanaLoop/kana_reading_practice.gd" id="1_wll0c"]
 
 [node name="KanaReadingPractice" type="Control"]
 anchor_left = 0.0
@@ -7,6 +9,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+script = ExtResource("1_wll0c")
+kana_label = NodePath("KanaLabel")
+status_label = NodePath("StatusLabel")
+animation_player = NodePath("AnimationPlayer")
 
 [node name="GlowRect" type="ColorRect" parent="."]
 anchor_left = 0.5
