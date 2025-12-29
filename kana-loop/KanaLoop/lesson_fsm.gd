@@ -5,7 +5,17 @@ signal state_changed(previous_state: int, new_state: int)
 signal state_entered(state: int, context: Dictionary)
 signal state_exited(state: int, context: Dictionary)
 
-enum LessonState { IDLE, PROMPT, LISTENING, PROCESSING, FEEDBACK, END }
+enum LessonState {
+	IDLE,
+	PROMPT,
+	LISTENING,
+	PROCESSING,
+	FEEDBACK,
+	END,
+	ERROR_NO_MIC,
+	ERROR_VOSK_UNAVAILABLE,
+	ERROR_TIMEOUT
+}
 
 var state: LessonState = LessonState.IDLE
 var lesson_items: Array = []
@@ -13,6 +23,7 @@ var current_index: int = -1
 var current_item: Variant = null
 var last_transcript: String = ""
 var last_grade: Dictionary = {}
+var last_error_message: String = ""
 var attempt_count: int = 0
 var max_attempts: int = 1
 var retry_pending: bool = false
@@ -31,6 +42,7 @@ func start_lesson(items: Array) -> void:
 	lesson_items = items.duplicate()
 	last_transcript = ""
 	last_grade = {}
+	last_error_message = ""
 	attempt_count = 0
 	max_attempts = default_max_attempts
 	retry_pending = false
@@ -99,10 +111,19 @@ func reset() -> void:
 	current_item = null
 	last_transcript = ""
 	last_grade = {}
+	last_error_message = ""
 	attempt_count = 0
 	max_attempts = default_max_attempts
 	retry_pending = false
 	_transition_to(LessonState.IDLE, _build_context())
+
+func set_error(error_state: LessonState, message: String = "") -> void:
+	if error_state != LessonState.ERROR_NO_MIC \
+			and error_state != LessonState.ERROR_VOSK_UNAVAILABLE \
+			and error_state != LessonState.ERROR_TIMEOUT:
+		return
+	last_error_message = message
+	_transition_to(error_state, _build_context())
 
 func _build_context() -> Dictionary:
 	var attempts_remaining := max(0, max_attempts - attempt_count)
@@ -116,6 +137,8 @@ func _build_context() -> Dictionary:
 		"max_attempts": max_attempts,
 		"attempts_remaining": attempts_remaining,
 		"retry_pending": retry_pending,
+		"error_message": last_error_message,
+		"error_state": state,
 	}
 
 func _update_retry_state(grade: Dictionary) -> void:
