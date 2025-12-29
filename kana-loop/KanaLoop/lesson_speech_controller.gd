@@ -68,7 +68,7 @@ func _request_grade(text: String) -> Dictionary:
 
 func _default_grade(text: String, normalized_text: String) -> Dictionary:
 	var context := _get_context()
-	var item := context.get("item", {})
+	var item: Variant = context.get("item", {})
 	var expected := ""
 	if typeof(item) == TYPE_DICTIONARY:
 		expected = str(item.get("kana", ""))
