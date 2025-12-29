@@ -49,6 +49,16 @@ func send_json(payload: Dictionary) -> bool:
 		return false
 	return true
 
+func send_bytes(payload: PackedByteArray) -> bool:
+	if not _is_open():
+		on_error.emit("WebSocket is not connected; cannot send payload.")
+		return false
+	var err := _peer.send(payload)
+	if err != OK:
+		on_error.emit("Failed to send WebSocket payload: %s" % str(err))
+		return false
+	return true
+
 func _process(_delta: float) -> void:
 	if not _peer:
 		if _should_reconnect():
