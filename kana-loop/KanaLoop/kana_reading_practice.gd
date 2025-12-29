@@ -31,7 +31,7 @@ func _ready() -> void:
 
 func _on_state_entered(state: int, context: Dictionary) -> void:
 	_clear_timers()
-	_set_listening_active(state == LessonFSM.LessonState.LISTENING)
+	_set_listening_active(state == LessonFSM.LessonState.LISTENING, context)
 	match state:
 		LessonFSM.LessonState.PROMPT:
 			_set_kana_from_context(context)
@@ -70,10 +70,18 @@ func _set_status_text(text: String) -> void:
 
 func _show_feedback(context: Dictionary) -> void:
 	var is_correct := _is_grade_correct(context)
+	var retry_pending := bool(context.get("retry_pending", false))
+	var attempt_count := int(context.get("attempt_count", 0))
+	var max_attempts := int(context.get("max_attempts", 0))
 	if is_correct:
 		_set_status_text("Correct!")
+	elif retry_pending:
+		if max_attempts > 0:
+			_set_status_text("Try again (%d/%d)" % [attempt_count, max_attempts])
+		else:
+			_set_status_text("Try again")
 	else:
-		_set_status_text("Try again")
+		_set_status_text("Incorrect")
 	_play_animation(_feedback_animation_name(is_correct))
 
 func _start_prompt_delay() -> void:
@@ -102,7 +110,7 @@ func _clear_timers() -> void:
 	_prompt_timer = null
 	_feedback_timer = null
 
-func _set_listening_active(should_listen: bool) -> void:
+func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	if mic_streamer == null:
 		return
 	if not should_listen:
@@ -110,13 +118,40 @@ func _set_listening_active(should_listen: bool) -> void:
 		return
 	if speech_controller == null or speech_controller.ws_client == null:
 		return
-	mic_streamer.start_streaming(speech_controller.ws_client)
+	var grammar := _build_grammar(context)
+	if grammar.is_empty():
+		mic_streamer.start_streaming(speech_controller.ws_client)
+		return
+	_start_listening_with_grammar(speech_controller.ws_client, grammar)
+
+func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
+	var acked := await ws_client.send_grammar_and_wait(grammar)
+	if not acked:
+		return
+	if fsm == null or fsm.get_state() != LessonFSM.LessonState.LISTENING:
+		return
+	mic_streamer.start_streaming(ws_client)
 
 func _play_animation(name: String) -> void:
 	if animation_player == null:
 		return
 	if animation_player.has_animation(name):
 		animation_player.play(name)
+
+func _build_grammar(context: Dictionary) -> Array[String]:
+	var item := context.get("item", null)
+	if typeof(item) == TYPE_DICTIONARY:
+		var grammar_value := item.get("grammar", null)
+		if typeof(grammar_value) == TYPE_ARRAY:
+			return grammar_value
+		var kana := str(item.get("kana", "")).strip_edges()
+		if not kana.is_empty():
+			return [kana]
+	elif item != null:
+		var value := str(item).strip_edges()
+		if not value.is_empty():
+			return [value]
+	return []
 
 func _is_grade_correct(context: Dictionary) -> bool:
 	var grade := context.get("grade", {})
