@@ -71,7 +71,7 @@ func send_grammar_and_wait(words: Array[String]) -> bool:
 		return true
 	if not send_grammar(words):
 		return false
-	var success := await grammar_acknowledged
+	var success: bool = await grammar_acknowledged
 	return success
 
 func _process(_delta: float) -> void:
@@ -106,17 +106,18 @@ func _read_packets() -> void:
 		_handle_text(packet.get_string_from_utf8())
 
 func _handle_text(message: String) -> void:
-	var payload := JSON.parse_string(message)
+	var payload: Variant = JSON.parse_string(message)
 	if typeof(payload) != TYPE_DICTIONARY:
 		on_error.emit("Invalid JSON payload: %s" % message)
 		return
-	if payload.has("type"):
-		_handle_typed_payload(payload)
+	var payload_dict: Dictionary = payload
+	if payload_dict.has("type"):
+		_handle_typed_payload(payload_dict)
 		return
-	if payload.has("partial"):
-		_emit_partial(str(payload["partial"]))
-	if payload.has("text"):
-		_emit_final(str(payload["text"]))
+	if payload_dict.has("partial"):
+		_emit_partial(str(payload_dict["partial"]))
+	if payload_dict.has("text"):
+		_emit_final(str(payload_dict["text"]))
 
 func _handle_typed_payload(payload: Dictionary) -> void:
 	var payload_type := str(payload.get("type", ""))
@@ -135,9 +136,9 @@ func _handle_typed_payload(payload: Dictionary) -> void:
 	on_error.emit("Unhandled payload type: %s" % payload_type)
 
 func _extract_result_payload(payload: Dictionary) -> Dictionary:
-	var result := payload.get("result", {})
+	var result: Variant = payload.get("result", {})
 	if typeof(result) == TYPE_DICTIONARY:
-		return result
+		return result as Dictionary
 	return {}
 
 func _emit_partial(text: String) -> void:
