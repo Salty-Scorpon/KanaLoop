@@ -1,7 +1,7 @@
 class_name VoskServiceManager
 extends Node
 
-signal ready
+signal service_ready
 signal unavailable(reason: String)
 
 const WS_URL := "ws://127.0.0.1:2700"
@@ -27,7 +27,7 @@ func can_enter_listening() -> bool:
 func wait_until_ready() -> void:
 	if _is_ready:
 		return
-	await ready
+	await service_ready
 
 func ensure_service_ready() -> void:
 	if _is_starting or _is_ready or _is_failed:
@@ -66,7 +66,7 @@ func _wait_for_ready_with_backoff() -> void:
 		if await _probe_websocket(CONNECT_TIMEOUT_SECONDS):
 			_mark_ready()
 			return
-		var delay := min(BACKOFF_BASE_SECONDS * pow(2.0, float(attempt)), BACKOFF_MAX_SECONDS)
+		var delay: float = min(BACKOFF_BASE_SECONDS * pow(2.0, float(attempt)), BACKOFF_MAX_SECONDS)
 		await get_tree().create_timer(delay).timeout
 	push_warning("Vosk service did not become ready after retries.")
 	_mark_unavailable("connect_failed")
@@ -94,7 +94,7 @@ func _mark_ready() -> void:
 	if _is_ready:
 		return
 	_is_ready = true
-	ready.emit()
+	service_ready.emit()
 
 func _mark_unavailable(reason: String) -> void:
 	if _is_failed:
