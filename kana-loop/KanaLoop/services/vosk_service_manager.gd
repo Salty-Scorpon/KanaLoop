@@ -67,6 +67,7 @@ func _start_service_process() -> void:
 
 func _wait_for_ready_with_backoff() -> void:
 	for attempt in range(MAX_RETRIES):
+		print("Vosk websocket probe attempt %d/%d url=%s" % [attempt + 1, MAX_RETRIES, WS_URL])
 		if await _probe_websocket(CONNECT_TIMEOUT_SECONDS):
 			_mark_ready()
 			return
@@ -79,15 +80,19 @@ func _probe_websocket(timeout_seconds: float) -> bool:
 	var peer := WebSocketPeer.new()
 	var err := peer.connect_to_url(WS_URL)
 	if err != OK:
+		print("Vosk websocket connect_to_url failed url=%s err=%s" % [WS_URL, err])
 		return false
+	print("Vosk websocket connect_to_url succeeded url=%s" % WS_URL)
 	var elapsed := 0.0
 	while elapsed < timeout_seconds:
 		peer.poll()
 		var state := peer.get_ready_state()
 		if state == WebSocketPeer.STATE_OPEN:
+			print("Vosk websocket state open url=%s" % WS_URL)
 			peer.close()
 			return true
 		if state == WebSocketPeer.STATE_CLOSED:
+			print("Vosk websocket state closed before open url=%s" % WS_URL)
 			return false
 		await get_tree().create_timer(0.1).timeout
 		elapsed += 0.1
