@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 KanaState="*res://KanaLoop/kana_state.gd"
 KanaAudio="*res://KanaLoop/kana_audio.gd"
+VoskServiceManager="*res://KanaLoop/services/vosk_service_manager.gd"
 
 [rendering]
 
