@@ -64,6 +64,8 @@ func _start_lesson_from_selection() -> void:
 	_active_kana = KanaState.get_selected_kana()
 	if _active_kana.is_empty():
 		_active_kana = KanaState.DEFAULT_KANA.duplicate()
+	if speech_controller and speech_controller.debug_speech:
+		print("KanaReadingPractice: active kana list: %s" % _active_kana)
 	var items: Array = []
 	for kana in _active_kana:
 		items.append({
