@@ -2,11 +2,13 @@ extends Control
 
 @export var fsm: LessonFSM
 @export var speech_controller: LessonSpeechController
+@export var mic_streamer: VoskMicStreamer
 @export var kana_label: Label
 @export var status_label: Label
 @export var animation_player: AnimationPlayer
-@export var prompt_delay_seconds := 0.6
-@export var feedback_duration_seconds := 1.2
+
+const PROMPT_DELAY_SECONDS := 0.6
+const FEEDBACK_DURATION_SECONDS := 1.2
 
 var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
@@ -29,6 +31,7 @@ func _ready() -> void:
 
 func _on_state_entered(state: int, context: Dictionary) -> void:
 	_clear_timers()
+	_set_listening_active(state == LessonFSM.LessonState.LISTENING)
 	match state:
 		LessonFSM.LessonState.PROMPT:
 			_set_kana_from_context(context)
@@ -76,10 +79,10 @@ func _show_feedback(context: Dictionary) -> void:
 func _start_prompt_delay() -> void:
 	if fsm == null:
 		return
-	if prompt_delay_seconds <= 0.0:
+	if PROMPT_DELAY_SECONDS <= 0.0:
 		fsm.begin_listening()
 		return
-	_prompt_timer = get_tree().create_timer(prompt_delay_seconds)
+	_prompt_timer = get_tree().create_timer(PROMPT_DELAY_SECONDS)
 	await _prompt_timer.timeout
 	if fsm and fsm.get_state() == LessonFSM.LessonState.PROMPT:
 		fsm.begin_listening()
@@ -87,10 +90,10 @@ func _start_prompt_delay() -> void:
 func _start_feedback_delay() -> void:
 	if fsm == null:
 		return
-	if feedback_duration_seconds <= 0.0:
+	if FEEDBACK_DURATION_SECONDS <= 0.0:
 		fsm.advance(true)
 		return
-	_feedback_timer = get_tree().create_timer(feedback_duration_seconds)
+	_feedback_timer = get_tree().create_timer(FEEDBACK_DURATION_SECONDS)
 	await _feedback_timer.timeout
 	if fsm and fsm.get_state() == LessonFSM.LessonState.FEEDBACK:
 		fsm.advance(true)
@@ -98,6 +101,16 @@ func _start_feedback_delay() -> void:
 func _clear_timers() -> void:
 	_prompt_timer = null
 	_feedback_timer = null
+
+func _set_listening_active(should_listen: bool) -> void:
+	if mic_streamer == null:
+		return
+	if not should_listen:
+		mic_streamer.stop_streaming()
+		return
+	if speech_controller == null or speech_controller.ws_client == null:
+		return
+	mic_streamer.start_streaming(speech_controller.ws_client)
 
 func _play_animation(name: String) -> void:
 	if animation_player == null:
