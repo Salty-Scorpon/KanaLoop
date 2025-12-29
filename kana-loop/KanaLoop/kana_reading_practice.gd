@@ -278,8 +278,7 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	_start_listening_with_grammar(speech_controller.ws_client, grammar)
 
 func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
-	var acked := await ws_client.send_grammar_and_wait(grammar)
-	if not acked:
+	if not ws_client.send_grammar(grammar):
 		return
 	if fsm == null or fsm.get_state() != LessonFSM.LessonState.LISTENING:
 		return
