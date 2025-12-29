@@ -41,8 +41,7 @@ grow_vertical = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "あ"
-[font_size_override]
-font_size = 144
+theme_override_font_sizes/font_size = 144
 
 [node name="StatusLabel" type="Label" parent="."]
 anchor_left = 0.5
@@ -58,8 +57,7 @@ grow_vertical = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "Speak now"
-[font_size_override]
-font_size = 36
+theme_override_font_sizes/font_size = 36
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 
