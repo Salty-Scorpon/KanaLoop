@@ -36,7 +36,7 @@ func _ready() -> void:
 	if mic_streamer and not mic_streamer.error_detected.is_connected(_on_mic_error):
 		mic_streamer.error_detected.connect(_on_mic_error)
 
-	_vosk_service_manager = get_node_or_null("/root/VoskServiceManager")
+	_vosk_service_manager = get_node_or_null("/root/VoskServiceAutoload")
 	if _vosk_service_manager and not _vosk_service_manager.unavailable.is_connected(_on_vosk_unavailable):
 		_vosk_service_manager.unavailable.connect(_on_vosk_unavailable)
 
