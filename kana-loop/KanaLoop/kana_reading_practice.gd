@@ -5,6 +5,7 @@ extends Control
 @export var mic_streamer: VoskMicStreamer
 @export var kana_label: Label
 @export var status_label: Label
+@export var transcript_label: Label
 @export var animation_player: AnimationPlayer
 
 const PROMPT_DELAY_SECONDS := 0.6
@@ -23,6 +24,8 @@ func _ready() -> void:
 		kana_label = $KanaLabel
 	if status_label == null and has_node("StatusLabel"):
 		status_label = $StatusLabel
+	if transcript_label == null and has_node("TranscriptLabel"):
+		transcript_label = $TranscriptLabel
 	if animation_player == null and has_node("AnimationPlayer"):
 		animation_player = $AnimationPlayer
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
@@ -73,29 +76,38 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 		LessonFSM.LessonState.PROMPT:
 			_set_kana_from_context(context)
 			_set_status_text("Get ready")
+			_set_transcript_text(_format_transcript(""))
 			_play_animation("IdleGlow")
 			_start_prompt_delay()
 		LessonFSM.LessonState.LISTENING:
 			_set_kana_from_context(context)
 			_set_status_text("Speak now")
+			_set_transcript_text(_format_transcript(""))
 			_play_animation("IdleGlow")
 			_start_listen_timeout()
 		LessonFSM.LessonState.PROCESSING:
 			_set_status_text("Checking...")
+			_set_transcript_text(_format_transcript(context.get("transcript", "")))
 		LessonFSM.LessonState.FEEDBACK:
 			_set_kana_from_context(context)
 			_show_feedback(context)
+			_set_transcript_text(_format_transcript(context.get("transcript", "")))
 			_start_feedback_delay()
 		LessonFSM.LessonState.END:
 			_set_status_text("Lesson complete")
+			_set_transcript_text(_format_transcript(context.get("transcript", "")))
 		LessonFSM.LessonState.IDLE:
 			_set_status_text("")
+			_set_transcript_text(_format_transcript(""))
 		LessonFSM.LessonState.ERROR_NO_MIC:
 			_set_status_text("Microphone not detected")
+			_set_transcript_text(_format_transcript(context.get("transcript", "")))
 		LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE:
 			_set_status_text("Speech service unavailable")
+			_set_transcript_text(_format_transcript(context.get("transcript", "")))
 		LessonFSM.LessonState.ERROR_TIMEOUT:
 			_set_status_text("Timed out — try again")
+			_set_transcript_text(_format_transcript(context.get("transcript", "")))
 
 func _set_kana_from_context(context: Dictionary) -> void:
 	if kana_label == null:
@@ -111,6 +123,16 @@ func _set_kana_from_context(context: Dictionary) -> void:
 func _set_status_text(text: String) -> void:
 	if status_label:
 		status_label.text = text
+
+func _set_transcript_text(text: String) -> void:
+	if transcript_label:
+		transcript_label.text = text
+
+func _format_transcript(value: Variant) -> String:
+	var transcript := str(value).strip_edges()
+	if transcript.is_empty():
+		return "Transcript: —"
+	return "Transcript: %s" % transcript
 
 func _show_feedback(context: Dictionary) -> void:
 	var is_correct := _is_grade_correct(context)

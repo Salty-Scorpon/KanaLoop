@@ -12,6 +12,7 @@ size_flags_vertical = 3
 script = ExtResource("1_wll0c")
 kana_label = NodePath("KanaLabel")
 status_label = NodePath("StatusLabel")
+transcript_label = NodePath("TranscriptLabel")
 animation_player = NodePath("AnimationPlayer")
 
 [node name="GlowRect" type="ColorRect" parent="."]
@@ -58,6 +59,22 @@ horizontal_alignment = 1
 vertical_alignment = 1
 text = "Speak now"
 theme_override_font_sizes/font_size = 36
+
+[node name="TranscriptLabel" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = 110.0
+offset_right = 250.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Transcript: —"
+theme_override_font_sizes/font_size = 24
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 
