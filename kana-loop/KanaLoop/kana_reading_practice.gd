@@ -6,7 +6,9 @@ extends Control
 @export var kana_label: Label
 @export var status_label: Label
 @export var transcript_label: Label
+@export var debug_label: RichTextLabel
 @export var animation_player: AnimationPlayer
+@export var debug_speech := false
 
 const PROMPT_DELAY_SECONDS := 0.6
 const FEEDBACK_DURATION_SECONDS := 1.2
@@ -18,6 +20,10 @@ var _feedback_timer: SceneTreeTimer
 var _listen_timeout_timer: SceneTreeTimer
 var _vosk_service_manager: VoskServiceManager
 var _active_kana: Array[String] = []
+var _debug_service_status := "unknown"
+var _debug_mic_status := "stopped"
+var _debug_last_transcript := ""
+var _debug_expected_kana := ""
 
 func _ready() -> void:
 	if kana_label == null and has_node("KanaLabel"):
@@ -26,10 +32,14 @@ func _ready() -> void:
 		status_label = $StatusLabel
 	if transcript_label == null and has_node("TranscriptLabel"):
 		transcript_label = $TranscriptLabel
+	if debug_label == null and has_node("DebugSpeechLabel"):
+		debug_label = $DebugSpeechLabel
 	if animation_player == null and has_node("AnimationPlayer"):
 		animation_player = $AnimationPlayer
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
 		animation_player.animation_finished.connect(_on_animation_finished)
+
+	_update_debug_label()
 
 	_ensure_fsm()
 	if speech_controller and speech_controller.fsm == null and fsm:
@@ -92,6 +102,7 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 		LessonFSM.LessonState.PROCESSING:
 			var transcript := str(context.get("transcript", ""))
 			print("KanaReadingPractice: processing transcript: %s" % transcript)
+			_set_debug_last_transcript(transcript)
 			if transcript.strip_edges().is_empty():
 				_set_status_text("Checking...")
 			else:
@@ -100,23 +111,33 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 		LessonFSM.LessonState.FEEDBACK:
 			_set_kana_from_context(context)
 			_show_feedback(context)
-			_set_transcript_text(_format_transcript(context.get("transcript", "")))
+			var feedback_transcript := str(context.get("transcript", ""))
+			_set_debug_last_transcript(feedback_transcript)
+			_set_transcript_text(_format_transcript(feedback_transcript))
 			_start_feedback_delay()
 		LessonFSM.LessonState.END:
 			_set_status_text("Lesson complete")
-			_set_transcript_text(_format_transcript(context.get("transcript", "")))
+			var end_transcript := str(context.get("transcript", ""))
+			_set_debug_last_transcript(end_transcript)
+			_set_transcript_text(_format_transcript(end_transcript))
 		LessonFSM.LessonState.IDLE:
 			_set_status_text("")
 			_set_transcript_text(_format_transcript(""))
 		LessonFSM.LessonState.ERROR_NO_MIC:
 			_set_status_text("Microphone not detected")
-			_set_transcript_text(_format_transcript(context.get("transcript", "")))
+			var mic_transcript := str(context.get("transcript", ""))
+			_set_debug_last_transcript(mic_transcript)
+			_set_transcript_text(_format_transcript(mic_transcript))
 		LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE:
 			_set_status_text("Speech service unavailable")
-			_set_transcript_text(_format_transcript(context.get("transcript", "")))
+			var service_transcript := str(context.get("transcript", ""))
+			_set_debug_last_transcript(service_transcript)
+			_set_transcript_text(_format_transcript(service_transcript))
 		LessonFSM.LessonState.ERROR_TIMEOUT:
 			_set_status_text("Timed out — try again")
-			_set_transcript_text(_format_transcript(context.get("transcript", "")))
+			var timeout_transcript := str(context.get("transcript", ""))
+			_set_debug_last_transcript(timeout_transcript)
+			_set_transcript_text(_format_transcript(timeout_transcript))
 
 func _set_kana_from_context(context: Dictionary) -> void:
 	if kana_label == null:
@@ -128,6 +149,7 @@ func _set_kana_from_context(context: Dictionary) -> void:
 	elif item != null:
 		kana = str(item)
 	kana_label.text = kana
+	_set_debug_expected_kana(kana)
 
 func _set_status_text(text: String) -> void:
 	if status_label:
@@ -136,6 +158,39 @@ func _set_status_text(text: String) -> void:
 func _set_transcript_text(text: String) -> void:
 	if transcript_label:
 		transcript_label.text = text
+
+func _update_debug_label() -> void:
+	if not debug_speech or debug_label == null:
+		return
+	var transcript_text := _debug_last_transcript
+	if transcript_text.strip_edges().is_empty():
+		transcript_text = "—"
+	var expected_text := _debug_expected_kana
+	if expected_text.strip_edges().is_empty():
+		expected_text = "—"
+	debug_label.text = (
+		"Debug speech\n"
+		+ "Service: %s\n" % _debug_service_status
+		+ "Mic: %s\n" % _debug_mic_status
+		+ "Expected: %s\n" % expected_text
+		+ "Last transcript: %s" % transcript_text
+	)
+
+func _set_debug_service_status(status: String) -> void:
+	_debug_service_status = status
+	_update_debug_label()
+
+func _set_debug_mic_status(status: String) -> void:
+	_debug_mic_status = status
+	_update_debug_label()
+
+func _set_debug_last_transcript(transcript: String) -> void:
+	_debug_last_transcript = transcript
+	_update_debug_label()
+
+func _set_debug_expected_kana(kana: String) -> void:
+	_debug_expected_kana = kana
+	_update_debug_label()
 
 func _format_transcript(value: Variant) -> String:
 	var transcript := str(value).strip_edges()
@@ -191,13 +246,17 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 		return
 	if not should_listen:
 		mic_streamer.stop_streaming()
+		_set_debug_mic_status("stopped")
 		return
 	if speech_controller == null or speech_controller.ws_client == null:
 		return
 	var grammar := _build_grammar(context)
 	if grammar.is_empty():
 		if not mic_streamer.start_streaming(speech_controller.ws_client):
+			_set_debug_mic_status("error")
 			_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
+		else:
+			_set_debug_mic_status("streaming")
 		return
 	_start_listening_with_grammar(speech_controller.ws_client, grammar)
 
@@ -208,7 +267,10 @@ func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Arra
 	if fsm == null or fsm.get_state() != LessonFSM.LessonState.LISTENING:
 		return
 	if not mic_streamer.start_streaming(ws_client):
+		_set_debug_mic_status("error")
 		_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
+		return
+	_set_debug_mic_status("streaming")
 
 func _play_animation(name: String) -> void:
 	if animation_player == null:
@@ -264,6 +326,7 @@ func _handle_error(error_state: LessonFSM.LessonState) -> void:
 		return
 	if mic_streamer:
 		mic_streamer.stop_streaming()
+		_set_debug_mic_status("stopped")
 	fsm.set_error(error_state)
 
 func _on_mic_error(error_code: int, _message: String) -> void:
@@ -273,7 +336,9 @@ func _on_mic_error(error_code: int, _message: String) -> void:
 		_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
 
 func _on_vosk_unavailable(_reason: String) -> void:
+	_set_debug_service_status("unavailable")
 	_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
 
 func _on_vosk_service_started(_pid: int, _path: String) -> void:
+	_set_debug_service_status("ready")
 	_set_status_text("Speech service ready")
