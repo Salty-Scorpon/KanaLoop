@@ -23,6 +23,7 @@ var _speech_seconds := 0.0
 var _silence_seconds := 0.0
 var _has_speech := false
 var _mic_error_reported := false
+var _packet_count := 0
 
 func _ready() -> void:
 	set_process(false)
@@ -31,6 +32,8 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 	_ws_client = ws_client
 	_input_sample_rate = AudioServer.get_mix_rate()
 	_mic_error_reported = false
+	_packet_count = 0
+	print("VoskMicStreamer: starting microphone capture.")
 	if not _ensure_capture_bus():
 		_ws_client = null
 		set_process(false)
@@ -41,6 +44,7 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 		return false
 	_reset_detection_state()
 	set_process(true)
+	print("VoskMicStreamer: microphone capture started.")
 	return true
 
 func start_listening(ws_client: VoskWebSocketClient, grammar: Array[String]) -> bool:
@@ -56,6 +60,7 @@ func stop_streaming() -> void:
 		_mic_player.queue_free()
 		_mic_player = null
 	_ws_client = null
+	print("VoskMicStreamer: microphone capture stopped.")
 
 func _process(_delta: float) -> void:
 	if not _capture_effect or not _ws_client:
@@ -71,6 +76,11 @@ func _process(_delta: float) -> void:
 	var resampled := _resample_to_target(mono_samples)
 	if resampled.size() > 0:
 		var pcm_bytes := _to_pcm16le(resampled)
+		_packet_count += 1
+		print(
+			"VoskMicStreamer: sending packet %d (frames=%d, resampled=%d, bytes=%d)"
+			% [_packet_count, frames.size(), resampled.size(), pcm_bytes.size()]
+		)
 		_ws_client.send_bytes(pcm_bytes)
 
 func _ensure_capture_bus() -> bool:

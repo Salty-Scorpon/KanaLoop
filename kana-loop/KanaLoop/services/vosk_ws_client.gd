@@ -69,6 +69,7 @@ func send_grammar(words: Array[String]) -> bool:
 func send_grammar_and_wait(words: Array[String]) -> bool:
 	if words.is_empty():
 		return true
+	print("VoskWebSocketClient: requesting grammar (%d items): %s" % [words.size(), str(words)])
 	if not send_grammar(words):
 		return false
 	var success: bool = await grammar_acknowledged
@@ -144,11 +145,13 @@ func _extract_result_payload(payload: Dictionary) -> Dictionary:
 func _emit_partial(text: String) -> void:
 	if text.is_empty():
 		return
+	print("VoskWebSocketClient: partial transcript received: %s" % text)
 	on_partial.emit(text)
 
 func _emit_final(text: String) -> void:
 	if text.is_empty():
 		return
+	print("VoskWebSocketClient: final transcript received: %s" % text)
 	on_final.emit(text)
 
 func _handle_close() -> void:

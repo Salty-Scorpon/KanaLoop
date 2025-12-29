@@ -88,8 +88,13 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 			_play_animation("IdleGlow")
 			_start_listen_timeout()
 		LessonFSM.LessonState.PROCESSING:
-			_set_status_text("Checking...")
-			_set_transcript_text(_format_transcript(context.get("transcript", "")))
+			var transcript := str(context.get("transcript", ""))
+			print("KanaReadingPractice: processing transcript: %s" % transcript)
+			if transcript.strip_edges().is_empty():
+				_set_status_text("Checking...")
+			else:
+				_set_status_text("Checking... Heard: %s" % transcript)
+			_set_transcript_text(_format_transcript(transcript))
 		LessonFSM.LessonState.FEEDBACK:
 			_set_kana_from_context(context)
 			_show_feedback(context)
