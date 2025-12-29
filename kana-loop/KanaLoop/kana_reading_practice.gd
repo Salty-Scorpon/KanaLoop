@@ -42,8 +42,7 @@ func _ready() -> void:
 	_update_debug_label()
 
 	_ensure_fsm()
-	if speech_controller and speech_controller.fsm == null and fsm:
-		speech_controller.fsm = fsm
+	_ensure_speech_nodes()
 
 	if fsm and not fsm.state_entered.is_connected(_on_state_entered):
 		fsm.state_entered.connect(_on_state_entered)
@@ -67,6 +66,24 @@ func _ensure_fsm() -> void:
 		return
 	fsm = LessonFSM.new()
 	add_child(fsm)
+
+func _ensure_speech_nodes() -> void:
+	if mic_streamer == null:
+		mic_streamer = VoskMicStreamer.new()
+		add_child(mic_streamer)
+	if speech_controller == null:
+		speech_controller = LessonSpeechController.new()
+		add_child(speech_controller)
+	if speech_controller and speech_controller.fsm == null and fsm:
+		speech_controller.fsm = fsm
+	if speech_controller and speech_controller.ws_client == null:
+		var ws_client := VoskWebSocketClient.new()
+		add_child(ws_client)
+		ws_client.configure()
+		ws_client.start()
+		speech_controller.set_ws_client(ws_client)
+	elif speech_controller and speech_controller.ws_client:
+		speech_controller.ws_client.start()
 
 func _start_lesson_from_selection() -> void:
 	if fsm == null:
