@@ -18,6 +18,8 @@ func _ready() -> void:
 		status_label = $StatusLabel
 	if animation_player == null and has_node("AnimationPlayer"):
 		animation_player = $AnimationPlayer
+	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
+		animation_player.animation_finished.connect(_on_animation_finished)
 
 	if speech_controller and speech_controller.fsm == null and fsm:
 		speech_controller.fsm = fsm
@@ -64,16 +66,12 @@ func _set_status_text(text: String) -> void:
 		status_label.text = text
 
 func _show_feedback(context: Dictionary) -> void:
-	var grade := context.get("grade", {})
-	var is_correct := false
-	if typeof(grade) == TYPE_DICTIONARY:
-		is_correct = bool(grade.get("is_correct", false))
+	var is_correct := _is_grade_correct(context)
 	if is_correct:
 		_set_status_text("Correct!")
-		_play_animation("CorrectFeedback")
 	else:
 		_set_status_text("Try again")
-		_play_animation("TryAgainFeedback")
+	_play_animation(_feedback_animation_name(is_correct))
 
 func _start_prompt_delay() -> void:
 	if fsm == null:
@@ -106,3 +104,20 @@ func _play_animation(name: String) -> void:
 		return
 	if animation_player.has_animation(name):
 		animation_player.play(name)
+
+func _is_grade_correct(context: Dictionary) -> bool:
+	var grade := context.get("grade", {})
+	if typeof(grade) == TYPE_DICTIONARY:
+		return bool(grade.get("is_correct", false))
+	return false
+
+func _feedback_animation_name(is_correct: bool) -> String:
+	return "feedback_correct" if is_correct else "feedback_incorrect"
+
+func _on_animation_finished(name: StringName) -> void:
+	if fsm == null:
+		return
+	if fsm.get_state() != LessonFSM.LessonState.FEEDBACK:
+		return
+	if name == "feedback_correct" or name == "feedback_incorrect":
+		_play_animation("IdleGlow")
