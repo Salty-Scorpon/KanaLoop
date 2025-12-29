@@ -1,16 +1,10 @@
 class_name GradingUtils
 extends RefCounted
 
-const NORMALIZATION_KC := 3
-
 # Normalizes transcripts for grading by applying NFKC Unicode normalization when available,
 # converting katakana to hiragana, and trimming punctuation/whitespace.
 static func normalize_transcript(text: String) -> String:
-	var normalized := text
-	if normalized.has_method("unicode_normalize"):
-		normalized = normalized.unicode_normalize(NORMALIZATION_KC)
-	elif ClassDB.class_has_method("String", "unicode_normalize"):
-		normalized = normalized.call("unicode_normalize", NORMALIZATION_KC)
+	var normalized := _normalize_unicode(text)
 
 	normalized = _katakana_to_hiragana(normalized)
 	return _trim_punctuation(normalized)
@@ -62,6 +56,9 @@ static func levenshtein_distance(left: String, right: String) -> int:
 
 static func _string_length(text: String) -> int:
 	return text.length()
+
+static func _normalize_unicode(text: String) -> String:
+	return text
 
 static func _katakana_to_hiragana(text: String) -> String:
 	var output := ""
