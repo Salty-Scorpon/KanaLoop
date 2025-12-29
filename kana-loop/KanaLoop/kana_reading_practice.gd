@@ -16,6 +16,7 @@ var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
 var _listen_timeout_timer: SceneTreeTimer
 var _vosk_service_manager: VoskServiceManager
+var _active_kana: Array[String] = []
 
 func _ready() -> void:
 	if kana_label == null and has_node("KanaLabel"):
@@ -27,6 +28,7 @@ func _ready() -> void:
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
 		animation_player.animation_finished.connect(_on_animation_finished)
 
+	_ensure_fsm()
 	if speech_controller and speech_controller.fsm == null and fsm:
 		speech_controller.fsm = fsm
 
@@ -39,6 +41,30 @@ func _ready() -> void:
 	_vosk_service_manager = get_node_or_null("/root/VoskServiceAutoload")
 	if _vosk_service_manager and not _vosk_service_manager.unavailable.is_connected(_on_vosk_unavailable):
 		_vosk_service_manager.unavailable.connect(_on_vosk_unavailable)
+
+	_start_lesson_from_selection()
+
+func _ensure_fsm() -> void:
+	if fsm != null:
+		return
+	if has_node("LessonFSM"):
+		fsm = $LessonFSM
+		return
+	fsm = LessonFSM.new()
+	add_child(fsm)
+
+func _start_lesson_from_selection() -> void:
+	if fsm == null:
+		return
+	_active_kana = KanaState.get_selected_kana()
+	if _active_kana.is_empty():
+		_active_kana = KanaState.DEFAULT_KANA.duplicate()
+	var items: Array = []
+	for kana in _active_kana:
+		items.append({
+			"kana": kana,
+		})
+	fsm.start_lesson(items)
 
 func _on_state_entered(state: int, context: Dictionary) -> void:
 	_clear_timers()
