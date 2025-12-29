@@ -10,8 +10,12 @@ extends Control
 const PROMPT_DELAY_SECONDS := 0.6
 const FEEDBACK_DURATION_SECONDS := 1.2
 
+@export var listen_timeout_seconds := 6.0
+
 var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
+var _listen_timeout_timer: SceneTreeTimer
+var _vosk_service_manager: VoskServiceManager
 
 func _ready() -> void:
 	if kana_label == null and has_node("KanaLabel"):
@@ -29,6 +33,13 @@ func _ready() -> void:
 	if fsm and not fsm.state_entered.is_connected(_on_state_entered):
 		fsm.state_entered.connect(_on_state_entered)
 
+	if mic_streamer and not mic_streamer.error_detected.is_connected(_on_mic_error):
+		mic_streamer.error_detected.connect(_on_mic_error)
+
+	_vosk_service_manager = get_node_or_null("/root/VoskServiceManager")
+	if _vosk_service_manager and not _vosk_service_manager.unavailable.is_connected(_on_vosk_unavailable):
+		_vosk_service_manager.unavailable.connect(_on_vosk_unavailable)
+
 func _on_state_entered(state: int, context: Dictionary) -> void:
 	_clear_timers()
 	_set_listening_active(state == LessonFSM.LessonState.LISTENING, context)
@@ -42,6 +53,7 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 			_set_kana_from_context(context)
 			_set_status_text("Speak now")
 			_play_animation("IdleGlow")
+			_start_listen_timeout()
 		LessonFSM.LessonState.PROCESSING:
 			_set_status_text("Checking...")
 		LessonFSM.LessonState.FEEDBACK:
@@ -52,6 +64,12 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 			_set_status_text("Lesson complete")
 		LessonFSM.LessonState.IDLE:
 			_set_status_text("")
+		LessonFSM.LessonState.ERROR_NO_MIC:
+			_set_status_text("Microphone not detected")
+		LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE:
+			_set_status_text("Speech service unavailable")
+		LessonFSM.LessonState.ERROR_TIMEOUT:
+			_set_status_text("Timed out — try again")
 
 func _set_kana_from_context(context: Dictionary) -> void:
 	if kana_label == null:
@@ -109,6 +127,7 @@ func _start_feedback_delay() -> void:
 func _clear_timers() -> void:
 	_prompt_timer = null
 	_feedback_timer = null
+	_listen_timeout_timer = null
 
 func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	if mic_streamer == null:
@@ -120,7 +139,8 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 		return
 	var grammar := _build_grammar(context)
 	if grammar.is_empty():
-		mic_streamer.start_streaming(speech_controller.ws_client)
+		if not mic_streamer.start_streaming(speech_controller.ws_client):
+			_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
 		return
 	_start_listening_with_grammar(speech_controller.ws_client, grammar)
 
@@ -130,7 +150,8 @@ func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Arra
 		return
 	if fsm == null or fsm.get_state() != LessonFSM.LessonState.LISTENING:
 		return
-	mic_streamer.start_streaming(ws_client)
+	if not mic_streamer.start_streaming(ws_client):
+		_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
 
 func _play_animation(name: String) -> void:
 	if animation_player == null:
@@ -169,3 +190,30 @@ func _on_animation_finished(name: StringName) -> void:
 		return
 	if name == "feedback_correct" or name == "feedback_incorrect":
 		_play_animation("IdleGlow")
+
+func _start_listen_timeout() -> void:
+	if listen_timeout_seconds <= 0.0:
+		return
+	var timer := get_tree().create_timer(listen_timeout_seconds)
+	_listen_timeout_timer = timer
+	await timer.timeout
+	if _listen_timeout_timer != timer:
+		return
+	if fsm and fsm.get_state() == LessonFSM.LessonState.LISTENING:
+		_handle_error(LessonFSM.LessonState.ERROR_TIMEOUT)
+
+func _handle_error(error_state: LessonFSM.LessonState) -> void:
+	if fsm == null:
+		return
+	if mic_streamer:
+		mic_streamer.stop_streaming()
+	fsm.set_error(error_state)
+
+func _on_mic_error(error_code: int, _message: String) -> void:
+	if fsm == null:
+		return
+	if error_code == LessonFSM.LessonState.ERROR_NO_MIC:
+		_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
+
+func _on_vosk_unavailable(_reason: String) -> void:
+	_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)

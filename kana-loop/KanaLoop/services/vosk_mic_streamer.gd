@@ -2,6 +2,7 @@ class_name VoskMicStreamer
 extends Node
 
 signal speech_finished
+signal error_detected(error_code: int, message: String)
 
 const VOSK_SAMPLE_FORMAT := "16kHz mono PCM16LE"
 
@@ -21,23 +22,32 @@ var _resample_pos := 0.0
 var _speech_seconds := 0.0
 var _silence_seconds := 0.0
 var _has_speech := false
+var _mic_error_reported := false
 
 func _ready() -> void:
 	set_process(false)
 
-func start_streaming(ws_client: VoskWebSocketClient) -> void:
+func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 	_ws_client = ws_client
 	_input_sample_rate = AudioServer.get_mix_rate()
-	_ensure_capture_bus()
-	_setup_microphone_player()
+	_mic_error_reported = false
+	if not _ensure_capture_bus():
+		_ws_client = null
+		set_process(false)
+		return false
+	if not _setup_microphone_player():
+		_ws_client = null
+		set_process(false)
+		return false
 	_reset_detection_state()
 	set_process(true)
+	return true
 
-func start_listening(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
+func start_listening(ws_client: VoskWebSocketClient, grammar: Array[String]) -> bool:
 	var acked := await ws_client.send_grammar_and_wait(grammar)
 	if not acked:
-		return
-	start_streaming(ws_client)
+		return false
+	return start_streaming(ws_client)
 
 func stop_streaming() -> void:
 	set_process(false)
@@ -63,26 +73,43 @@ func _process(_delta: float) -> void:
 		var pcm_bytes := _to_pcm16le(resampled)
 		_ws_client.send_bytes(pcm_bytes)
 
-func _ensure_capture_bus() -> void:
+func _ensure_capture_bus() -> bool:
 	_capture_bus_index = _find_bus_index(capture_bus_name)
 	if _capture_bus_index < 0:
-		AudioServer.add_bus(AudioServer.get_bus_count())
-		_capture_bus_index = AudioServer.get_bus_count() - 1
-		AudioServer.set_bus_name(_capture_bus_index, capture_bus_name)
+		var previous_count := AudioServer.get_bus_count()
+		AudioServer.add_bus(previous_count)
+		_capture_bus_index = _find_bus_index(capture_bus_name)
+		if _capture_bus_index < 0 and AudioServer.get_bus_count() > previous_count:
+			_capture_bus_index = AudioServer.get_bus_count() - 1
+			AudioServer.set_bus_name(_capture_bus_index, capture_bus_name)
+	if _capture_bus_index < 0:
+		_report_no_mic("Capture bus not found.")
+		return false
 	_capture_effect = _get_capture_effect(_capture_bus_index)
 	if not _capture_effect:
 		_capture_effect = AudioEffectCapture.new()
 		AudioServer.add_bus_effect(_capture_bus_index, _capture_effect, 0)
 		_capture_effect = _get_capture_effect(_capture_bus_index)
+	if not _capture_effect:
+		_report_no_mic("Capture effect unavailable.")
+		return false
+	return true
 
-func _setup_microphone_player() -> void:
+func _setup_microphone_player() -> bool:
 	if _mic_player:
 		_mic_player.queue_free()
 	_mic_player = AudioStreamPlayer.new()
-	_mic_player.stream = AudioStreamMicrophone.new()
+	var mic_stream := AudioStreamMicrophone.new()
+	if mic_stream == null:
+		_mic_player.queue_free()
+		_mic_player = null
+		_report_no_mic("AudioStreamMicrophone unavailable.")
+		return false
+	_mic_player.stream = mic_stream
 	_mic_player.bus = capture_bus_name
 	add_child(_mic_player)
 	_mic_player.play()
+	return true
 
 func _find_bus_index(bus_name: String) -> int:
 	for index in range(AudioServer.get_bus_count()):
@@ -172,3 +199,10 @@ func _reset_detection_state() -> void:
 	_speech_seconds = 0.0
 	_silence_seconds = 0.0
 	_has_speech = false
+
+func _report_no_mic(message: String) -> void:
+	if _mic_error_reported:
+		return
+	_mic_error_reported = true
+	push_warning(message)
+	error_detected.emit(LessonFSM.LessonState.ERROR_NO_MIC, message)
