@@ -9,6 +9,7 @@ extends Control
 @onready var practice_visual_delay_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeVisualDelay
 @onready var practice_random_chains_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeRandomChains
 @onready var practice_audio_symbol_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeAudioSymbol
+@onready var practice_symbol_reading_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSymbolReading
 @onready var practice_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeGuidedWriting
 
 @onready var vowels_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/VowelsCheckBox
@@ -84,6 +85,7 @@ var selected_kana: Array[String] = []
 const VISUAL_DELAY_SCENE := preload("res://KanaLoop/visual_delay.tscn")
 const RANDOM_CHAINS_SCENE := preload("res://KanaLoop/random_chains.tscn")
 const AUDIO_SYMBOL_SCENE := preload("res://KanaLoop/audio_symbol.tscn")
+const SYMBOL_READING_SCENE := preload("res://KanaReadingPractice.tscn")
 const GUIDED_WRITING_SCENE := preload("res://KanaLoop/guided_writing.tscn")
 
 func _ready() -> void:
@@ -92,6 +94,7 @@ func _ready() -> void:
 	practice_visual_delay_button.pressed.connect(_on_practice_visual_delay)
 	practice_random_chains_button.pressed.connect(_on_practice_random_chains)
 	practice_audio_symbol_button.pressed.connect(_on_practice_audio_symbol)
+	practice_symbol_reading_button.pressed.connect(_on_practice_symbol_reading)
 	practice_guided_writing_button.pressed.connect(_on_practice_guided_writing)
 
 	for toggle in row_toggles:
@@ -276,6 +279,9 @@ func _on_practice_random_chains() -> void:
 
 func _on_practice_audio_symbol() -> void:
 	_open_practice_scene(AUDIO_SYMBOL_SCENE)
+
+func _on_practice_symbol_reading() -> void:
+	_open_practice_scene(SYMBOL_READING_SCENE)
 
 func _on_practice_guided_writing() -> void:
 	_open_practice_scene(GUIDED_WRITING_SCENE)
