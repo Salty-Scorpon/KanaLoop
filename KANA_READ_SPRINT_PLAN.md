@@ -62,16 +62,24 @@ SPRINT 2 — Godot Speech Integration
 
 Goal: Godot launches Vosk and receives text.
 
-
-
 Tasks
+
+
+
+S2.T0 — Service path resolution
+
+* Detect platform.
+* Resolve relative path to vosk_service.exe inside export folder.
+* Do not assume PATH.
+
+
 
 S2.T1 — VoskServiceManager autoload
 
 * Detect running service
 * Start service if missing
 * Retry connection logic
-
+* Wait for WebSocket availability before allowing LISTENING state.
 
 
 S2.T2 — WebSocket client
@@ -125,6 +133,11 @@ S3.T3 — FSM implementation
 S3.T4 — Hook transcription into FSM
 
 * LISTENING → PROCESSING → FEEDBACK
+Expect JSON with:
+  text: final transcript
+  partial: partial transcript
+Ignore empty partials.
+Only grade on final.
 
 
 
@@ -205,7 +218,9 @@ Goal: Shippable build.
 
 Tasks
 
-S6.T1 — Bundle Vosk with export
+S6.T1 — Bundle vosk_service.exe alongside game.
+* Do not attempt to embed Python or Vosk inside Godot.
+
 
 
 

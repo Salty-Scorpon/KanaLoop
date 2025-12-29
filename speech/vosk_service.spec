@@ -1,44 +1,47 @@
+# -*- mode: python ; coding: utf-8 -*-
+
 from pathlib import Path
+import sys
+import vosk
+from PyInstaller.building.datastruct import Tree
 
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+# Resolve paths
+SPEC_DIR = Path(sys.argv[0]).resolve().parent
+VOSK_DIR = Path(vosk.__file__).resolve().parent
 
-
-MODEL_NAME = "vosk-model-small-ja-0.22"
-REPO_ROOT = Path(__file__).resolve().parents[1]
-MODEL_DIR = REPO_ROOT / "models" / MODEL_NAME
-
-hiddenimports = collect_submodules("vosk")
-datas = collect_data_files("vosk")
-
-if MODEL_DIR.is_dir():
-    datas.append((str(MODEL_DIR), f"models/{MODEL_NAME}"))
+block_cipher = None
 
 a = Analysis(
-    ["vosk_service.py"],
-    pathex=[str(Path(__file__).resolve().parent)],
+    ['vosk_service.py'],
+    pathex=[str(SPEC_DIR)],
     binaries=[],
-    datas=datas,
-    hiddenimports=hiddenimports,
+    datas=[
+        (str(VOSK_DIR), "_internal/vosk"),
+    ],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
+    optimize=0,
 )
-pyz = PYZ(a.pure)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
     [],
-    name="vosk_service",
+    exclude_binaries=True,
+    name='vosk_service',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
     console=True,
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
@@ -46,5 +49,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="vosk_service",
+    name='vosk_service',
 )

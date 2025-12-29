@@ -6,13 +6,27 @@ import os
 import sys
 from pathlib import Path
 
+if getattr(sys, "frozen", False):
+    bundle_dir = Path(sys._MEIPASS)
+    for candidate in [
+        bundle_dir,
+        bundle_dir / "vosk",
+        bundle_dir / "_internal",
+        bundle_dir / "_internal" / "vosk",
+    ]:
+        if candidate.exists():
+            try:
+                os.add_dll_directory(str(candidate))
+            except Exception:
+                pass
+
 import websockets
 from vosk import KaldiRecognizer, Model
 
 
 MODEL_NAME = "vosk-model-small-ja-0.22"
 MODEL_ENV_VAR = "KANALOOP_MODEL_PATH"
-DEFAULT_MODEL_ROOT = Path("/models")
+DEFAULT_MODEL_ROOT = Path("models")
 HOST = "localhost"
 PORT = 2700
 SAMPLE_RATE = 16000
@@ -73,5 +87,10 @@ async def main():
 
 if __name__ == "__main__":
     MODEL_PATH = resolve_model_path()
-    MODEL = Model(str(MODEL_PATH))
+    try:
+        MODEL = Model(str(MODEL_PATH))
+    except Exception as e:
+        logging.error("Failed to load Vosk model or native libraries.")
+        logging.error(str(e))
+        raise
     asyncio.run(main())
