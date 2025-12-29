@@ -73,13 +73,12 @@ func _default_grade(text: String, normalized_text: String) -> Dictionary:
 	if typeof(item) == TYPE_DICTIONARY:
 		expected = str(item.get("kana", ""))
 	var normalized_expected := GradingUtils.normalize_transcript(expected)
-	return {
-		"transcript": text,
-		"transcript_normalized": normalized_text,
-		"expected": expected,
-		"expected_normalized": normalized_expected,
-		"is_correct": normalized_text == normalized_expected,
-	}
+	var grade := GradingUtils.grade_transcript(normalized_text, normalized_expected)
+	grade["transcript"] = text
+	grade["expected"] = expected
+	grade["transcript_normalized"] = normalized_text
+	grade["expected_normalized"] = normalized_expected
+	return grade
 
 func _get_context() -> Dictionary:
 	if fsm == null:
