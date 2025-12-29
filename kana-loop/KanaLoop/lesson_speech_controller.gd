@@ -5,6 +5,7 @@ extends Node
 @export var ws_client: VoskWebSocketClient
 @export var grading_target: Node
 @export var grading_method := "grade_transcript"
+@export var debug_speech := false
 
 func _ready() -> void:
 	if ws_client:
@@ -78,6 +79,17 @@ func _default_grade(text: String, normalized_text: String) -> Dictionary:
 	grade["expected"] = expected
 	grade["transcript_normalized"] = normalized_text
 	grade["expected_normalized"] = normalized_expected
+	if debug_speech:
+		print(
+			"LessonSpeechController: grading transcript. expected=%s transcript=%s normalized_expected=%s normalized_transcript=%s is_correct=%s"
+			% [
+				expected,
+				text,
+				normalized_expected,
+				normalized_text,
+				grade.get("is_correct", false),
+			]
+		)
 	return grade
 
 func _get_context() -> Dictionary:
