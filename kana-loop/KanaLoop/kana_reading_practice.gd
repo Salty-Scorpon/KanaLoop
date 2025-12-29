@@ -175,7 +175,7 @@ func _build_grammar(context: Dictionary) -> Array[String]:
 	return []
 
 func _is_grade_correct(context: Dictionary) -> bool:
-	var grade := context.get("grade", {})
+	var grade: Dictionary = context.get("grade", {})
 	if typeof(grade) == TYPE_DICTIONARY:
 		return bool(grade.get("is_correct", false))
 	return false

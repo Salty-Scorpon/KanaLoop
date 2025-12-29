@@ -17,7 +17,7 @@ static func normalize_transcript(text: String) -> String:
 
 static func grade_transcript(normalized_input: String, normalized_target: String) -> Dictionary:
 	var distance := levenshtein_distance(normalized_input, normalized_target)
-	var max_len := max(_string_length(normalized_input), _string_length(normalized_target))
+	var max_len: int = max(_string_length(normalized_input), _string_length(normalized_target))
 	var score := 1.0
 	if max_len > 0:
 		score = 1.0 - (float(distance) / float(max_len))
