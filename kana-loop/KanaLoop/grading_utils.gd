@@ -7,7 +7,9 @@ const NORMALIZATION_KC := 3
 # converting katakana to hiragana, and trimming punctuation/whitespace.
 static func normalize_transcript(text: String) -> String:
 	var normalized := text
-	if ClassDB.class_has_method("String", "unicode_normalize"):
+	if normalized.has_method("unicode_normalize"):
+		normalized = normalized.unicode_normalize(NORMALIZATION_KC)
+	elif ClassDB.class_has_method("String", "unicode_normalize"):
 		normalized = normalized.call("unicode_normalize", NORMALIZATION_KC)
 
 	normalized = _katakana_to_hiragana(normalized)
@@ -62,14 +64,13 @@ static func _string_length(text: String) -> int:
 	return text.length()
 
 static func _katakana_to_hiragana(text: String) -> String:
-	var output: PackedStringArray = PackedStringArray()
-	output.resize(text.length())
+	var output := ""
 	for index in range(text.length()):
 		var codepoint: int = text.unicode_at(index)
 		if (codepoint >= 0x30A1 and codepoint <= 0x30F6) or (codepoint >= 0x30FD and codepoint <= 0x30FE):
 			codepoint -= 0x60
-		output[index] = String.chr(codepoint)
-	return output.join("")
+		output += String.chr(codepoint)
+	return output
 
 static func _string_to_codepoints(text: String) -> Array[int]:
 	var codepoints: Array[int] = []
