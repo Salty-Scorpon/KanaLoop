@@ -33,6 +33,12 @@ func start_streaming(ws_client: VoskWebSocketClient) -> void:
 	_reset_detection_state()
 	set_process(true)
 
+func start_listening(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
+	var acked := await ws_client.send_grammar_and_wait(grammar)
+	if not acked:
+		return
+	start_streaming(ws_client)
+
 func stop_streaming() -> void:
 	set_process(false)
 	if _mic_player:

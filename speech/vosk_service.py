@@ -55,6 +55,9 @@ async def handle_connection(websocket):
             if msg.get("type") == "set_grammar":
                 grammar = msg.get("grammar", [])
                 recognizer = make_recognizer(grammar)
+                await websocket.send(
+                    json.dumps({"type": "grammar_ack", "ok": True, "grammar": grammar})
+                )
             continue
 
         if recognizer.AcceptWaveform(message):

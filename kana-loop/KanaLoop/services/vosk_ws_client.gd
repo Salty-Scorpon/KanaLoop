@@ -4,6 +4,7 @@ extends Node
 signal on_partial(text: String)
 signal on_final(text: String)
 signal on_error(message: String)
+signal grammar_acknowledged(success: bool)
 
 const DEFAULT_HOST := "localhost"
 const DEFAULT_PORT := 2700
@@ -59,6 +60,20 @@ func send_bytes(payload: PackedByteArray) -> bool:
 		return false
 	return true
 
+func send_grammar(words: Array[String]) -> bool:
+	return send_json({
+		"type": "set_grammar",
+		"grammar": words,
+	})
+
+func send_grammar_and_wait(words: Array[String]) -> bool:
+	if words.is_empty():
+		return true
+	if not send_grammar(words):
+		return false
+	var success := await grammar_acknowledged
+	return success
+
 func _process(_delta: float) -> void:
 	if not _peer:
 		if _should_reconnect():
@@ -95,14 +110,45 @@ func _handle_text(message: String) -> void:
 	if typeof(payload) != TYPE_DICTIONARY:
 		on_error.emit("Invalid JSON payload: %s" % message)
 		return
+	if payload.has("type"):
+		_handle_typed_payload(payload)
+		return
 	if payload.has("partial"):
-		var partial := str(payload["partial"])
-		if not partial.is_empty():
-			on_partial.emit(partial)
+		_emit_partial(str(payload["partial"]))
 	if payload.has("text"):
-		var final_text := str(payload["text"])
-		if not final_text.is_empty():
-			on_final.emit(final_text)
+		_emit_final(str(payload["text"]))
+
+func _handle_typed_payload(payload: Dictionary) -> void:
+	var payload_type := str(payload.get("type", ""))
+	if payload_type == "partial":
+		var result := _extract_result_payload(payload)
+		_emit_partial(str(result.get("partial", "")))
+		return
+	if payload_type == "final":
+		var result := _extract_result_payload(payload)
+		_emit_final(str(result.get("text", "")))
+		return
+	if payload_type == "grammar_ack":
+		var ok := bool(payload.get("ok", false))
+		grammar_acknowledged.emit(ok)
+		return
+	on_error.emit("Unhandled payload type: %s" % payload_type)
+
+func _extract_result_payload(payload: Dictionary) -> Dictionary:
+	var result := payload.get("result", {})
+	if typeof(result) == TYPE_DICTIONARY:
+		return result
+	return {}
+
+func _emit_partial(text: String) -> void:
+	if text.is_empty():
+		return
+	on_partial.emit(text)
+
+func _emit_final(text: String) -> void:
+	if text.is_empty():
+		return
+	on_final.emit(text)
 
 func _handle_close() -> void:
 	var close_code := _peer.get_close_code()
