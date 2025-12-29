@@ -2,6 +2,7 @@ class_name VoskServiceManager
 extends Node
 
 signal service_ready
+signal service_started(pid: int, path: String)
 signal unavailable(reason: String)
 
 const WS_URL := "ws://127.0.0.1:2700"
@@ -60,6 +61,9 @@ func _start_service_process() -> void:
 	if _service_pid <= 0:
 		push_warning("Failed to launch Vosk service at %s" % service_path)
 		_mark_unavailable("launch_failed")
+	else:
+		print("Launched Vosk service pid=%d path=%s" % [_service_pid, service_path])
+		service_started.emit(_service_pid, service_path)
 
 func _wait_for_ready_with_backoff() -> void:
 	for attempt in range(MAX_RETRIES):
@@ -94,6 +98,7 @@ func _mark_ready() -> void:
 	if _is_ready:
 		return
 	_is_ready = true
+	print("Vosk service websocket ready.")
 	service_ready.emit()
 
 func _mark_unavailable(reason: String) -> void:

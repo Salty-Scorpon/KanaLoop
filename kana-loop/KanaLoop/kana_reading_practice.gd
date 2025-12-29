@@ -44,6 +44,8 @@ func _ready() -> void:
 	_vosk_service_manager = get_node_or_null("/root/VoskServiceAutoload")
 	if _vosk_service_manager and not _vosk_service_manager.unavailable.is_connected(_on_vosk_unavailable):
 		_vosk_service_manager.unavailable.connect(_on_vosk_unavailable)
+	if _vosk_service_manager and not _vosk_service_manager.service_started.is_connected(_on_vosk_service_started):
+		_vosk_service_manager.service_started.connect(_on_vosk_service_started)
 
 	_start_lesson_from_selection()
 
@@ -265,3 +267,6 @@ func _on_mic_error(error_code: int, _message: String) -> void:
 
 func _on_vosk_unavailable(_reason: String) -> void:
 	_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
+
+func _on_vosk_service_started(_pid: int, _path: String) -> void:
+	_set_status_text("Speech service ready")
