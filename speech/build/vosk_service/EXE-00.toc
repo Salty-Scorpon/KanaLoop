@@ -67,7 +67,7 @@
  [],
  False,
  False,
- 1767061013,
+ 1767067748,
  [('run.exe',
    'C:\\Users\\salty\\AppData\\Local\\Python\\pythoncore-3.10-64\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
    'EXECUTABLE')],
