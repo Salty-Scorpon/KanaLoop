@@ -11,11 +11,21 @@ signal back_requested
 @export var debug_label: RichTextLabel
 @export var animation_player: AnimationPlayer
 @export var debug_speech := false
+@export var metronome_player: AudioStreamPlayer
+@export var metronome_toggle: Button
+@export var bpm_slider: HSlider
+@export var bpm_value_label: Label
+@export var metronome_timer: Timer
 
 @onready var back_button: Button = get_node_or_null("MarginContainer/VBoxContainer/BackButton")
 
 const PROMPT_DELAY_SECONDS := 0.6
 const FEEDBACK_DURATION_SECONDS := 1.2
+const METRONOME_MINIMUM_INTERVAL := 0.1
+const METRONOME_SAMPLE_RATE := 44100.0
+const METRONOME_CLICK_DURATION := 0.05
+const METRONOME_CLICK_FREQUENCY := 1000.0
+const METRONOME_CLICK_VOLUME := 0.35
 
 var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
@@ -25,6 +35,8 @@ var _debug_service_status := "unknown"
 var _debug_mic_status := "stopped"
 var _debug_last_transcript := ""
 var _debug_expected_kana := ""
+var _metronome_running := false
+var _metronome_playback: AudioStreamGeneratorPlayback
 
 func _ready() -> void:
 	if kana_label == null and has_node("KanaLabel"):
@@ -41,8 +53,26 @@ func _ready() -> void:
 		animation_player.animation_finished.connect(_on_animation_finished)
 	if back_button and not back_button.pressed.is_connected(_on_back_pressed):
 		back_button.pressed.connect(_on_back_pressed)
+	if metronome_player == null and has_node("MetronomePlayer"):
+		metronome_player = $MetronomePlayer
+	if metronome_timer == null and has_node("MetronomeTimer"):
+		metronome_timer = $MetronomeTimer
+	if metronome_timer and not metronome_timer.timeout.is_connected(_on_metronome_timeout):
+		metronome_timer.timeout.connect(_on_metronome_timeout)
+	if metronome_toggle == null and has_node("MarginContainer/VBoxContainer/MetronomeControls/MetronomeToggle"):
+		metronome_toggle = $MarginContainer/VBoxContainer/MetronomeControls/MetronomeToggle
+	if metronome_toggle and not metronome_toggle.toggled.is_connected(_on_metronome_toggled):
+		metronome_toggle.toggled.connect(_on_metronome_toggled)
+	if bpm_slider == null and has_node("MarginContainer/VBoxContainer/MetronomeControls/BpmSlider"):
+		bpm_slider = $MarginContainer/VBoxContainer/MetronomeControls/BpmSlider
+	if bpm_slider and not bpm_slider.value_changed.is_connected(_on_bpm_changed):
+		bpm_slider.value_changed.connect(_on_bpm_changed)
+	if bpm_value_label == null and has_node("MarginContainer/VBoxContainer/MetronomeControls/BpmValueLabel"):
+		bpm_value_label = $MarginContainer/VBoxContainer/MetronomeControls/BpmValueLabel
 
 	_update_debug_label()
+	_update_bpm_display(bpm_slider.value if bpm_slider else 120.0)
+	_update_metronome_interval()
 
 	_ensure_fsm()
 	_ensure_speech_nodes()
@@ -206,6 +236,57 @@ func _set_debug_expected_kana(kana: String) -> void:
 	_debug_expected_kana = kana
 	_update_debug_label()
 
+func _update_bpm_display(bpm_value: float) -> void:
+	if bpm_value_label:
+		bpm_value_label.text = str(int(round(bpm_value)))
+
+func _update_metronome_interval() -> void:
+	if bpm_slider == null or metronome_timer == null:
+		return
+	var bpm := max(1.0, bpm_slider.value)
+	var interval := max(METRONOME_MINIMUM_INTERVAL, 60.0 / bpm)
+	metronome_timer.wait_time = interval
+	if _metronome_running:
+		metronome_timer.start()
+
+func _set_metronome_running(should_run: bool) -> void:
+	_metronome_running = should_run
+	if metronome_toggle:
+		metronome_toggle.text = "Stop Metronome" if should_run else "Start Metronome"
+	if metronome_timer == null:
+		return
+	if should_run:
+		_ensure_metronome_stream()
+		metronome_timer.start()
+		_play_metronome_click()
+	else:
+		metronome_timer.stop()
+
+func _ensure_metronome_stream() -> void:
+	if metronome_player == null:
+		return
+	if metronome_player.stream == null:
+		var generator := AudioStreamGenerator.new()
+		generator.mix_rate = METRONOME_SAMPLE_RATE
+		generator.buffer_length = 0.2
+		metronome_player.stream = generator
+	if not metronome_player.playing:
+		metronome_player.play()
+	_metronome_playback = metronome_player.get_stream_playback()
+
+func _play_metronome_click() -> void:
+	if metronome_player == null:
+		return
+	_ensure_metronome_stream()
+	if _metronome_playback == null:
+		return
+	var sample_count := int(METRONOME_SAMPLE_RATE * METRONOME_CLICK_DURATION)
+	for index in range(sample_count):
+		var t := float(index) / METRONOME_SAMPLE_RATE
+		var envelope := exp(-t * 60.0)
+		var sample := sin(TAU * METRONOME_CLICK_FREQUENCY * t) * METRONOME_CLICK_VOLUME * envelope
+		_metronome_playback.push_frame(Vector2(sample, sample))
+
 func _format_transcript(value: Variant) -> String:
 	var transcript := str(value).strip_edges()
 	if transcript.is_empty():
@@ -340,6 +421,16 @@ func _on_vosk_unavailable(_reason: String) -> void:
 func _on_vosk_service_started(_pid: int, _path: String) -> void:
 	_set_debug_service_status("ready")
 	_set_status_text("Speech service ready")
+
+func _on_metronome_toggled(toggled_on: bool) -> void:
+	_set_metronome_running(toggled_on)
+
+func _on_bpm_changed(value: float) -> void:
+	_update_bpm_display(value)
+	_update_metronome_interval()
+
+func _on_metronome_timeout() -> void:
+	_play_metronome_click()
 
 func _stop_mic_streaming() -> void:
 	if mic_streamer:
