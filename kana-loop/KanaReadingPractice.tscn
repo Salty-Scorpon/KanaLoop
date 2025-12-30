@@ -15,6 +15,7 @@ status_label = NodePath("StatusLabel")
 transcript_label = NodePath("TranscriptLabel")
 debug_label = NodePath("DebugSpeechLabel")
 animation_player = NodePath("AnimationPlayer")
+mic_level_bar = NodePath("MicLevelBar")
 
 [node name="GlowRect" type="ColorRect" parent="."]
 anchor_left = 0.5
@@ -60,6 +61,21 @@ horizontal_alignment = 1
 vertical_alignment = 1
 text = "Speak now"
 theme_override_font_sizes/font_size = 36
+
+[node name="MicLevelBar" type="ProgressBar" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = 98.0
+offset_right = 160.0
+offset_bottom = 112.0
+grow_horizontal = 2
+grow_vertical = 2
+min_value = 0.0
+max_value = 1.0
+value = 0.0
 
 [node name="TranscriptLabel" type="Label" parent="."]
 anchor_left = 0.5
