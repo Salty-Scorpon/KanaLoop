@@ -41,6 +41,7 @@ var _debug_expected_kana := ""
 var _debug_last_grammar := ""
 var _debug_grammar_status := "idle"
 var _debug_last_error := ""
+var _last_grammar_ack_error := ""
 var _metronome_running := false
 var _metronome_playback: AudioStreamGeneratorPlayback
 var _mic_level_value := 0.0
@@ -402,7 +403,10 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 
 func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
 	if not await _send_grammar_with_timeout(ws_client, grammar):
-		_set_status_text("Speech service unavailable")
+		if not _last_grammar_ack_error.is_empty():
+			_set_status_text("Grammar error: %s" % _last_grammar_ack_error)
+		else:
+			_set_status_text("Speech service unavailable")
 		_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
 		return
 	if fsm == null or fsm.get_state() != LessonFSM.LessonState.LISTENING:
@@ -428,6 +432,7 @@ func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[S
 		return true
 	var grammar_text := JSON.stringify(grammar)
 	var send_timestamp := Time.get_datetime_string_from_system()
+	_last_grammar_ack_error = ""
 	_set_debug_last_grammar(grammar_text)
 	_set_debug_grammar_status("sending at %s (timeout %.1fs)" % [send_timestamp, GRAMMAR_ACK_TIMEOUT_SECONDS])
 	print("KanaReadingPractice: sending grammar at %s (timeout %.1fs): %s" % [
@@ -436,23 +441,33 @@ func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[S
 		grammar_text,
 	])
 	if not ws_client.send_grammar(grammar):
+		_last_grammar_ack_error = "Failed to send grammar"
+		_set_debug_last_error("Grammar error: %s" % _last_grammar_ack_error)
 		_set_debug_grammar_status("send failed at %s" % send_timestamp)
 		return false
 	var acked := false
 	var acked_received := false
-	var handler := func(success: bool) -> void:
+	var handler := func(success: bool, error: String, _grammar: Array) -> void:
 		acked = success
 		acked_received = true
+		if not success:
+			var message := error.strip_edges()
+			if message.is_empty():
+				message = "Unknown grammar error"
+			_last_grammar_ack_error = message
+			_set_debug_last_error("Grammar error: %s" % message)
 		var ack_timestamp := Time.get_datetime_string_from_system()
 		_set_debug_grammar_status("ack %s at %s" % ["ok" if success else "failed", ack_timestamp])
-	ws_client.grammar_acknowledged.connect(handler, CONNECT_ONE_SHOT)
+	ws_client.grammar_acknowledged_detail.connect(handler, CONNECT_ONE_SHOT)
 	var timer := get_tree().create_timer(GRAMMAR_ACK_TIMEOUT_SECONDS)
 	while timer.time_left > 0.0 and not acked_received:
 		await get_tree().process_frame
-	if not acked_received and ws_client.grammar_acknowledged.is_connected(handler):
-		ws_client.grammar_acknowledged.disconnect(handler)
+	if not acked_received and ws_client.grammar_acknowledged_detail.is_connected(handler):
+		ws_client.grammar_acknowledged_detail.disconnect(handler)
 	if not acked_received:
 		var timeout_timestamp := Time.get_datetime_string_from_system()
+		_last_grammar_ack_error = "Grammar acknowledgment timed out"
+		_set_debug_last_error("Grammar error: %s" % _last_grammar_ack_error)
 		_set_debug_grammar_status("timeout at %s" % timeout_timestamp)
 		print("KanaReadingPractice: grammar ack timeout at %s (size %d, timeout %.1fs): %s" % [
 			timeout_timestamp,

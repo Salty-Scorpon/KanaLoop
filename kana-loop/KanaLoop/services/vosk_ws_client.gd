@@ -5,6 +5,7 @@ signal on_partial(text: String)
 signal on_final(text: String)
 signal on_error(message: String)
 signal grammar_acknowledged(success: bool)
+signal grammar_acknowledged_detail(ok: bool, error: String, grammar: Array)
 
 const DEFAULT_HOST := "localhost"
 const DEFAULT_PORT := 2700
@@ -132,7 +133,13 @@ func _handle_typed_payload(payload: Dictionary) -> void:
 		return
 	if payload_type == "grammar_ack":
 		var ok := bool(payload.get("ok", false))
+		var error_text := str(payload.get("error", ""))
+		var grammar_payload: Array = []
+		var raw_grammar: Variant = payload.get("grammar", [])
+		if typeof(raw_grammar) == TYPE_ARRAY:
+			grammar_payload = Array(raw_grammar, TYPE_STRING, "", null)
 		grammar_acknowledged.emit(ok)
+		grammar_acknowledged_detail.emit(ok, error_text, grammar_payload)
 		return
 	on_error.emit("Unhandled payload type: %s" % payload_type)
 
