@@ -28,6 +28,7 @@ const METRONOME_CLICK_DURATION := 0.05
 const METRONOME_CLICK_FREQUENCY := 1000.0
 const METRONOME_CLICK_VOLUME := 0.35
 const VOSK_READY_TIMEOUT_SECONDS := 3.0
+const WS_CONNECT_TIMEOUT_SECONDS := 3.0
 const GRAMMAR_ACK_TIMEOUT_SECONDS := 2.0
 const MICROPHONE_PERMISSION_ANDROID := "android.permission.RECORD_AUDIO"
 const MICROPHONE_PERMISSION_IOS := "microphone"
@@ -143,6 +144,10 @@ func _ensure_ws_error_handler() -> void:
 		return
 	if not speech_controller.ws_client.on_error.is_connected(_on_ws_error):
 		speech_controller.ws_client.on_error.connect(_on_ws_error)
+	if not speech_controller.ws_client.connected.is_connected(_on_ws_connected):
+		speech_controller.ws_client.connected.connect(_on_ws_connected)
+	if not speech_controller.ws_client.disconnected.is_connected(_on_ws_disconnected):
+		speech_controller.ws_client.disconnected.connect(_on_ws_disconnected)
 
 func _start_lesson_from_selection() -> void:
 	if fsm == null:
@@ -405,6 +410,10 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 		_set_status_text("Speech service unavailable")
 		_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
 		return
+	if not await _wait_for_ws_connected(speech_controller.ws_client):
+		_set_status_text("Speech service unavailable")
+		_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
+		return
 	var grammar := _build_grammar(context)
 	if grammar.is_empty():
 		if not mic_streamer.start_streaming(speech_controller.ws_client):
@@ -416,6 +425,10 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	await _start_listening_with_grammar(speech_controller.ws_client, grammar)
 
 func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
+	if not await _wait_for_ws_connected(ws_client):
+		_set_status_text("Speech service unavailable")
+		_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
+		return
 	if not await _send_grammar_with_timeout(ws_client, grammar):
 		if not _last_grammar_ack_error.is_empty():
 			_set_status_text("Grammar error: %s" % _last_grammar_ack_error)
@@ -440,6 +453,16 @@ func _wait_for_vosk_ready() -> bool:
 	while timer.time_left > 0.0 and not _vosk_service_manager.can_enter_listening():
 		await get_tree().process_frame
 	return _vosk_service_manager.can_enter_listening()
+
+func _wait_for_ws_connected(ws_client: VoskWebSocketClient) -> bool:
+	if ws_client == null:
+		return false
+	if ws_client.is_open():
+		return true
+	var timer := get_tree().create_timer(WS_CONNECT_TIMEOUT_SECONDS)
+	while timer.time_left > 0.0 and not ws_client.is_open():
+		await get_tree().process_frame
+	return ws_client.is_open()
 
 func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[String]) -> bool:
 	if grammar.is_empty():
@@ -606,6 +629,15 @@ func _on_vosk_service_started(_pid: int, _path: String) -> void:
 func _on_ws_error(message: String) -> void:
 	_set_debug_last_error(message)
 	_set_debug_service_status("error")
+
+func _on_ws_connected() -> void:
+	_set_debug_service_status("connected")
+
+func _on_ws_disconnected(_code: int, _reason: String) -> void:
+	_set_debug_service_status("disconnected")
+	if fsm and fsm.get_state() == LessonFSM.LessonState.LISTENING:
+		_set_status_text("Speech service disconnected")
+	_stop_mic_streaming()
 
 func _on_metronome_toggled(toggled_on: bool) -> void:
 	_set_metronome_running(toggled_on)
