@@ -29,6 +29,9 @@ const METRONOME_CLICK_FREQUENCY := 1000.0
 const METRONOME_CLICK_VOLUME := 0.35
 const VOSK_READY_TIMEOUT_SECONDS := 3.0
 const GRAMMAR_ACK_TIMEOUT_SECONDS := 2.0
+const MICROPHONE_PERMISSION_ANDROID := "android.permission.RECORD_AUDIO"
+const MICROPHONE_PERMISSION_IOS := "microphone"
+const MICROPHONE_PERMISSION_WEB := "microphone"
 
 var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
@@ -105,6 +108,7 @@ func _ready() -> void:
 
 	_start_lesson_from_selection()
 	_update_mic_level_bar(0.0, true)
+	_request_microphone_permission()
 
 func _ensure_fsm() -> void:
 	if fsm != null:
@@ -391,6 +395,10 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	if not should_listen:
 		_stop_mic_streaming()
 		return
+	if not _ensure_microphone_permission():
+		_set_debug_mic_status("permission denied")
+		_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
+		return
 	if speech_controller == null or speech_controller.ws_client == null:
 		return
 	if not await _wait_for_vosk_ready():
@@ -550,6 +558,36 @@ func _handle_error(error_state: LessonFSM.LessonState) -> void:
 		return
 	_stop_mic_streaming()
 	fsm.set_error(error_state)
+
+func _get_microphone_permission_id() -> String:
+	if OS.has_feature("android"):
+		return MICROPHONE_PERMISSION_ANDROID
+	if OS.has_feature("ios"):
+		return MICROPHONE_PERMISSION_IOS
+	if OS.has_feature("web"):
+		return MICROPHONE_PERMISSION_WEB
+	return ""
+
+func _request_microphone_permission() -> void:
+	var permission_id := _get_microphone_permission_id()
+	if permission_id.is_empty():
+		return
+	if OS.is_permission_granted(permission_id):
+		return
+	OS.request_permission(permission_id)
+
+func _ensure_microphone_permission() -> bool:
+	var permission_id := _get_microphone_permission_id()
+	if permission_id.is_empty():
+		return true
+	if OS.is_permission_granted(permission_id):
+		return true
+	OS.request_permission(permission_id)
+	if OS.is_permission_granted(permission_id):
+		return true
+	_set_status_text("Microphone permission denied")
+	_set_debug_last_error("Microphone permission denied")
+	return false
 
 func _on_mic_error(error_code: int, _message: String) -> void:
 	if fsm == null:
