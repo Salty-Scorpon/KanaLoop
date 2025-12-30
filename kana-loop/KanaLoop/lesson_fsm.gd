@@ -13,8 +13,7 @@ enum LessonState {
 	FEEDBACK,
 	END,
 	ERROR_NO_MIC,
-	ERROR_VOSK_UNAVAILABLE,
-	ERROR_TIMEOUT
+	ERROR_VOSK_UNAVAILABLE
 }
 
 var state: LessonState = LessonState.IDLE
@@ -119,8 +118,7 @@ func reset() -> void:
 
 func set_error(error_state: LessonState, message: String = "") -> void:
 	if error_state != LessonState.ERROR_NO_MIC \
-			and error_state != LessonState.ERROR_VOSK_UNAVAILABLE \
-			and error_state != LessonState.ERROR_TIMEOUT:
+			and error_state != LessonState.ERROR_VOSK_UNAVAILABLE:
 		return
 	last_error_message = message
 	_transition_to(error_state, _build_context())
