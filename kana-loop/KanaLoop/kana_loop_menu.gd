@@ -79,6 +79,7 @@ extends Control
 
 @onready var volume_slider: HSlider = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VolumeRow/VolumeSlider
 @onready var voice_selector: OptionButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/VoiceRow/VoiceSelector
+@onready var mic_device_selector: OptionButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/InputDeviceRow/MicDeviceSelector
 
 var selected_kana: Array[String] = []
 
@@ -123,6 +124,9 @@ func _ready() -> void:
 	voice_selector.select(selected_index)
 	_on_voice_selected(selected_index)
 
+	mic_device_selector.item_selected.connect(_on_mic_device_selected)
+	_refresh_mic_devices()
+
 	_apply_custom_mix_state(custom_mix_toggle.button_pressed)
 	_update_kana_selection()
 	_apply_highlight_color(highlight_picker.color)
@@ -134,6 +138,7 @@ func _show_options() -> void:
 	main_menu.visible = false
 	options_menu.visible = true
 	practice_container.visible = false
+	_refresh_mic_devices()
 
 func _show_main() -> void:
 	_clear_practice_scene()
@@ -270,6 +275,37 @@ func _on_volume_changed(value: float) -> void:
 func _on_voice_selected(index: int) -> void:
 	var voice := voice_selector.get_item_text(index)
 	KanaState.set_selected_voice(voice)
+
+func _refresh_mic_devices() -> void:
+	mic_device_selector.clear()
+	mic_device_selector.add_item("System Default")
+
+	var devices := AudioServer.get_input_device_list()
+	for device in devices:
+		mic_device_selector.add_item(device)
+
+	var selected_device := KanaState.get_selected_input_device()
+	var selected_index := 0
+	if not selected_device.is_empty():
+		for index in range(1, mic_device_selector.item_count):
+			if mic_device_selector.get_item_text(index) == selected_device:
+				selected_index = index
+				break
+	mic_device_selector.select(selected_index)
+	_apply_mic_device_selection(selected_index)
+
+func _on_mic_device_selected(index: int) -> void:
+	_apply_mic_device_selection(index)
+
+func _apply_mic_device_selection(index: int) -> void:
+	if index == 0:
+		AudioServer.input_device = ""
+		KanaState.set_selected_input_device("")
+		return
+
+	var device := mic_device_selector.get_item_text(index)
+	AudioServer.input_device = device
+	KanaState.set_selected_input_device(device)
 
 func _on_practice_visual_delay() -> void:
 	_open_practice_scene(VISUAL_DELAY_SCENE)

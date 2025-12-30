@@ -2,6 +2,7 @@ extends Node
 
 var selected_kana: Array[String] = []
 var selected_voice: String = ""
+var selected_input_device: String = ""
 var highlight_color: Color = Color(0.85, 0.2, 0.2, 1)
 
 const DEFAULT_KANA: Array[String] = ["あ", "い", "う", "え", "お"]
@@ -26,6 +27,12 @@ func set_selected_voice(voice: String) -> void:
 		selected_voice = KanaAudio.DEFAULT_VOICE
 		return
 	selected_voice = voice
+
+func get_selected_input_device() -> String:
+	return selected_input_device
+
+func set_selected_input_device(device: String) -> void:
+	selected_input_device = device
 
 func get_highlight_color() -> Color:
 	return highlight_color
