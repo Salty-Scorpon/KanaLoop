@@ -11,6 +11,7 @@ const VOSK_SAMPLE_FORMAT := "16kHz mono PCM16LE"
 @export var silence_threshold := 0.01
 @export var min_speech_seconds := 0.3
 @export var silence_timeout_seconds := 0.6
+@export var stop_on_silence := false
 
 var _ws_client: VoskWebSocketClient
 var _mic_player: AudioStreamPlayer
@@ -186,7 +187,7 @@ func _update_silence_detector(samples: PackedFloat32Array) -> void:
 		_speech_seconds += duration
 		_silence_seconds = 0.0
 		return
-	if _has_speech and _speech_seconds >= min_speech_seconds:
+	if _has_speech and _speech_seconds >= min_speech_seconds and stop_on_silence:
 		_silence_seconds += duration
 		if _silence_seconds >= silence_timeout_seconds:
 			_request_final()
