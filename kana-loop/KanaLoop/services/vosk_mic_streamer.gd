@@ -50,12 +50,16 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 		set_process(false)
 		return false
 	_apply_selected_input_device()
-	if not _validate_selected_device_active():
+	_log_capture_configuration()
+	if not _setup_microphone_player():
 		_ws_client = null
 		set_process(false)
 		return false
-	_log_capture_configuration()
-	if not _setup_microphone_player():
+	if not _validate_selected_device_active():
+		if _mic_player:
+			_mic_player.stop()
+			_mic_player.queue_free()
+			_mic_player = null
 		_ws_client = null
 		set_process(false)
 		return false
@@ -178,8 +182,10 @@ func _validate_selected_device_active() -> bool:
 		_report_no_mic("Selected microphone is unavailable.")
 		return false
 	if AudioServer.input_device != selected_device:
-		_report_no_mic("Selected microphone is not active.")
-		return false
+		push_warning("Selected microphone is not active yet: %s (current=%s)" % [
+			selected_device,
+			AudioServer.input_device,
+		])
 	return true
 
 func _log_capture_configuration() -> void:
