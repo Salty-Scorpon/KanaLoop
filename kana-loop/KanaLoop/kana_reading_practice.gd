@@ -243,8 +243,9 @@ func _update_bpm_display(bpm_value: float) -> void:
 func _update_metronome_interval() -> void:
 	if bpm_slider == null or metronome_timer == null:
 		return
-	var bpm := max(1.0, bpm_slider.value)
-	var interval := max(METRONOME_MINIMUM_INTERVAL, 60.0 / bpm)
+	var bpm: float = float(bpm_slider.value)
+	bpm = maxf(1.0, bpm)
+	var interval: float = maxf(METRONOME_MINIMUM_INTERVAL, 60.0 / bpm)
 	metronome_timer.wait_time = interval
 	if _metronome_running:
 		metronome_timer.start()
