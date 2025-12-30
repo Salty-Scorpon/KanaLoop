@@ -1,5 +1,7 @@
 extends Control
 
+signal back_requested
+
 @export var fsm: LessonFSM
 @export var speech_controller: LessonSpeechController
 @export var mic_streamer: VoskMicStreamer
@@ -9,6 +11,8 @@ extends Control
 @export var debug_label: RichTextLabel
 @export var animation_player: AnimationPlayer
 @export var debug_speech := false
+
+@onready var back_button: Button = get_node_or_null("MarginContainer/VBoxContainer/BackButton")
 
 const PROMPT_DELAY_SECONDS := 0.6
 const FEEDBACK_DURATION_SECONDS := 1.2
@@ -35,6 +39,8 @@ func _ready() -> void:
 		animation_player = $AnimationPlayer
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
 		animation_player.animation_finished.connect(_on_animation_finished)
+	if back_button and not back_button.pressed.is_connected(_on_back_pressed):
+		back_button.pressed.connect(_on_back_pressed)
 
 	_update_debug_label()
 
@@ -252,8 +258,7 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	if mic_streamer == null:
 		return
 	if not should_listen:
-		mic_streamer.stop_streaming()
-		_set_debug_mic_status("stopped")
+		_stop_mic_streaming()
 		return
 	if speech_controller == null or speech_controller.ws_client == null:
 		return
@@ -319,9 +324,7 @@ func _on_animation_finished(name: StringName) -> void:
 func _handle_error(error_state: LessonFSM.LessonState) -> void:
 	if fsm == null:
 		return
-	if mic_streamer:
-		mic_streamer.stop_streaming()
-		_set_debug_mic_status("stopped")
+	_stop_mic_streaming()
 	fsm.set_error(error_state)
 
 func _on_mic_error(error_code: int, _message: String) -> void:
@@ -337,3 +340,12 @@ func _on_vosk_unavailable(_reason: String) -> void:
 func _on_vosk_service_started(_pid: int, _path: String) -> void:
 	_set_debug_service_status("ready")
 	_set_status_text("Speech service ready")
+
+func _stop_mic_streaming() -> void:
+	if mic_streamer:
+		mic_streamer.stop_streaming()
+		_set_debug_mic_status("stopped")
+
+func _on_back_pressed() -> void:
+	_stop_mic_streaming()
+	back_requested.emit()
