@@ -460,9 +460,9 @@ func _set_mic_level_listening(is_listening: bool) -> void:
 func _on_mic_level_changed(level: float, active: bool) -> void:
 	if not _mic_level_listening:
 		return
-	var threshold := maxf(0.0001, mic_streamer.silence_threshold if mic_streamer else 0.01)
-	var normalized := clamp(level / threshold, 0.0, 1.0)
-	var target := normalized if active else 0.0
+	var threshold: float = maxf(0.0001, float(mic_streamer.silence_threshold) if mic_streamer else 0.01)
+	var normalized: float = clampf(level / threshold, 0.0, 1.0)
+	var target: float = normalized if active else 0.0
 	_mic_level_value = lerp(_mic_level_value, target, 0.35)
 	_update_mic_level_bar(_mic_level_value, false)
 	if mic_level_bar:
