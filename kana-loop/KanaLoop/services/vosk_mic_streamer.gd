@@ -13,6 +13,7 @@ const VOSK_SAMPLE_FORMAT := "16kHz mono PCM16LE"
 @export var min_speech_seconds := 0.3
 @export var silence_timeout_seconds := 0.6
 @export var stop_on_silence := false
+@export var no_audio_timeout_seconds := 3.0
 
 var _ws_client: VoskWebSocketClient
 var _mic_player: AudioStreamPlayer
@@ -26,6 +27,7 @@ var _silence_seconds := 0.0
 var _has_speech := false
 var _mic_error_reported := false
 var _packet_count := 0
+var _no_audio_seconds := 0.0
 
 func _ready() -> void:
 	set_process(false)
@@ -35,12 +37,22 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 	_input_sample_rate = AudioServer.get_mix_rate()
 	_mic_error_reported = false
 	_packet_count = 0
+	_no_audio_seconds = 0.0
 	print("VoskMicStreamer: starting microphone capture.")
+	if not _validate_input_devices():
+		_ws_client = null
+		set_process(false)
+		return false
 	if not _ensure_capture_bus():
 		_ws_client = null
 		set_process(false)
 		return false
 	_apply_selected_input_device()
+	if not _validate_selected_device_active():
+		_ws_client = null
+		set_process(false)
+		return false
+	_log_capture_configuration()
 	if not _setup_microphone_player():
 		_ws_client = null
 		set_process(false)
@@ -65,12 +77,14 @@ func stop_streaming() -> void:
 	_ws_client = null
 	print("VoskMicStreamer: microphone capture stopped.")
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not _capture_effect or not _ws_client:
 		return
 	var frames_available := _capture_effect.get_frames_available()
 	if frames_available <= 0:
+		_track_no_audio(delta)
 		return
+	_no_audio_seconds = 0.0
 	var frames := _capture_effect.get_buffer(frames_available)
 	if frames.is_empty():
 		return
@@ -135,6 +149,36 @@ func _apply_selected_input_device() -> void:
 		KanaState.set_selected_input_device("")
 		return
 	AudioServer.input_device = selected_device
+
+func _validate_input_devices() -> bool:
+	var devices := AudioServer.get_input_device_list()
+	if devices.is_empty():
+		_report_no_mic("No microphone devices detected.")
+		return false
+	return true
+
+func _validate_selected_device_active() -> bool:
+	var selected_device := KanaState.get_selected_input_device()
+	if selected_device.is_empty():
+		return true
+	var devices := AudioServer.get_input_device_list()
+	if not devices.has(selected_device):
+		_report_no_mic("Selected microphone is unavailable.")
+		return false
+	if AudioServer.input_device != selected_device:
+		_report_no_mic("Selected microphone is not active.")
+		return false
+	return true
+
+func _log_capture_configuration() -> void:
+	var selected_device := AudioServer.input_device
+	var device_label := selected_device if not selected_device.is_empty() else "System Default"
+	var mix_rate := AudioServer.get_mix_rate()
+	var capture_attached := _capture_effect != null
+	print(
+		"VoskMicStreamer: device=%s mix_rate=%.1f capture_bus=%d capture_effect_attached=%s"
+		% [device_label, mix_rate, _capture_bus_index, str(capture_attached)]
+	)
 
 func _find_bus_index(bus_name: String) -> int:
 	for index in range(AudioServer.get_bus_count()):
@@ -226,6 +270,15 @@ func _reset_detection_state() -> void:
 	_speech_seconds = 0.0
 	_silence_seconds = 0.0
 	_has_speech = false
+	_no_audio_seconds = 0.0
+
+func _track_no_audio(delta: float) -> void:
+	if no_audio_timeout_seconds <= 0.0:
+		return
+	_no_audio_seconds += delta
+	if _no_audio_seconds >= no_audio_timeout_seconds:
+		_report_no_mic("No audio captured from the microphone.")
+		stop_streaming()
 
 func _report_no_mic(message: String) -> void:
 	if _mic_error_reported:
