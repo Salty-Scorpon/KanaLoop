@@ -3,6 +3,7 @@ extends Node
 
 signal speech_finished
 signal error_detected(error_code: int, message: String)
+signal mic_level_changed(level: float, active: bool)
 
 const VOSK_SAMPLE_FORMAT := "16kHz mono PCM16LE"
 
@@ -181,8 +182,10 @@ func _update_silence_detector(samples: PackedFloat32Array) -> void:
 	if samples.is_empty() or _input_sample_rate <= 0:
 		return
 	var rms := _calculate_rms(samples)
+	var active := rms >= silence_threshold
+	mic_level_changed.emit(rms, active)
 	var duration := float(samples.size()) / float(_input_sample_rate)
-	if rms >= silence_threshold:
+	if active:
 		_has_speech = true
 		_speech_seconds += duration
 		_silence_seconds = 0.0

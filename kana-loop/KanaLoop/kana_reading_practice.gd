@@ -10,6 +10,7 @@ signal back_requested
 @export var transcript_label: Label
 @export var debug_label: RichTextLabel
 @export var animation_player: AnimationPlayer
+@export var mic_level_bar: ProgressBar
 @export var debug_speech := false
 @export var metronome_player: AudioStreamPlayer
 @export var metronome_toggle: Button
@@ -37,6 +38,8 @@ var _debug_last_transcript := ""
 var _debug_expected_kana := ""
 var _metronome_running := false
 var _metronome_playback: AudioStreamGeneratorPlayback
+var _mic_level_value := 0.0
+var _mic_level_listening := false
 
 func _ready() -> void:
 	if kana_label == null and has_node("KanaLabel"):
@@ -49,6 +52,8 @@ func _ready() -> void:
 		debug_label = $DebugSpeechLabel
 	if animation_player == null and has_node("AnimationPlayer"):
 		animation_player = $AnimationPlayer
+	if mic_level_bar == null and has_node("MicLevelBar"):
+		mic_level_bar = $MicLevelBar
 	if animation_player and not animation_player.animation_finished.is_connected(_on_animation_finished):
 		animation_player.animation_finished.connect(_on_animation_finished)
 	if back_button and not back_button.pressed.is_connected(_on_back_pressed):
@@ -82,6 +87,8 @@ func _ready() -> void:
 
 	if mic_streamer and not mic_streamer.error_detected.is_connected(_on_mic_error):
 		mic_streamer.error_detected.connect(_on_mic_error)
+	if mic_streamer and not mic_streamer.mic_level_changed.is_connected(_on_mic_level_changed):
+		mic_streamer.mic_level_changed.connect(_on_mic_level_changed)
 
 	_vosk_service_manager = get_node_or_null("/root/VoskServiceAutoload")
 	if _vosk_service_manager and not _vosk_service_manager.unavailable.is_connected(_on_vosk_unavailable):
@@ -90,6 +97,7 @@ func _ready() -> void:
 		_vosk_service_manager.service_started.connect(_on_vosk_service_started)
 
 	_start_lesson_from_selection()
+	_update_mic_level_bar(0.0, true)
 
 func _ensure_fsm() -> void:
 	if fsm != null:
@@ -136,6 +144,7 @@ func _start_lesson_from_selection() -> void:
 func _on_state_entered(state: int, context: Dictionary) -> void:
 	_clear_timers()
 	_set_listening_active(state == LessonFSM.LessonState.LISTENING, context)
+	_set_mic_level_listening(state == LessonFSM.LessonState.LISTENING)
 	match state:
 		LessonFSM.LessonState.PROMPT:
 			_set_kana_from_context(context)
@@ -441,3 +450,27 @@ func _stop_mic_streaming() -> void:
 func _on_back_pressed() -> void:
 	_stop_mic_streaming()
 	back_requested.emit()
+
+func _set_mic_level_listening(is_listening: bool) -> void:
+	_mic_level_listening = is_listening
+	_update_mic_level_bar(0.0, true)
+	if mic_level_bar:
+		mic_level_bar.visible = is_listening
+
+func _on_mic_level_changed(level: float, active: bool) -> void:
+	if not _mic_level_listening:
+		return
+	var threshold := maxf(0.0001, mic_streamer.silence_threshold if mic_streamer else 0.01)
+	var normalized := clamp(level / threshold, 0.0, 1.0)
+	var target := normalized if active else 0.0
+	_mic_level_value = lerp(_mic_level_value, target, 0.35)
+	_update_mic_level_bar(_mic_level_value, false)
+	if mic_level_bar:
+		mic_level_bar.modulate = Color(1.0, 1.0, 1.0, 1.0 if active else 0.4)
+
+func _update_mic_level_bar(value: float, force_reset: bool) -> void:
+	if mic_level_bar == null:
+		return
+	if force_reset:
+		_mic_level_value = 0.0
+	mic_level_bar.value = clamp(value, 0.0, 1.0)
