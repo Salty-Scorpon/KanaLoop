@@ -599,10 +599,10 @@ func _request_microphone_permission() -> void:
 		return
 	if not OS.has_method("is_permission_granted"):
 		return
-	if OS.is_permission_granted(permission_id):
+	if OS.call("is_permission_granted", permission_id):
 		return
 	if OS.has_method("request_permission"):
-		OS.request_permission(permission_id)
+		OS.call("request_permission", permission_id)
 
 func _ensure_microphone_permission() -> bool:
 	var permission_id := _get_microphone_permission_id()
@@ -610,11 +610,11 @@ func _ensure_microphone_permission() -> bool:
 		return true
 	if not OS.has_method("is_permission_granted"):
 		return true
-	if OS.is_permission_granted(permission_id):
+	if OS.call("is_permission_granted", permission_id):
 		return true
 	if OS.has_method("request_permission"):
-		OS.request_permission(permission_id)
-		if OS.is_permission_granted(permission_id):
+		OS.call("request_permission", permission_id)
+		if OS.call("is_permission_granted", permission_id):
 			return true
 	_set_status_text("Microphone permission denied")
 	_set_debug_last_error("Microphone permission denied")
