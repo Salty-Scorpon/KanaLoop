@@ -13,11 +13,8 @@ extends Control
 const PROMPT_DELAY_SECONDS := 0.6
 const FEEDBACK_DURATION_SECONDS := 1.2
 
-@export var listen_timeout_seconds := 6.0
-
 var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
-var _listen_timeout_timer: SceneTreeTimer
 var _vosk_service_manager: VoskServiceManager
 var _active_kana: Array[String] = []
 var _debug_service_status := "unknown"
@@ -115,7 +112,6 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 			_set_status_text("Speak now")
 			_set_transcript_text(_format_transcript(""))
 			_play_animation("IdleGlow")
-			_start_listen_timeout()
 		LessonFSM.LessonState.PROCESSING:
 			var transcript := str(context.get("transcript", ""))
 			print("KanaReadingPractice: processing transcript: %s" % transcript)
@@ -150,11 +146,6 @@ func _on_state_entered(state: int, context: Dictionary) -> void:
 			var service_transcript := str(context.get("transcript", ""))
 			_set_debug_last_transcript(service_transcript)
 			_set_transcript_text(_format_transcript(service_transcript))
-		LessonFSM.LessonState.ERROR_TIMEOUT:
-			_set_status_text("Timed out — try again")
-			var timeout_transcript := str(context.get("transcript", ""))
-			_set_debug_last_transcript(timeout_transcript)
-			_set_transcript_text(_format_transcript(timeout_transcript))
 
 func _set_kana_from_context(context: Dictionary) -> void:
 	if kana_label == null:
@@ -256,7 +247,6 @@ func _start_feedback_delay() -> void:
 func _clear_timers() -> void:
 	_prompt_timer = null
 	_feedback_timer = null
-	_listen_timeout_timer = null
 
 func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 	if mic_streamer == null:
@@ -325,17 +315,6 @@ func _on_animation_finished(name: StringName) -> void:
 		return
 	if name == "feedback_correct" or name == "feedback_incorrect":
 		_play_animation("IdleGlow")
-
-func _start_listen_timeout() -> void:
-	if listen_timeout_seconds <= 0.0:
-		return
-	var timer := get_tree().create_timer(listen_timeout_seconds)
-	_listen_timeout_timer = timer
-	await timer.timeout
-	if _listen_timeout_timer != timer:
-		return
-	if fsm and fsm.get_state() == LessonFSM.LessonState.LISTENING:
-		_handle_error(LessonFSM.LessonState.ERROR_TIMEOUT)
 
 func _handle_error(error_state: LessonFSM.LessonState) -> void:
 	if fsm == null:
