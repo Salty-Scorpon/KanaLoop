@@ -27,6 +27,8 @@ const METRONOME_SAMPLE_RATE := 44100.0
 const METRONOME_CLICK_DURATION := 0.05
 const METRONOME_CLICK_FREQUENCY := 1000.0
 const METRONOME_CLICK_VOLUME := 0.35
+const VOSK_READY_TIMEOUT_SECONDS := 3.0
+const GRAMMAR_ACK_TIMEOUT_SECONDS := 2.0
 
 var _prompt_timer: SceneTreeTimer
 var _feedback_timer: SceneTreeTimer
@@ -353,6 +355,10 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 		return
 	if speech_controller == null or speech_controller.ws_client == null:
 		return
+	if not await _wait_for_vosk_ready():
+		_set_status_text("Speech service unavailable")
+		_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
+		return
 	var grammar := _build_grammar(context)
 	if grammar.is_empty():
 		if not mic_streamer.start_streaming(speech_controller.ws_client):
@@ -361,10 +367,12 @@ func _set_listening_active(should_listen: bool, context: Dictionary) -> void:
 		else:
 			_set_debug_mic_status("streaming")
 		return
-	_start_listening_with_grammar(speech_controller.ws_client, grammar)
+	await _start_listening_with_grammar(speech_controller.ws_client, grammar)
 
 func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Array[String]) -> void:
-	if not ws_client.send_grammar(grammar):
+	if not await _send_grammar_with_timeout(ws_client, grammar):
+		_set_status_text("Speech service unavailable")
+		_handle_error(LessonFSM.LessonState.ERROR_VOSK_UNAVAILABLE)
 		return
 	if fsm == null or fsm.get_state() != LessonFSM.LessonState.LISTENING:
 		return
@@ -373,6 +381,34 @@ func _start_listening_with_grammar(ws_client: VoskWebSocketClient, grammar: Arra
 		_handle_error(LessonFSM.LessonState.ERROR_NO_MIC)
 		return
 	_set_debug_mic_status("streaming")
+
+func _wait_for_vosk_ready() -> bool:
+	if _vosk_service_manager == null:
+		return true
+	if _vosk_service_manager.can_enter_listening():
+		return true
+	var timer := get_tree().create_timer(VOSK_READY_TIMEOUT_SECONDS)
+	while timer.time_left > 0.0 and not _vosk_service_manager.can_enter_listening():
+		await get_tree().process_frame
+	return _vosk_service_manager.can_enter_listening()
+
+func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[String]) -> bool:
+	if grammar.is_empty():
+		return true
+	if not ws_client.send_grammar(grammar):
+		return false
+	var acked := false
+	var acked_received := false
+	var handler := func(success: bool) -> void:
+		acked = success
+		acked_received = true
+	ws_client.grammar_acknowledged.connect(handler, CONNECT_ONE_SHOT)
+	var timer := get_tree().create_timer(GRAMMAR_ACK_TIMEOUT_SECONDS)
+	while timer.time_left > 0.0 and not acked_received:
+		await get_tree().process_frame
+	if not acked_received and ws_client.grammar_acknowledged.is_connected(handler):
+		ws_client.grammar_acknowledged.disconnect(handler)
+	return acked_received and acked
 
 func _play_animation(name: String) -> void:
 	if animation_player == null:
