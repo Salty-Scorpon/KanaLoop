@@ -43,6 +43,17 @@ SAMPLE_RATE = 16000
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
+def format_client_identity(websocket) -> str:
+    peer = getattr(websocket, "remote_address", None)
+    if peer:
+        if isinstance(peer, (list, tuple)):
+            if len(peer) >= 2:
+                return f"{peer[0]}:{peer[1]}"
+            return str(peer[0])
+        return str(peer)
+    return "unknown"
+
+
 async def handle_connection(websocket):
     recognizer = make_recognizer()
     async for message in websocket:
@@ -50,10 +61,34 @@ async def handle_connection(websocket):
             try:
                 msg = json.loads(message)
             except json.JSONDecodeError:
+                client = format_client_identity(websocket)
+                logging.warning(
+                    "JSON decode failed from %s: %s", client, message
+                )
                 continue
 
             if msg.get("type") == "set_grammar":
                 grammar = msg.get("grammar", [])
+                if not (
+                    isinstance(grammar, list)
+                    and all(isinstance(item, str) for item in grammar)
+                ):
+                    await websocket.send(
+                        json.dumps(
+                            {
+                                "type": "grammar_ack",
+                                "ok": False,
+                                "error": "grammar must be a list of strings",
+                            }
+                        )
+                    )
+                    continue
+                preview = grammar[:5]
+                logging.info(
+                    "Received grammar with %d entries; preview=%s",
+                    len(grammar),
+                    preview,
+                )
                 recognizer = make_recognizer(grammar)
                 await websocket.send(
                     json.dumps({"type": "grammar_ack", "ok": True, "grammar": grammar})
