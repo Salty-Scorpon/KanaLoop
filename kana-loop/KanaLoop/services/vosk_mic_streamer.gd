@@ -40,6 +40,7 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 		_ws_client = null
 		set_process(false)
 		return false
+	_apply_selected_input_device()
 	if not _setup_microphone_player():
 		_ws_client = null
 		set_process(false)
@@ -122,6 +123,18 @@ func _setup_microphone_player() -> bool:
 	add_child(_mic_player)
 	_mic_player.play()
 	return true
+
+func _apply_selected_input_device() -> void:
+	var selected_device := KanaState.get_selected_input_device()
+	if selected_device.is_empty():
+		AudioServer.input_device = ""
+		return
+	var devices := AudioServer.get_input_device_list()
+	if not devices.has(selected_device):
+		AudioServer.input_device = ""
+		KanaState.set_selected_input_device("")
+		return
+	AudioServer.input_device = selected_device
 
 func _find_bus_index(bus_name: String) -> int:
 	for index in range(AudioServer.get_bus_count()):
