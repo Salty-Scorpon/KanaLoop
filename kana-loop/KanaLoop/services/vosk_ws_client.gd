@@ -6,6 +6,8 @@ signal on_final(text: String)
 signal on_error(message: String)
 signal grammar_acknowledged(success: bool)
 signal grammar_acknowledged_detail(ok: bool, error: String, grammar: Array)
+signal connected
+signal disconnected(code: int, reason: String)
 
 const DEFAULT_HOST := "localhost"
 const DEFAULT_PORT := 2700
@@ -87,6 +89,7 @@ func _process(_delta: float) -> void:
 		if not _connected:
 			_connected = true
 			_reset_reconnect()
+			connected.emit()
 		_read_packets()
 		return
 	if state == WebSocketPeer.STATE_CLOSED:
@@ -166,6 +169,7 @@ func _handle_close() -> void:
 	var close_reason := _peer.get_close_reason()
 	if not _stop_requested:
 		on_error.emit("WebSocket closed: %s (%s)" % [str(close_code), close_reason])
+	disconnected.emit(close_code, close_reason)
 	_peer = null
 	_connected = false
 	if not _stop_requested:
@@ -186,3 +190,6 @@ func _reset_reconnect() -> void:
 
 func _is_open() -> bool:
 	return _peer and _peer.get_ready_state() == WebSocketPeer.STATE_OPEN
+
+func is_open() -> bool:
+	return _is_open()

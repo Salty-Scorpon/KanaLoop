@@ -28,6 +28,7 @@ var _has_speech := false
 var _mic_error_reported := false
 var _packet_count := 0
 var _no_audio_seconds := 0.0
+var _waiting_for_connection := false
 
 func _ready() -> void:
 	set_process(false)
@@ -38,6 +39,7 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 	_mic_error_reported = false
 	_packet_count = 0
 	_no_audio_seconds = 0.0
+	_waiting_for_connection = _ws_client != null and not _ws_client.is_open()
 	print("VoskMicStreamer: starting microphone capture.")
 	if not _validate_input_devices():
 		_ws_client = null
@@ -63,6 +65,8 @@ func start_streaming(ws_client: VoskWebSocketClient) -> bool:
 	return true
 
 func start_listening(ws_client: VoskWebSocketClient, grammar: Array[String]) -> bool:
+	if not await _wait_for_ws_connected(ws_client):
+		return false
 	var acked := await ws_client.send_grammar_and_wait(grammar)
 	if not acked:
 		return false
@@ -79,6 +83,14 @@ func stop_streaming() -> void:
 
 func _process(delta: float) -> void:
 	if not _capture_effect or not _ws_client:
+		return
+	if _waiting_for_connection:
+		if _ws_client.is_open():
+			_waiting_for_connection = false
+		else:
+			return
+	if not _ws_client.is_open():
+		_waiting_for_connection = true
 		return
 	var frames_available := _capture_effect.get_frames_available()
 	if frames_available <= 0:
@@ -286,3 +298,13 @@ func _report_no_mic(message: String) -> void:
 	_mic_error_reported = true
 	push_warning(message)
 	error_detected.emit(LessonFSM.LessonState.ERROR_NO_MIC, message)
+
+func _wait_for_ws_connected(ws_client: VoskWebSocketClient, timeout_seconds: float = 3.0) -> bool:
+	if ws_client == null:
+		return false
+	if ws_client.is_open():
+		return true
+	var timer := get_tree().create_timer(timeout_seconds)
+	while timer.time_left > 0.0 and not ws_client.is_open():
+		await get_tree().process_frame
+	return ws_client.is_open()
