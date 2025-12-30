@@ -482,11 +482,13 @@ func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[S
 		_set_debug_last_error("Grammar error: %s" % _last_grammar_ack_error)
 		_set_debug_grammar_status("send failed at %s" % send_timestamp)
 		return false
-	var acked := false
-	var acked_received := false
+	var ack_state := {
+		"acked": false,
+		"received": false,
+	}
 	var handler := func(success: bool, error: String, _grammar: Array) -> void:
-		acked = success
-		acked_received = true
+		ack_state.acked = success
+		ack_state.received = true
 		if not success:
 			var message := error.strip_edges()
 			if message.is_empty():
@@ -497,11 +499,11 @@ func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[S
 		_set_debug_grammar_status("ack %s at %s" % ["ok" if success else "failed", ack_timestamp])
 	ws_client.grammar_acknowledged_detail.connect(handler, CONNECT_ONE_SHOT)
 	var timer := get_tree().create_timer(GRAMMAR_ACK_TIMEOUT_SECONDS)
-	while timer.time_left > 0.0 and not acked_received:
+	while timer.time_left > 0.0 and not ack_state.received:
 		await get_tree().process_frame
-	if not acked_received and ws_client.grammar_acknowledged_detail.is_connected(handler):
+	if not ack_state.received and ws_client.grammar_acknowledged_detail.is_connected(handler):
 		ws_client.grammar_acknowledged_detail.disconnect(handler)
-	if not acked_received:
+	if not ack_state.received:
 		var timeout_timestamp := Time.get_datetime_string_from_system()
 		_last_grammar_ack_error = "Grammar acknowledgment timed out"
 		_set_debug_last_error("Grammar error: %s" % _last_grammar_ack_error)
@@ -512,13 +514,13 @@ func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[S
 			GRAMMAR_ACK_TIMEOUT_SECONDS,
 			grammar_text,
 		])
-	return acked_received and acked
+	return ack_state.received and ack_state.acked
 
-func _play_animation(name: String) -> void:
+func _play_animation(anim_name: String) -> void:
 	if animation_player == null:
 		return
-	if animation_player.has_animation(name):
-		animation_player.play(name)
+	if animation_player.has_animation(anim_name):
+		animation_player.play(anim_name)
 
 func _build_grammar(context: Dictionary) -> Array[String]:
 	var item: Variant = context.get("item", null)
@@ -568,12 +570,12 @@ func _is_grade_correct(context: Dictionary) -> bool:
 func _feedback_animation_name(is_correct: bool) -> String:
 	return "feedback_correct" if is_correct else "feedback_incorrect"
 
-func _on_animation_finished(name: StringName) -> void:
+func _on_animation_finished(anim_name: StringName) -> void:
 	if fsm == null:
 		return
 	if fsm.get_state() != LessonFSM.LessonState.FEEDBACK:
 		return
-	if name == "feedback_correct" or name == "feedback_incorrect":
+	if anim_name == "feedback_correct" or anim_name == "feedback_incorrect":
 		_play_animation("IdleGlow")
 
 func _handle_error(error_state: LessonFSM.LessonState) -> void:
@@ -595,19 +597,25 @@ func _request_microphone_permission() -> void:
 	var permission_id := _get_microphone_permission_id()
 	if permission_id.is_empty():
 		return
+	if not OS.has_method("is_permission_granted"):
+		return
 	if OS.is_permission_granted(permission_id):
 		return
-	OS.request_permission(permission_id)
+	if OS.has_method("request_permission"):
+		OS.request_permission(permission_id)
 
 func _ensure_microphone_permission() -> bool:
 	var permission_id := _get_microphone_permission_id()
 	if permission_id.is_empty():
 		return true
+	if not OS.has_method("is_permission_granted"):
+		return true
 	if OS.is_permission_granted(permission_id):
 		return true
-	OS.request_permission(permission_id)
-	if OS.is_permission_granted(permission_id):
-		return true
+	if OS.has_method("request_permission"):
+		OS.request_permission(permission_id)
+		if OS.is_permission_granted(permission_id):
+			return true
 	_set_status_text("Microphone permission denied")
 	_set_debug_last_error("Microphone permission denied")
 	return false
