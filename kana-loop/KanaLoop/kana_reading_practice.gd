@@ -38,6 +38,8 @@ var _debug_service_status := "unknown"
 var _debug_mic_status := "stopped"
 var _debug_last_transcript := ""
 var _debug_expected_kana := ""
+var _debug_last_grammar := ""
+var _debug_grammar_status := "idle"
 var _metronome_running := false
 var _metronome_playback: AudioStreamGeneratorPlayback
 var _mic_level_value := 0.0
@@ -223,11 +225,16 @@ func _update_debug_label() -> void:
 	var expected_text := _debug_expected_kana
 	if expected_text.strip_edges().is_empty():
 		expected_text = "—"
+	var grammar_text := _debug_last_grammar
+	if grammar_text.strip_edges().is_empty():
+		grammar_text = "—"
 	debug_label.text = (
 		"Debug speech\n"
 		+ "Service: %s\n" % _debug_service_status
+		+ "Grammar: %s\n" % _debug_grammar_status
 		+ "Mic: %s\n" % _debug_mic_status
 		+ "Expected: %s\n" % expected_text
+		+ "Last grammar: %s\n" % grammar_text
 		+ "Last transcript: %s" % transcript_text
 	)
 
@@ -245,6 +252,14 @@ func _set_debug_last_transcript(transcript: String) -> void:
 
 func _set_debug_expected_kana(kana: String) -> void:
 	_debug_expected_kana = kana
+	_update_debug_label()
+
+func _set_debug_grammar_status(status: String) -> void:
+	_debug_grammar_status = status
+	_update_debug_label()
+
+func _set_debug_last_grammar(grammar_text: String) -> void:
+	_debug_last_grammar = grammar_text
 	_update_debug_label()
 
 func _update_bpm_display(bpm_value: float) -> void:
@@ -395,19 +410,40 @@ func _wait_for_vosk_ready() -> bool:
 func _send_grammar_with_timeout(ws_client: VoskWebSocketClient, grammar: Array[String]) -> bool:
 	if grammar.is_empty():
 		return true
+	var grammar_text := JSON.stringify(grammar)
+	var send_timestamp := Time.get_datetime_string_from_system()
+	_set_debug_last_grammar(grammar_text)
+	_set_debug_grammar_status("sending at %s (timeout %.1fs)" % [send_timestamp, GRAMMAR_ACK_TIMEOUT_SECONDS])
+	print("KanaReadingPractice: sending grammar at %s (timeout %.1fs): %s" % [
+		send_timestamp,
+		GRAMMAR_ACK_TIMEOUT_SECONDS,
+		grammar_text,
+	])
 	if not ws_client.send_grammar(grammar):
+		_set_debug_grammar_status("send failed at %s" % send_timestamp)
 		return false
 	var acked := false
 	var acked_received := false
 	var handler := func(success: bool) -> void:
 		acked = success
 		acked_received = true
+		var ack_timestamp := Time.get_datetime_string_from_system()
+		_set_debug_grammar_status("ack %s at %s" % ["ok" if success else "failed", ack_timestamp])
 	ws_client.grammar_acknowledged.connect(handler, CONNECT_ONE_SHOT)
 	var timer := get_tree().create_timer(GRAMMAR_ACK_TIMEOUT_SECONDS)
 	while timer.time_left > 0.0 and not acked_received:
 		await get_tree().process_frame
 	if not acked_received and ws_client.grammar_acknowledged.is_connected(handler):
 		ws_client.grammar_acknowledged.disconnect(handler)
+	if not acked_received:
+		var timeout_timestamp := Time.get_datetime_string_from_system()
+		_set_debug_grammar_status("timeout at %s" % timeout_timestamp)
+		print("KanaReadingPractice: grammar ack timeout at %s (size %d, timeout %.1fs): %s" % [
+			timeout_timestamp,
+			grammar.size(),
+			GRAMMAR_ACK_TIMEOUT_SECONDS,
+			grammar_text,
+		])
 	return acked_received and acked
 
 func _play_animation(name: String) -> void:
