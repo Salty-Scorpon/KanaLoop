@@ -40,6 +40,7 @@ var _debug_last_transcript := ""
 var _debug_expected_kana := ""
 var _debug_last_grammar := ""
 var _debug_grammar_status := "idle"
+var _debug_grammar_source := "unknown"
 var _debug_last_error := ""
 var _last_grammar_ack_error := ""
 var _metronome_running := false
@@ -244,6 +245,7 @@ func _update_debug_label() -> void:
 		"Debug speech\n"
 		+ "Service: %s\n" % _debug_service_status
 		+ "Grammar: %s\n" % _debug_grammar_status
+		+ "Grammar source: %s\n" % _debug_grammar_source
 		+ "Mic: %s\n" % _debug_mic_status
 		+ "Expected: %s\n" % expected_text
 		+ "Last grammar: %s\n" % grammar_text
@@ -269,6 +271,10 @@ func _set_debug_expected_kana(kana: String) -> void:
 
 func _set_debug_grammar_status(status: String) -> void:
 	_debug_grammar_status = status
+	_update_debug_label()
+
+func _set_debug_grammar_source(source: String) -> void:
+	_debug_grammar_source = source
 	_update_debug_label()
 
 func _set_debug_last_grammar(grammar_text: String) -> void:
@@ -485,17 +491,41 @@ func _play_animation(name: String) -> void:
 
 func _build_grammar(context: Dictionary) -> Array[String]:
 	var item: Variant = context.get("item", null)
+	var grammar: Array[String] = []
+	var source := "empty"
 	if typeof(item) == TYPE_DICTIONARY:
 		var grammar_value: Variant = item.get("grammar", null)
 		if typeof(grammar_value) == TYPE_ARRAY:
-			return Array(grammar_value, TYPE_STRING, "", null)
+			grammar = Array(grammar_value, TYPE_STRING, "", null)
+			source = "context item grammar"
+			_set_debug_grammar_source(source)
+			_set_debug_last_grammar(JSON.stringify(grammar))
+			if debug_speech:
+				print("KanaReadingPractice: grammar built from %s: %s" % [source, grammar])
+			return grammar
 		var kana := str(item.get("kana", "")).strip_edges()
 		if not kana.is_empty():
-			return [kana]
+			grammar = [kana]
+			source = "kana fallback"
+			_set_debug_grammar_source(source)
+			_set_debug_last_grammar(JSON.stringify(grammar))
+			if debug_speech:
+				print("KanaReadingPractice: grammar built from %s: %s" % [source, grammar])
+			return grammar
 	elif item != null:
 		var value := str(item).strip_edges()
 		if not value.is_empty():
-			return [value]
+			grammar = [value]
+			source = "kana fallback"
+			_set_debug_grammar_source(source)
+			_set_debug_last_grammar(JSON.stringify(grammar))
+			if debug_speech:
+				print("KanaReadingPractice: grammar built from %s: %s" % [source, grammar])
+			return grammar
+	_set_debug_grammar_source(source)
+	_set_debug_last_grammar(JSON.stringify(grammar))
+	if debug_speech:
+		print("KanaReadingPractice: grammar built from %s: %s" % [source, grammar])
 	return []
 
 func _is_grade_correct(context: Dictionary) -> bool:
