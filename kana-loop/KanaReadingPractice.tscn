@@ -113,6 +113,36 @@ alignment = 0
 text = "Back to Main Menu"
 size_flags_horizontal = 3
 
+[node name="MetronomeControls" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+alignment = 0
+
+[node name="MetronomeToggle" type="Button" parent="MarginContainer/VBoxContainer/MetronomeControls"]
+text = "Start Metronome"
+toggle_mode = true
+
+[node name="BpmLabel" type="Label" parent="MarginContainer/VBoxContainer/MetronomeControls"]
+text = "BPM"
+theme_override_font_sizes/font_size = 20
+
+[node name="BpmSlider" type="HSlider" parent="MarginContainer/VBoxContainer/MetronomeControls"]
+custom_minimum_size = Vector2(220, 0)
+min_value = 40.0
+max_value = 200.0
+step = 1.0
+value = 120.0
+size_flags_horizontal = 3
+
+[node name="BpmValueLabel" type="Label" parent="MarginContainer/VBoxContainer/MetronomeControls"]
+text = "120"
+theme_override_font_sizes/font_size = 20
+
+[node name="MetronomePlayer" type="AudioStreamPlayer" parent="."]
+
+[node name="MetronomeTimer" type="Timer" parent="."]
+one_shot = false
+wait_time = 0.5
+
 [node name="IdleGlow" type="Animation" parent="AnimationPlayer"]
 resource_name = "IdleGlow"
 length = 1.5
