@@ -40,6 +40,7 @@ var _debug_last_transcript := ""
 var _debug_expected_kana := ""
 var _debug_last_grammar := ""
 var _debug_grammar_status := "idle"
+var _debug_last_error := ""
 var _metronome_running := false
 var _metronome_playback: AudioStreamGeneratorPlayback
 var _mic_level_value := 0.0
@@ -129,6 +130,13 @@ func _ensure_speech_nodes() -> void:
 		speech_controller.set_ws_client(ws_client)
 	elif speech_controller and speech_controller.ws_client:
 		speech_controller.ws_client.start()
+	_ensure_ws_error_handler()
+
+func _ensure_ws_error_handler() -> void:
+	if speech_controller == null or speech_controller.ws_client == null:
+		return
+	if not speech_controller.ws_client.on_error.is_connected(_on_ws_error):
+		speech_controller.ws_client.on_error.connect(_on_ws_error)
 
 func _start_lesson_from_selection() -> void:
 	if fsm == null:
@@ -228,6 +236,9 @@ func _update_debug_label() -> void:
 	var grammar_text := _debug_last_grammar
 	if grammar_text.strip_edges().is_empty():
 		grammar_text = "—"
+	var error_text := _debug_last_error
+	if error_text.strip_edges().is_empty():
+		error_text = "—"
 	debug_label.text = (
 		"Debug speech\n"
 		+ "Service: %s\n" % _debug_service_status
@@ -235,6 +246,7 @@ func _update_debug_label() -> void:
 		+ "Mic: %s\n" % _debug_mic_status
 		+ "Expected: %s\n" % expected_text
 		+ "Last grammar: %s\n" % grammar_text
+		+ "Last error: %s\n" % error_text
 		+ "Last transcript: %s" % transcript_text
 	)
 
@@ -260,6 +272,10 @@ func _set_debug_grammar_status(status: String) -> void:
 
 func _set_debug_last_grammar(grammar_text: String) -> void:
 	_debug_last_grammar = grammar_text
+	_update_debug_label()
+
+func _set_debug_last_error(message: String) -> void:
+	_debug_last_error = message
 	_update_debug_label()
 
 func _update_bpm_display(bpm_value: float) -> void:
@@ -503,6 +519,10 @@ func _on_vosk_unavailable(_reason: String) -> void:
 func _on_vosk_service_started(_pid: int, _path: String) -> void:
 	_set_debug_service_status("ready")
 	_set_status_text("Speech service ready")
+
+func _on_ws_error(message: String) -> void:
+	_set_debug_last_error(message)
+	_set_debug_service_status("error")
 
 func _on_metronome_toggled(toggled_on: bool) -> void:
 	_set_metronome_running(toggled_on)
