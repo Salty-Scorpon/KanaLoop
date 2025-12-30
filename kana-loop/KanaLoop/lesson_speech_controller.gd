@@ -41,8 +41,12 @@ func _on_partial(text: String) -> void:
 
 func _on_final(text: String) -> void:
 	var trimmed := text.strip_edges()
-	_submit_transcript(trimmed, true)
+	if trimmed.is_empty():
+		return
 	var grade := _request_grade(trimmed)
+	if not grade.get("is_correct", false):
+		return
+	_submit_transcript(trimmed, true)
 	_submit_grade(grade)
 
 func _submit_transcript(text: String, is_final: bool) -> void:
