@@ -31,14 +31,17 @@ const JLPT_OPTIONS := [
 @onready var results_count: Label = $MarginContainer/Panel/VBoxContainer/ResultsCount
 @onready var back_button: Button = $MarginContainer/Panel/VBoxContainer/Header/BackButton
 @onready var status_label: Label = $MarginContainer/Panel/VBoxContainer/StatusLabel
+@onready var detail_panel: WordDetailPanel = $MarginContainer/Panel/VBoxContainer/WordDetailPanel
 
 var entries: Array = []
+var visible_entries: Array = []
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	search_input.text_changed.connect(_on_search_text_changed)
 	frequency_filter.item_selected.connect(_on_filter_changed)
 	jlpt_filter.item_selected.connect(_on_filter_changed)
+	results_list.item_selected.connect(_on_result_selected)
 
 	_load_index()
 	_populate_filters()
@@ -99,9 +102,11 @@ func _on_filter_changed(_index: int) -> void:
 
 func _apply_filters() -> void:
 	results_list.clear()
+	visible_entries.clear()
 
 	if entries.is_empty():
 		results_count.text = "No entries loaded."
+		detail_panel.clear()
 		return
 
 	var query := search_input.text.strip_edges().to_lower()
@@ -117,11 +122,15 @@ func _apply_filters() -> void:
 		matched += 1
 		if shown < MAX_RESULTS:
 			results_list.add_item(_format_entry(entry))
+			visible_entries.append(entry)
 			shown += 1
 
 	results_count.text = "Showing %d of %d results" % [shown, matched]
 	if shown > 0:
 		results_list.select(0)
+		detail_panel.set_entry(visible_entries[0])
+	else:
+		detail_panel.clear()
 
 func _matches_filters(entry: Dictionary, query: String, frequency_marker: String, jlpt_level) -> bool:
 	if query != "":
@@ -171,3 +180,8 @@ func _move_selection(delta: int) -> void:
 	results_list.select(index)
 	results_list.ensure_current_is_visible()
 	results_list.grab_focus()
+
+func _on_result_selected(index: int) -> void:
+	if index < 0 or index >= visible_entries.size():
+		return
+	detail_panel.set_entry(visible_entries[index])

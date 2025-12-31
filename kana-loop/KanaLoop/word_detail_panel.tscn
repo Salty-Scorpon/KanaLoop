@@ -1,0 +1,94 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://KanaLoop/word_detail_panel.gd" id="1_70dso"]
+
+[node name="WordDetailPanel" type="PanelContainer"]
+visible = false
+size_flags_horizontal = 3
+size_flags_vertical = 0
+script = ExtResource("1_70dso")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Header" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Word Details"
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+text = "Close"
+
+[node name="KanjiLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Kanji"
+
+[node name="KanjiValue" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "—"
+
+[node name="KanaLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Kana"
+
+[node name="KanaValue" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "—"
+
+[node name="GlossLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Gloss"
+
+[node name="GlossValue" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "—"
+
+[node name="ExamplesLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Examples"
+
+[node name="ExamplesValue" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "—"
+
+[node name="FrequencyLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Frequency"
+
+[node name="FrequencyValue" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "—"
+
+[node name="TagsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Tags"
+
+[node name="TagsValue" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "—"
+
+[node name="Actions" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AddToStudyButton" type="Button" parent="MarginContainer/VBoxContainer/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add to Study"
+
+[node name="MarkKnownButton" type="Button" parent="MarginContainer/VBoxContainer/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Mark Known"
