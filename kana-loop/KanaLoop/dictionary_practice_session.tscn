@@ -1,0 +1,90 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://KanaLoop/dictionary_practice_session.gd" id="1_4m7lq"]
+
+[node name="DictionaryPracticeSession" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_4m7lq")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Panel" type="PanelContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/Panel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Header" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/Panel/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Practice Session"
+
+[node name="BackButton" type="Button" parent="MarginContainer/Panel/VBoxContainer/Header"]
+layout_mode = 2
+text = "Back"
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Practice prompt"
+
+[node name="IndexLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Item 0 of 0"
+
+[node name="WordDetails" type="VBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="KanjiLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "Kanji"
+
+[node name="KanjiValue" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "—"
+
+[node name="KanaLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "Kana"
+
+[node name="KanaValue" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "—"
+
+[node name="DefinitionLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "Definition"
+
+[node name="DefinitionValue" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "—"
+
+[node name="GlossLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "Gloss"
+
+[node name="GlossValue" type="Label" parent="MarginContainer/Panel/VBoxContainer/WordDetails"]
+layout_mode = 2
+text = "—"
+
+[node name="Controls" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NextButton" type="Button" parent="MarginContainer/Panel/VBoxContainer/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Next"
