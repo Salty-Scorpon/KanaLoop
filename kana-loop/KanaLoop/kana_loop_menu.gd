@@ -11,6 +11,7 @@ extends Control
 @onready var practice_audio_symbol_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeAudioSymbol
 @onready var practice_symbol_reading_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSymbolReading
 @onready var practice_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeGuidedWriting
+@onready var dictionary_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/DictionaryButton
 
 @onready var vowels_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/VowelsCheckBox
 @onready var k_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/KRowCheckBox
@@ -88,6 +89,7 @@ const RANDOM_CHAINS_SCENE := preload("res://KanaLoop/random_chains.tscn")
 const AUDIO_SYMBOL_SCENE := preload("res://KanaLoop/audio_symbol.tscn")
 const SYMBOL_READING_SCENE := preload("res://KanaReadingPractice.tscn")
 const GUIDED_WRITING_SCENE := preload("res://KanaLoop/guided_writing.tscn")
+const DICTIONARY_SCENE := preload("res://KanaLoop/dictionary_ui.tscn")
 
 func _ready() -> void:
 	options_button.pressed.connect(_show_options)
@@ -97,6 +99,7 @@ func _ready() -> void:
 	practice_audio_symbol_button.pressed.connect(_on_practice_audio_symbol)
 	practice_symbol_reading_button.pressed.connect(_on_practice_symbol_reading)
 	practice_guided_writing_button.pressed.connect(_on_practice_guided_writing)
+	dictionary_button.pressed.connect(_on_dictionary_open)
 
 	for toggle in row_toggles:
 		toggle.toggled.connect(_on_row_toggle)
@@ -321,6 +324,9 @@ func _on_practice_symbol_reading() -> void:
 
 func _on_practice_guided_writing() -> void:
 	_open_practice_scene(GUIDED_WRITING_SCENE)
+
+func _on_dictionary_open() -> void:
+	_open_practice_scene(DICTIONARY_SCENE)
 
 func _open_practice_scene(scene: PackedScene) -> void:
 	_clear_practice_scene()

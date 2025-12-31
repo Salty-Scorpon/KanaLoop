@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://KanaLoop/dictionary_ui.gd" id="1_6x7w1"]
+
+[node name="DictionaryUI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_6x7w1")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Panel" type="PanelContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/Panel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Header" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Title" type="Label" parent="MarginContainer/Panel/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dictionary"
+
+[node name="BackButton" type="Button" parent="MarginContainer/Panel/VBoxContainer/Header"]
+layout_mode = 2
+text = "Back"
+
+[node name="SearchInput" type="LineEdit" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search kana, kanji, romaji, or English..."
+
+[node name="Filters" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FrequencyLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+layout_mode = 2
+text = "Frequency"
+
+[node name="FrequencyFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JLPTLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+layout_mode = 2
+text = "JLPT"
+
+[node name="JLPTFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+visible = false
+text = "Status"
+
+[node name="ResultsCount" type="Label" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+text = "Showing 0 results"
+
+[node name="ResultsList" type="ItemList" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
