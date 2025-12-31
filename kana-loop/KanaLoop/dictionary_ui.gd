@@ -110,7 +110,7 @@ func _apply_filters() -> void:
 		return
 
 	var query := search_input.text.strip_edges().to_lower()
-	var frequency_marker := FREQUENCY_OPTIONS[frequency_filter.selected].marker
+	var frequency_marker: String = str(FREQUENCY_OPTIONS[frequency_filter.selected].marker)
 	var jlpt_level = JLPT_OPTIONS[jlpt_filter.selected].level
 
 	var matched := 0
