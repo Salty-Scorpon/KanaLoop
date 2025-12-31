@@ -88,6 +88,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Practice: Guided Writing (書字誘導)"
 
+[node name="DictionaryButton" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=["menu_buttons"]]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dictionary (辞書)"
+
 [node name="OptionsButton" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=["menu_buttons"]]
 layout_mode = 2
 size_flags_horizontal = 3
