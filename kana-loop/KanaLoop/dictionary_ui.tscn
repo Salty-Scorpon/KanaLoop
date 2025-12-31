@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=4]
+[gd_scene load_steps=3 format=4]
 
 [ext_resource type="Script" path="res://KanaLoop/dictionary_ui.gd" id="1_6x7w1"]
+[ext_resource type="PackedScene" path="res://KanaLoop/word_detail_panel.tscn" id="2_lbh7y"]
 
 [node name="DictionaryUI" type="Control"]
 anchor_right = 1.0
@@ -75,3 +76,6 @@ text = "Showing 0 results"
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="WordDetailPanel" parent="MarginContainer/Panel/VBoxContainer" instance=ExtResource("2_lbh7y")]
+layout_mode = 2
