@@ -94,3 +94,15 @@ func play_kana_audio(kana: String, voice: String = "") -> void:
 		return
 	audio_player.stream = stream
 	audio_player.play()
+
+func play_kana_audio_and_wait(kana: String, voice: String = "") -> void:
+	var voice_key := voice
+	if voice_key == "":
+		voice_key = KanaState.get_selected_voice()
+	var catalog: Dictionary = voice_catalog.get(voice_key, {})
+	var stream: AudioStream = catalog.get(kana)
+	if stream == null:
+		return
+	audio_player.stream = stream
+	audio_player.play()
+	await audio_player.finished
