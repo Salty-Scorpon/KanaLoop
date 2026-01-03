@@ -61,7 +61,7 @@ func _build_round_choices(active_prompt: String) -> Array[String]:
 			if kana != active_prompt:
 				distractors.append(kana)
 		distractors.shuffle()
-		var limit := min(3, distractors.size())
+		var limit: int = min(3, distractors.size())
 		for i in limit:
 			choices.append(distractors[i])
 	choices.shuffle()
