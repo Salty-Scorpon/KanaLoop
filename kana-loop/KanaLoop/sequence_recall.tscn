@@ -31,6 +31,41 @@ horizontal_alignment = 1
 text = "Listen to the sequence and repeat it by selecting the kana in order."
 horizontal_alignment = 1
 
+[node name="OptionsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="OptionsVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/OptionsPanel"]
+size_flags_horizontal = 3
+
+[node name="DifficultyRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox"]
+alignment = 1
+
+[node name="DifficultyLabel" type="Label" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/DifficultyRow"]
+text = "Difficulty"
+
+[node name="DifficultyOption" type="OptionButton" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/DifficultyRow"]
+size_flags_horizontal = 3
+
+[node name="PoolRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox"]
+alignment = 1
+
+[node name="PoolLabel" type="Label" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/PoolRow"]
+text = "Selection Pool Size"
+
+[node name="PoolSizeSpinBox" type="SpinBox" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/PoolRow"]
+min_value = 0.0
+max_value = 30.0
+step = 1.0
+value = 8.0
+
+[node name="RepeatsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox"]
+alignment = 1
+
+[node name="RepeatsLabel" type="Label" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/RepeatsRow"]
+text = "Allow Repeats"
+
+[node name="RepeatsCheckBox" type="CheckBox" parent="MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/RepeatsRow"]
+
 [node name="PlaybackLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 text = ""
 theme_override_font_sizes/font_size = 120

@@ -17,7 +17,12 @@ enum State {
 @export var playback_delay := 0.6
 @export var feedback_delay := 1.5
 
+const DIFFICULTY_LENGTHS := [2, 3, 4, 5]
+
 @onready var back_button: Button = $MarginContainer/VBoxContainer/BackButton
+@onready var difficulty_option: OptionButton = $MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/DifficultyRow/DifficultyOption
+@onready var pool_size_spin_box: SpinBox = $MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/PoolRow/PoolSizeSpinBox
+@onready var repeats_check_box: CheckBox = $MarginContainer/VBoxContainer/OptionsPanel/OptionsVBox/RepeatsRow/RepeatsCheckBox
 @onready var playback_label: Label = $MarginContainer/VBoxContainer/PlaybackLabel
 @onready var progress_label: Label = $MarginContainer/VBoxContainer/ProgressLabel
 @onready var feedback_label: Label = $MarginContainer/VBoxContainer/FeedbackLabel
@@ -32,10 +37,37 @@ var state: State = State.INIT
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
+	_setup_options()
 	_start_round()
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
+
+func _setup_options() -> void:
+	difficulty_option.clear()
+	for length in DIFFICULTY_LENGTHS:
+		difficulty_option.add_item(str(length))
+	var selected_index := DIFFICULTY_LENGTHS.find(mode_length)
+	if selected_index == -1:
+		mode_length = DIFFICULTY_LENGTHS[0]
+		selected_index = 0
+	difficulty_option.select(selected_index)
+	pool_size_spin_box.value = selection_pool_size
+	repeats_check_box.button_pressed = allow_repeats
+	difficulty_option.item_selected.connect(_on_difficulty_selected)
+	pool_size_spin_box.value_changed.connect(_on_pool_size_changed)
+	repeats_check_box.toggled.connect(_on_allow_repeats_toggled)
+
+func _on_difficulty_selected(index: int) -> void:
+	if index < 0 or index >= DIFFICULTY_LENGTHS.size():
+		return
+	mode_length = DIFFICULTY_LENGTHS[index]
+
+func _on_pool_size_changed(value: float) -> void:
+	selection_pool_size = int(value)
+
+func _on_allow_repeats_toggled(enabled: bool) -> void:
+	allow_repeats = enabled
 
 func _start_round() -> void:
 	_set_state(State.INIT)
