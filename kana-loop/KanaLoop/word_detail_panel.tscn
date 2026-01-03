@@ -92,3 +92,8 @@ text = "Add to Study"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Mark Known"
+
+[node name="PracticeButton" type="Button" parent="MarginContainer/VBoxContainer/Actions"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Practice"
