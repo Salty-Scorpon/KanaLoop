@@ -9,6 +9,7 @@ extends Control
 @onready var practice_visual_delay_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeVisualDelay
 @onready var practice_random_chains_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeRandomChains
 @onready var practice_audio_symbol_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeAudioSymbol
+@onready var practice_sequence_recall_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSequenceRecall
 @onready var practice_symbol_reading_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSymbolReading
 @onready var practice_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeGuidedWriting
 @onready var dictionary_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/DictionaryButton
@@ -87,6 +88,7 @@ var selected_kana: Array[String] = []
 const VISUAL_DELAY_SCENE := preload("res://KanaLoop/visual_delay.tscn")
 const RANDOM_CHAINS_SCENE := preload("res://KanaLoop/random_chains.tscn")
 const AUDIO_SYMBOL_SCENE := preload("res://KanaLoop/audio_symbol.tscn")
+const SEQUENCE_RECALL_SCENE := preload("res://KanaLoop/sequence_recall.tscn")
 const SYMBOL_READING_SCENE := preload("res://KanaReadingPractice.tscn")
 const GUIDED_WRITING_SCENE := preload("res://KanaLoop/guided_writing.tscn")
 const DICTIONARY_SCENE := preload("res://KanaLoop/dictionary_ui.tscn")
@@ -97,6 +99,7 @@ func _ready() -> void:
 	practice_visual_delay_button.pressed.connect(_on_practice_visual_delay)
 	practice_random_chains_button.pressed.connect(_on_practice_random_chains)
 	practice_audio_symbol_button.pressed.connect(_on_practice_audio_symbol)
+	practice_sequence_recall_button.pressed.connect(_on_practice_sequence_recall)
 	practice_symbol_reading_button.pressed.connect(_on_practice_symbol_reading)
 	practice_guided_writing_button.pressed.connect(_on_practice_guided_writing)
 	dictionary_button.pressed.connect(_on_dictionary_open)
@@ -318,6 +321,9 @@ func _on_practice_random_chains() -> void:
 
 func _on_practice_audio_symbol() -> void:
 	_open_practice_scene(AUDIO_SYMBOL_SCENE)
+
+func _on_practice_sequence_recall() -> void:
+	_open_practice_scene(SEQUENCE_RECALL_SCENE)
 
 func _on_practice_symbol_reading() -> void:
 	_open_practice_scene(SYMBOL_READING_SCENE)
