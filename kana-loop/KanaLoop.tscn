@@ -78,6 +78,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Practice: Audio → Symbol (音声連想)"
 
+[node name="PracticeSequenceRecall" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=["menu_buttons"]]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Practice: Sequence Recall (順序記憶)"
+
 [node name="PracticeSymbolReading" type="Button" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu" groups=["menu_buttons"]]
 layout_mode = 2
 size_flags_horizontal = 3
