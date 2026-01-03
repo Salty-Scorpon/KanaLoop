@@ -1,8 +1,8 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1767465673
+::res://::1767474569
 icon.svg::CompressedTexture2D::7614869125433276389::1766801438::1766894093::1::::<><><>0<>0<>b3fe1ac2586fd8906f9a173561140d66<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
 jmdict_with_freq.json::JSON::-1::1767156865::0::1::::<><><>0<>0<><>::
-KanaLoop.tscn::PackedScene::7149953874202987463::1767159209::0::1::::<><><>0<>0<><>::uid://dg1b24k5igb02::::res://KanaLoop/kana_loop_menu.gd
+KanaLoop.tscn::PackedScene::7149953874202987463::1767474544::0::1::::<><><>0<>0<><>::uid://dg1b24k5igb02::::res://KanaLoop/kana_loop_menu.gd
 KanaReadingPractice.tscn::PackedScene::-1::1767063430::0::1::::<><><>0<>0<><>::res://KanaLoop/kana_reading_practice.gd
 ::res://_internal/::1767067804
 ::res://_internal/_internal/::1767067748
@@ -26,7 +26,7 @@ words.txt::TextFile::-1::1766960519::0::1::::<><><>0<>0<><>::
 ::res://_internal/websockets-15.0.1.dist-info/::1767067748
 entry_points.txt::TextFile::-1::1767067748::0::1::::<><><>0<>0<><>::
 top_level.txt::TextFile::-1::1767067748::0::1::::<><><>0<>0<><>::
-::res://assets/::1766898546
+::res://assets/::1767474629
 README.md::TextFile::-1::1766822294::0::1::::<><><>0<>0<><>::
 ::res://assets/audio/::1766801438
 README.md::TextFile::-1::1766801438::0::1::::<><><>0<>0<><>::
@@ -165,8 +165,11 @@ kana_outline_overrides.json::JSON::-1::1766872875::0::1::::<><><>0<>0<><>::
 yoon_layouts.json::JSON::-1::1766869517::0::1::::<><><>0<>0<><>::
 ::res://assets/data/overrides/::1766801438
 ::res://assets/image/::1766954672
-::res://KanaLoop/::1767465637
-audio_symbol.gd::GDScript::1389130219153009396::1766817678::0::1::::<>Control<><>0<>0<><>::
+::res://assets/ui/::1767475324
+failure.ogg::AudioStreamOggVorbis::4630181866067652322::1767475234::1767475326::1::::<><><>0<>0<>18084e62b8fa1130c0fe40e8eb56db07<>res://.godot/imported/failure.ogg-ac84c4d6e0bfa0311afd300c15006bcd.oggvorbisstr::
+success.ogg::AudioStreamOggVorbis::6141211535705731314::1767475234::1767475326::1::::<><><>0<>0<>0d8e33f8bf41545227946f4ad15ae5da<>res://.godot/imported/success.ogg-643976d18c9bf4190c8977e8acdffb06.oggvorbisstr::
+::res://KanaLoop/::1767474570
+audio_symbol.gd::GDScript::1389130219153009396::1767467692::0::1::::<>Control<><>0<>0<><>::
 audio_symbol.tscn::PackedScene::-1::1766801438::0::1::::<><><>0<>0<><>::res://KanaLoop/audio_symbol.gd
 dictionary_ui.gd::GDScript::6356374726232662556::1767159402::0::1::::<>Control<><>0<>0<><>::
 dictionary_ui.tscn::PackedScene::-1::1767159209::0::1::::<><><>0<>0<><>::res://KanaLoop/dictionary_ui.gd<>res://KanaLoop/word_detail_panel.tscn
@@ -174,7 +177,7 @@ grading_utils.gd::GDScript::7368823513749509457::1766985971::0::1::::GradingUtil
 guided_writing.gd::GDScript::3640236483870555823::1766828611::0::1::::<>Control<><>0<>0<><>::
 guided_writing.tscn::PackedScene::-1::1766801438::0::1::::<><><>0<>0<><>::res://KanaLoop/guided_writing.gd
 kana_audio.gd::GDScript::4780703013892684984::1767465637::0::1::::<>Node<><>0<>0<><>::
-kana_loop_menu.gd::GDScript::7634179407940439905::1767159209::0::1::::<>Control<><>0<>0<><>::
+kana_loop_menu.gd::GDScript::7634179407940439905::1767474544::0::1::::<>Control<><>0<>0<><>::
 kana_reading_practice.gd::GDScript::3703970506368848344::1767071804::0::1::::<>Control<><>0<>0<><>::
 kana_state.gd::GDScript::5429060707090247199::1767063430::0::1::::<>Node<><>0<>0<><>::
 learner_state.gd::GDScript::3601466962180795189::1767159209::0::1::::LearnerState<>RefCounted<><>0<>0<><>::
@@ -182,7 +185,9 @@ lesson_fsm.gd::GDScript::2094069362690729696::1767059197::0::1::::LessonFSM<>Nod
 lesson_speech_controller.gd::GDScript::8974523868684148055::1767061673::0::1::::LessonSpeechController<>Node<><>0<>0<><>::
 random_chains.gd::GDScript::378620435305918052::1766817678::0::1::::<>Control<><>0<>0<><>::
 random_chains.tscn::PackedScene::-1::1766801438::0::1::::<><><>0<>0<><>::res://KanaLoop/random_chains.gd
-visual_delay.gd::GDScript::6863952049257696410::1767465637::0::1::::<>Control<><>0<>0<><>::
+sequence_recall.gd::GDScript::239844776546742987::1767474544::0::1::::<>Control<><>0<>0<><>::
+sequence_recall.tscn::PackedScene::-1::1767474544::0::1::::<><><>0<>0<><>::res://KanaLoop/sequence_recall.gd
+visual_delay.gd::GDScript::6863952049257696410::1767466146::0::1::::<>Control<><>0<>0<><>::
 visual_delay.tscn::PackedScene::-1::1766801438::0::1::::<><><>0<>0<><>::res://KanaLoop/visual_delay.gd
 word_detail_panel.gd::GDScript::5674751115995937649::1767159209::0::1::::WordDetailPanel<>PanelContainer<><>0<>0<><>::
 word_detail_panel.tscn::PackedScene::-1::1767159209::0::1::::<><><>0<>0<><>::res://KanaLoop/word_detail_panel.gd

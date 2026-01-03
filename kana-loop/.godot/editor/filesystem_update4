@@ -1,0 +1,3 @@
+res://KanaLoop.tscn
+res://KanaLoop/kana_audio.gd
+res://KanaLoop/sequence_recall.gd

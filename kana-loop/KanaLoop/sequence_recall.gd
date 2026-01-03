@@ -132,6 +132,10 @@ func _validate_sequence() -> void:
 	var correct := player_sequence == played_sequence
 	_set_state(State.FEEDBACK)
 	feedback_label.text = "Correct!" if correct else "Try again!"
+	if correct:
+		KanaAudio.play_success()
+	else:
+		KanaAudio.play_failure()
 	await get_tree().create_timer(feedback_delay).timeout
 	_start_round()
 
