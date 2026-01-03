@@ -12,7 +12,6 @@ var kana_index := 0
 var running := false
 
 const AUDIO_DELAY_SECONDS := 1.5
-const KANA_DISPLAY_SECONDS := 2.0
 const FADE_OUT_SECONDS := 0.0
 const INTER_STIMULUS_DELAY_SECONDS := 0.0
 const KANA_LABEL_FONT_SIZE := 120
@@ -40,9 +39,9 @@ func _run_sequence() -> void:
 	while running:
 		var kana := _next_kana()
 		_show_blank()
+		_show_kana(kana)
 		await get_tree().create_timer(AUDIO_DELAY_SECONDS).timeout
 		await KanaAudio.play_kana_audio_and_wait(kana)
-		await _show_kana(kana)
 		await _fade_to_blank()
 		await get_tree().create_timer(INTER_STIMULUS_DELAY_SECONDS).timeout
 
@@ -68,7 +67,6 @@ func _show_kana(kana: String) -> void:
 	_apply_kana_font_sizes(kana)
 	fullscreen_kana.text = kana
 	_set_fade_alpha(0.0)
-	await get_tree().create_timer(KANA_DISPLAY_SECONDS).timeout
 
 func _fade_to_blank() -> void:
 	if FADE_OUT_SECONDS <= 0.0:
