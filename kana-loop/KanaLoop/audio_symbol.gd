@@ -20,15 +20,14 @@ func _ready() -> void:
 	selected_kana = KanaState.get_selected_kana()
 	prompt_order = selected_kana.duplicate()
 	prompt_order.shuffle()
-	_build_choice_buttons()
 	_start_round()
 	back_button.pressed.connect(_on_back_pressed)
 
-func _build_choice_buttons() -> void:
+func _build_choice_buttons(choices: Array[String]) -> void:
 	for child in choices_grid.get_children():
 		child.queue_free()
 	choice_buttons.clear()
-	for kana in selected_kana:
+	for kana in choices:
 		var button := Button.new()
 		button.text = kana
 		_apply_choice_font_size(button, kana)
@@ -45,9 +44,28 @@ func _start_round() -> void:
 		return
 	active_prompt = _next_prompt()
 	feedback_label.text = "Listen and choose."
+	_build_choice_buttons(_build_round_choices(active_prompt))
 	_set_choices_enabled(true)
 	awaiting_answer = true
 	KanaAudio.play_kana_audio(active_prompt)
+
+func _build_round_choices(active_prompt: String) -> Array[String]:
+	var choices: Array[String] = [active_prompt]
+	if selected_kana.size() < 4:
+		for kana in selected_kana:
+			if not choices.has(kana):
+				choices.append(kana)
+	else:
+		var distractors: Array[String] = []
+		for kana in selected_kana:
+			if kana != active_prompt:
+				distractors.append(kana)
+		distractors.shuffle()
+		var limit := min(3, distractors.size())
+		for i in limit:
+			choices.append(distractors[i])
+	choices.shuffle()
+	return choices
 
 func _next_prompt() -> String:
 	if prompt_order.is_empty():
