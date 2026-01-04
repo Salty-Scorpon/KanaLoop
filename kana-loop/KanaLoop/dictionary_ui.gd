@@ -24,6 +24,11 @@ const SORT_OPTIONS := [
 	{"label": "Frequency (most common)", "mode": "frequency"},
 ]
 
+const SORT_OPTIONS := [
+	{"label": "Default", "mode": "default"},
+	{"label": "Frequency (most common)", "mode": "frequency"},
+]
+
 @onready var search_input: LineEdit = $MarginContainer/Panel/VBoxContainer/SearchInput
 @onready var frequency_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/FrequencyFilter
 @onready var jlpt_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/JLPTFilter
@@ -93,6 +98,11 @@ func _populate_filters() -> void:
 		jlpt_filter.add_item(option.label)
 	jlpt_filter.select(0)
 	jlpt_filter.disabled = true
+
+	sort_filter.clear()
+	for option in SORT_OPTIONS:
+		sort_filter.add_item(option.label)
+	sort_filter.select(0)
 
 	sort_filter.clear()
 	for option in SORT_OPTIONS:
