@@ -123,7 +123,7 @@ func _apply_filters() -> void:
 
 	var query := search_input.text.strip_edges().to_lower()
 	var frequency_marker: String = str(FREQUENCY_OPTIONS[frequency_filter.selected].marker)
-	var jlpt_level = JLPT_OPTIONS[jlpt_filter.selected].level
+	var jlpt_level: Variant = JLPT_OPTIONS[jlpt_filter.selected].level
 	var sort_mode: String = str(SORT_OPTIONS[sort_filter.selected].mode)
 
 	var matched_entries: Array = []
