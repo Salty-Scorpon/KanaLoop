@@ -5,8 +5,8 @@ static var _instance: KanaAudio
 const DEFAULT_VOICE := "Voice 1"
 # Expected audio layout: res://assets/audio/<voice>/<kana>.ogg
 # Example: res://assets/audio/Voice 1/あ.ogg
-const UI_SUCCESS_AUDIO_PATH := "res://assets/audio/ui/success.ogg"
-const UI_FAILURE_AUDIO_PATH := "res://assets/audio/ui/failure.ogg"
+const UI_SUCCESS_AUDIO_PATH := "res://assets/ui/success.ogg"
+const UI_FAILURE_AUDIO_PATH := "res://assets/ui/failure.ogg"
 const VOICE_NAMES := ["Voice 1", "Voice 2"]
 const AUDIO_BASE_PATH := "res://assets/audio"
 const KANA_LIST := [
@@ -84,8 +84,8 @@ func _load_kana_stream(kana: String, voice: String) -> AudioStream:
 
 func _load_ui_stream(path: String) -> AudioStream:
 	# UI cues live at:
-	# - res://assets/audio/ui/success.ogg
-	# - res://assets/audio/ui/failure.ogg
+	# - res://assets/ui/success.ogg
+	# - res://assets/ui/failure.ogg
 	if not ResourceLoader.exists(path):
 		push_warning("Missing UI audio file: %s" % path)
 		return _create_placeholder_stream()
