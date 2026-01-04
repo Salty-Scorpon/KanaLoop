@@ -13,9 +13,9 @@ The guided writing outline data is generated from the StrokeSVG hiragana set.
    ```
    This writes `kana-loop/assets/data/kana_outline.json`.
    - To regenerate a single kana entry in-place (for example, after editing `strokesvg/dist/hiragana/お.svg`):
-     ```bash
-     python3 kana-loop/tools/convert_strokesvg_to_kanaoutline.py --kana お
-     ```
+	 ```bash
+	 python3 kana-loop/tools/convert_strokesvg_to_kanaoutline.py --kana お
+	 ```
 3. Validate the output:
    ```bash
    python3 kana-loop/tools/validate_kana_outline.py
@@ -92,10 +92,10 @@ Example (array):
 ```json
 [
   {
-    "kana": "お",
-    "strokes": [
-      { "path_hint": [], "start_hint": {}, "end_hint": {}, "rules": {} }
-    ]
+	"kana": "お",
+	"strokes": [
+	  { "path_hint": [], "start_hint": {}, "end_hint": {}, "rules": {} }
+	]
   }
 ]
 ```
@@ -105,9 +105,9 @@ Example (dictionary keyed by kana):
 ```json
 {
   "お": {
-    "strokes": [
-      { "path_hint": [], "start_hint": {}, "end_hint": {}, "rules": {} }
-    ]
+	"strokes": [
+	  { "path_hint": [], "start_hint": {}, "end_hint": {}, "rules": {} }
+	]
   }
 }
 ```
@@ -120,7 +120,7 @@ Place a file like `assets/data/overrides/お.json` with a single kana entry:
 {
   "kana": "お",
   "strokes": [
-    { "path_hint": [], "start_hint": {}, "end_hint": {}, "rules": {} }
+	{ "path_hint": [], "start_hint": {}, "end_hint": {}, "rules": {} }
   ]
 }
 ```
