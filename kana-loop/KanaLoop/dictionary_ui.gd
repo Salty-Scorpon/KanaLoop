@@ -17,11 +17,11 @@ const FREQUENCY_OPTIONS := [
 
 const JLPT_OPTIONS := [
 	{"label": "Any", "level": null},
-	{"label": "N5", "level": 5},
-	{"label": "N4", "level": 4},
-	{"label": "N3", "level": 3},
-	{"label": "N2", "level": 2},
-	{"label": "N1", "level": 1},
+]
+
+const SORT_OPTIONS := [
+	{"label": "Default", "mode": "default"},
+	{"label": "Frequency (most common)", "mode": "frequency"},
 ]
 
 const SORT_OPTIONS := [
@@ -97,6 +97,12 @@ func _populate_filters() -> void:
 	for option in JLPT_OPTIONS:
 		jlpt_filter.add_item(option.label)
 	jlpt_filter.select(0)
+	jlpt_filter.disabled = true
+
+	sort_filter.clear()
+	for option in SORT_OPTIONS:
+		sort_filter.add_item(option.label)
+	sort_filter.select(0)
 
 	sort_filter.clear()
 	for option in SORT_OPTIONS:
@@ -135,7 +141,7 @@ func _apply_filters() -> void:
 	_sort_entries(matched_entries, sort_mode)
 
 	var matched := matched_entries.size()
-	var shown := min(MAX_RESULTS, matched_entries.size())
+	var shown: int = min(MAX_RESULTS, matched_entries.size())
 	for entry_index in range(shown):
 		var entry: Dictionary = matched_entries[entry_index]
 		results_list.add_item(_format_entry(entry))
