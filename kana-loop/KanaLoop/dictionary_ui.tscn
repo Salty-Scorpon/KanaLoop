@@ -57,9 +57,17 @@ size_flags_horizontal = 3
 
 [node name="JLPTLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
 layout_mode = 2
-text = "JLPT"
+text = "JLPT (coming soon)"
 
 [node name="JLPTFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SortLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+layout_mode = 2
+text = "Sort"
+
+[node name="SortFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
 layout_mode = 2
 size_flags_horizontal = 3
 

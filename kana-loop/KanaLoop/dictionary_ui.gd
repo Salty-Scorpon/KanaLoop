@@ -17,16 +17,17 @@ const FREQUENCY_OPTIONS := [
 
 const JLPT_OPTIONS := [
 	{"label": "Any", "level": null},
-	{"label": "N5", "level": 5},
-	{"label": "N4", "level": 4},
-	{"label": "N3", "level": 3},
-	{"label": "N2", "level": 2},
-	{"label": "N1", "level": 1},
+]
+
+const SORT_OPTIONS := [
+	{"label": "Default", "mode": "default"},
+	{"label": "Frequency (most common)", "mode": "frequency"},
 ]
 
 @onready var search_input: LineEdit = $MarginContainer/Panel/VBoxContainer/SearchInput
 @onready var frequency_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/FrequencyFilter
 @onready var jlpt_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/JLPTFilter
+@onready var sort_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/SortFilter
 @onready var results_list: ItemList = $MarginContainer/Panel/VBoxContainer/ResultsList
 @onready var results_count: Label = $MarginContainer/Panel/VBoxContainer/ResultsCount
 @onready var back_button: Button = $MarginContainer/Panel/VBoxContainer/Header/BackButton
@@ -41,6 +42,7 @@ func _ready() -> void:
 	search_input.text_changed.connect(_on_search_text_changed)
 	frequency_filter.item_selected.connect(_on_filter_changed)
 	jlpt_filter.item_selected.connect(_on_filter_changed)
+	sort_filter.item_selected.connect(_on_filter_changed)
 	results_list.item_selected.connect(_on_result_selected)
 
 	_load_index()
@@ -90,6 +92,12 @@ func _populate_filters() -> void:
 	for option in JLPT_OPTIONS:
 		jlpt_filter.add_item(option.label)
 	jlpt_filter.select(0)
+	jlpt_filter.disabled = true
+
+	sort_filter.clear()
+	for option in SORT_OPTIONS:
+		sort_filter.add_item(option.label)
+	sort_filter.select(0)
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
@@ -111,19 +119,23 @@ func _apply_filters() -> void:
 
 	var query := search_input.text.strip_edges().to_lower()
 	var frequency_marker: String = str(FREQUENCY_OPTIONS[frequency_filter.selected].marker)
-	var jlpt_level = JLPT_OPTIONS[jlpt_filter.selected].level
+	var jlpt_level: Variant = JLPT_OPTIONS[jlpt_filter.selected].level
+	var sort_mode: String = str(SORT_OPTIONS[sort_filter.selected].mode)
 
-	var matched := 0
-	var shown := 0
-
+	var matched_entries: Array = []
 	for entry in entries:
 		if not _matches_filters(entry, query, frequency_marker, jlpt_level):
 			continue
-		matched += 1
-		if shown < MAX_RESULTS:
-			results_list.add_item(_format_entry(entry))
-			visible_entries.append(entry)
-			shown += 1
+		matched_entries.append(entry)
+
+	_sort_entries(matched_entries, sort_mode)
+
+	var matched := matched_entries.size()
+	var shown: int = min(MAX_RESULTS, matched_entries.size())
+	for entry_index in range(shown):
+		var entry: Dictionary = matched_entries[entry_index]
+		results_list.add_item(_format_entry(entry))
+		visible_entries.append(entry)
 
 	results_count.text = "Showing %d of %d results" % [shown, matched]
 	if shown > 0:
@@ -148,6 +160,24 @@ func _matches_filters(entry: Dictionary, query: String, frequency_marker: String
 			return false
 
 	return true
+
+func _sort_entries(entries_to_sort: Array, sort_mode: String) -> void:
+	if sort_mode != "frequency":
+		return
+
+	entries_to_sort.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var rank_a := _frequency_rank(a)
+		var rank_b := _frequency_rank(b)
+		if rank_a == rank_b:
+			return _format_entry(a) < _format_entry(b)
+		return rank_a < rank_b
+	)
+
+func _frequency_rank(entry: Dictionary) -> int:
+	var rank = entry.get("frequency_rank", null)
+	if rank == null:
+		return 999999999
+	return int(rank)
 
 func _entry_search_blob(entry: Dictionary) -> String:
 	var parts: Array[String] = []
