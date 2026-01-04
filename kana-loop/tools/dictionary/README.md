@@ -1,6 +1,6 @@
 # Dictionary Search Index Builder
 
-This tool builds a SQLite search index with FTS tables from `jmdict_with_freq.json`.
+This tool builds a SQLite search index with FTS tables from `dictionary_3000_common_words.json`.
 
 ## Usage
 
@@ -8,7 +8,7 @@ From the repository root:
 
 ```sh
 python3 kana-loop/tools/dictionary/build_search_index.py \
-  --input kana-loop/jmdict_with_freq.json \
+  --input kana-loop/assets/data/dictionary_3000_common_words.json \
   --output kana-loop/search_index.sqlite
 ```
 
