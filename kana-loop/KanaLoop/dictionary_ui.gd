@@ -2,7 +2,7 @@ extends Control
 
 signal back_requested
 
-const INDEX_PATH := "res://jmdict_with_freq.json"
+const INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
 const MAX_RESULTS := 200
 
 const FREQUENCY_OPTIONS := [

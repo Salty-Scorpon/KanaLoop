@@ -6,13 +6,13 @@ from pathlib import Path
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build search_index.sqlite from jmdict_with_freq.json",
+        description="Build search_index.sqlite from dictionary_3000_common_words.json",
     )
     parser.add_argument(
         "--input",
         type=Path,
-        default=Path(__file__).resolve().parents[2] / "jmdict_with_freq.json",
-        help="Path to jmdict_with_freq.json",
+        default=Path(__file__).resolve().parents[2] / "assets" / "data" / "dictionary_3000_common_words.json",
+        help="Path to dictionary_3000_common_words.json",
     )
     parser.add_argument(
         "--output",
