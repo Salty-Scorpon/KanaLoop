@@ -5,29 +5,9 @@ signal back_requested
 const INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
 const MAX_RESULTS := 200
 
-const FREQUENCY_OPTIONS := [
-	{"label": "Any", "marker": ""},
-	{"label": "Top 100", "marker": "top_100"},
-	{"label": "Top 500", "marker": "top_500"},
-	{"label": "Top 1000", "marker": "top_1000"},
-	{"label": "Top 2000", "marker": "top_2000"},
-	{"label": "Top 3000", "marker": "top_3000"},
-	{"label": "Top 5000", "marker": "top_5000"},
-]
-
-const JLPT_OPTIONS := [
-	{"label": "Any", "level": null},
-]
-
-const SORT_OPTIONS := [
-	{"label": "Default", "mode": "default"},
-	{"label": "Frequency (most common)", "mode": "frequency"},
-]
-
 @onready var search_input: LineEdit = $MarginContainer/Panel/VBoxContainer/SearchInput
-@onready var frequency_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/FrequencyFilter
-@onready var jlpt_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/JLPTFilter
-@onready var sort_filter: OptionButton = $MarginContainer/Panel/VBoxContainer/Filters/SortFilter
+@onready var week_filter_container: GridContainer = $MarginContainer/Panel/VBoxContainer/ScheduleFilters/WeekFilters
+@onready var day_filter_container: GridContainer = $MarginContainer/Panel/VBoxContainer/ScheduleFilters/DayFilters
 @onready var results_list: ItemList = $MarginContainer/Panel/VBoxContainer/ResultsList
 @onready var results_count: Label = $MarginContainer/Panel/VBoxContainer/ResultsCount
 @onready var back_button: Button = $MarginContainer/Panel/VBoxContainer/Header/BackButton
@@ -36,17 +16,16 @@ const SORT_OPTIONS := [
 
 var entries: Array = []
 var visible_entries: Array = []
+var week_checkboxes: Array[CheckBox] = []
+var day_checkboxes: Array[CheckBox] = []
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	search_input.text_changed.connect(_on_search_text_changed)
-	frequency_filter.item_selected.connect(_on_filter_changed)
-	jlpt_filter.item_selected.connect(_on_filter_changed)
-	sort_filter.item_selected.connect(_on_filter_changed)
 	results_list.item_selected.connect(_on_result_selected)
 
 	_load_index()
-	_populate_filters()
+	_build_schedule_filters()
 	_apply_filters()
 	search_input.grab_focus()
 
@@ -82,22 +61,53 @@ func _load_index() -> void:
 	entries = parse_result
 	status_label.visible = false
 
-func _populate_filters() -> void:
-	frequency_filter.clear()
-	for option in FREQUENCY_OPTIONS:
-		frequency_filter.add_item(option.label)
-	frequency_filter.select(0)
+func _build_schedule_filters() -> void:
+	_clear_checkboxes(week_filter_container)
+	_clear_checkboxes(day_filter_container)
+	week_checkboxes.clear()
+	day_checkboxes.clear()
 
-	jlpt_filter.clear()
-	for option in JLPT_OPTIONS:
-		jlpt_filter.add_item(option.label)
-	jlpt_filter.select(0)
-	jlpt_filter.disabled = true
+	var week_numbers := _collect_tag_numbers("week_")
+	week_numbers.sort()
+	for week_number in week_numbers:
+		var checkbox := _create_filter_checkbox("Week %d" % week_number, week_number)
+		week_filter_container.add_child(checkbox)
+		week_checkboxes.append(checkbox)
 
-	sort_filter.clear()
-	for option in SORT_OPTIONS:
-		sort_filter.add_item(option.label)
-	sort_filter.select(0)
+	var day_numbers := _collect_tag_numbers("day_")
+	day_numbers.sort()
+	for day_number in day_numbers:
+		var checkbox := _create_filter_checkbox("Day %d" % day_number, day_number)
+		day_filter_container.add_child(checkbox)
+		day_checkboxes.append(checkbox)
+
+func _clear_checkboxes(container: Container) -> void:
+	for child in container.get_children():
+		child.queue_free()
+
+func _create_filter_checkbox(label: String, value: int) -> CheckBox:
+	var checkbox := CheckBox.new()
+	checkbox.text = label
+	checkbox.set_meta("value", value)
+	checkbox.toggled.connect(_on_filter_changed)
+	return checkbox
+
+func _collect_tag_numbers(prefix: String) -> Array[int]:
+	var numbers: Array[int] = []
+	var seen: Dictionary = {}
+	for entry in entries:
+		for tag in entry.get("tags", []):
+			if not tag.begins_with(prefix):
+				continue
+			var value_string := tag.trim_prefix(prefix)
+			if not value_string.is_valid_int():
+				continue
+			var value := int(value_string)
+			if seen.has(value):
+				continue
+			seen[value] = true
+			numbers.append(value)
+	return numbers
 
 func _on_back_pressed() -> void:
 	back_requested.emit()
@@ -105,7 +115,7 @@ func _on_back_pressed() -> void:
 func _on_search_text_changed(_new_text: String) -> void:
 	_apply_filters()
 
-func _on_filter_changed(_index: int) -> void:
+func _on_filter_changed(_value) -> void:
 	_apply_filters()
 
 func _apply_filters() -> void:
@@ -118,17 +128,14 @@ func _apply_filters() -> void:
 		return
 
 	var query := search_input.text.strip_edges().to_lower()
-	var frequency_marker: String = str(FREQUENCY_OPTIONS[frequency_filter.selected].marker)
-	var jlpt_level: Variant = JLPT_OPTIONS[jlpt_filter.selected].level
-	var sort_mode: String = str(SORT_OPTIONS[sort_filter.selected].mode)
+	var selected_weeks := _selected_values(week_checkboxes)
+	var selected_days := _selected_values(day_checkboxes)
 
 	var matched_entries: Array = []
 	for entry in entries:
-		if not _matches_filters(entry, query, frequency_marker, jlpt_level):
+		if not _matches_filters(entry, query, selected_weeks, selected_days):
 			continue
 		matched_entries.append(entry)
-
-	_sort_entries(matched_entries, sort_mode)
 
 	var matched := matched_entries.size()
 	var shown: int = min(MAX_RESULTS, matched_entries.size())
@@ -144,40 +151,33 @@ func _apply_filters() -> void:
 	else:
 		detail_panel.clear()
 
-func _matches_filters(entry: Dictionary, query: String, frequency_marker: String, jlpt_level) -> bool:
+func _matches_filters(entry: Dictionary, query: String, selected_weeks: Array[int], selected_days: Array[int]) -> bool:
 	if query != "":
 		var searchable := _entry_search_blob(entry)
 		if searchable.find(query) == -1:
 			return false
 
-	if frequency_marker != "":
-		var markers: Array = entry.get("frequency_band_markers", [])
-		if not markers.has(frequency_marker):
-			return false
+	if selected_weeks.size() > 0 and not _has_tag(entry, "week_", selected_weeks):
+		return false
 
-	if jlpt_level != null:
-		if entry.get("jlpt") != jlpt_level:
-			return false
+	if selected_days.size() > 0 and not _has_tag(entry, "day_", selected_days):
+		return false
 
 	return true
 
-func _sort_entries(entries_to_sort: Array, sort_mode: String) -> void:
-	if sort_mode != "frequency":
-		return
+func _selected_values(checkboxes: Array[CheckBox]) -> Array[int]:
+	var selected: Array[int] = []
+	for checkbox in checkboxes:
+		if checkbox.button_pressed:
+			selected.append(int(checkbox.get_meta("value")))
+	return selected
 
-	entries_to_sort.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var rank_a := _frequency_rank(a)
-		var rank_b := _frequency_rank(b)
-		if rank_a == rank_b:
-			return _format_entry(a) < _format_entry(b)
-		return rank_a < rank_b
-	)
-
-func _frequency_rank(entry: Dictionary) -> int:
-	var rank = entry.get("frequency_rank", null)
-	if rank == null:
-		return 999999999
-	return int(rank)
+func _has_tag(entry: Dictionary, prefix: String, selected_values: Array[int]) -> bool:
+	var tags: Array = entry.get("tags", [])
+	for value in selected_values:
+		if tags.has("%s%d" % [prefix, value]):
+			return true
+	return false
 
 func _entry_search_blob(entry: Dictionary) -> String:
 	var parts: Array[String] = []

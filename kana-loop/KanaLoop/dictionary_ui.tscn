@@ -43,33 +43,27 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Search kana, kanji, romaji, or English..."
 
-[node name="Filters" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+[node name="ScheduleFilters" type="VBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FrequencyLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+[node name="WeekLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
 layout_mode = 2
-text = "Frequency"
+text = "Weeks"
 
-[node name="FrequencyFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+[node name="WeekFilters" type="GridContainer" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
 layout_mode = 2
 size_flags_horizontal = 3
+columns = 6
 
-[node name="JLPTLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+[node name="DayLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
 layout_mode = 2
-text = "JLPT (coming soon)"
+text = "Days"
 
-[node name="JLPTFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="SortLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/Filters"]
-layout_mode = 2
-text = "Sort"
-
-[node name="SortFilter" type="OptionButton" parent="MarginContainer/Panel/VBoxContainer/Filters"]
+[node name="DayFilters" type="GridContainer" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
 layout_mode = 2
 size_flags_horizontal = 3
+columns = 7
 
 [node name="StatusLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer"]
 layout_mode = 2
