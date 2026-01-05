@@ -220,7 +220,7 @@ func _submit_response() -> void:
 		feedback_label.text = "Please enter a response before submitting."
 		return
 
-	var entry := dictionary_entries.get(current_word_id, {})
+	var entry: Dictionary = dictionary_entries.get(current_word_id, {}) as Dictionary
 	var expected_romaji := _normalize_response(str(entry.get("romaji", "")))
 	var expected_kana := _normalize_response(str(entry.get("kana", "")))
 	var normalized_response := _normalize_response(response)
@@ -311,13 +311,13 @@ func _select_next_sentence() -> void:
 	if candidates.is_empty():
 		return
 
-	var chosen := candidates[0]
+	var chosen: Dictionary = candidates[0]
 	current_word_id = chosen["word_id"]
 	_select_sentence_for_word(current_word_id)
 
-func _build_candidates() -> Array:
-	var candidates: Array = []
-	var stage_filtered: Array = []
+func _build_candidates() -> Array[Dictionary]:
+	var candidates: Array[Dictionary] = []
+	var stage_filtered: Array[Dictionary] = []
 
 	for word_id in sentence_corpus.keys():
 		var word_state := LearnerState.get_word_state(word_id)
@@ -331,7 +331,7 @@ func _build_candidates() -> Array:
 		if word_id == last_word_id:
 			repeat_penalty = 1
 		var rank := int(frequency_ranks.get(word_id, 999999))
-		var candidate = {
+		var candidate: Dictionary = {
 			"word_id": word_id,
 			"needs_exposure": needs_exposure,
 			"exposures": exposures,
@@ -393,7 +393,7 @@ func _select_sentence_for_word(word_id: String) -> void:
 	_apply_sentence(word_id, sentence)
 
 func _apply_sentence(word_id: String, sentence: Dictionary) -> void:
-	var entry := dictionary_entries.get(word_id, {})
+	var entry: Dictionary = dictionary_entries.get(word_id, {}) as Dictionary
 	if word_label != null:
 		var display_word := str(entry.get("kanji", ""))
 		if display_word == "":
@@ -415,7 +415,7 @@ func _apply_sentence(word_id: String, sentence: Dictionary) -> void:
 
 	var stage := int(word_state.get("stage", STAGE_UNSEEN))
 	if feedback_label != null:
-		var stage_label := STAGE_LABELS.get(stage, "unknown")
+		var stage_label: String = str(STAGE_LABELS.get(stage, "unknown"))
 		var message := "Stage: %s. Type the response and submit." % stage_label
 		if easier_mode:
 			message = "Stage: %s. Taking it slow—kana is shown to help." % stage_label
