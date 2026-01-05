@@ -2,6 +2,8 @@ extends PanelContainer
 
 class_name WordDetailPanel
 
+signal practice_requested(entry: Dictionary)
+
 @onready var kanji_value: Label = $MarginContainer/VBoxContainer/KanjiValue
 @onready var kana_value: Label = $MarginContainer/VBoxContainer/KanaValue
 @onready var gloss_value: Label = $MarginContainer/VBoxContainer/GlossValue
@@ -10,6 +12,7 @@ class_name WordDetailPanel
 @onready var tags_value: Label = $MarginContainer/VBoxContainer/TagsValue
 @onready var add_to_study_button: Button = $MarginContainer/VBoxContainer/Actions/AddToStudyButton
 @onready var mark_known_button: Button = $MarginContainer/VBoxContainer/Actions/MarkKnownButton
+@onready var practice_button: Button = $MarginContainer/VBoxContainer/Actions/PracticeButton
 @onready var close_button: Button = $MarginContainer/VBoxContainer/Header/CloseButton
 
 var _entry: Dictionary = {}
@@ -17,6 +20,7 @@ var _entry: Dictionary = {}
 func _ready() -> void:
 	add_to_study_button.pressed.connect(_on_add_to_study)
 	mark_known_button.pressed.connect(_on_mark_known)
+	practice_button.pressed.connect(_on_practice)
 	close_button.pressed.connect(_on_close_pressed)
 
 func set_entry(entry: Dictionary) -> void:
@@ -59,6 +63,11 @@ func _on_mark_known() -> void:
 	if _entry.is_empty():
 		return
 	LearnerState.mark_known(_entry)
+
+func _on_practice() -> void:
+	if _entry.is_empty():
+		return
+	practice_requested.emit(_entry)
 
 func _on_close_pressed() -> void:
 	clear()

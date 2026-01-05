@@ -4,6 +4,7 @@ signal back_requested
 
 const INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
 const MAX_RESULTS := 200
+const PRACTICE_SESSION_SCENE := preload("res://KanaLoop/dictionary_practice_session.tscn")
 
 const FREQUENCY_OPTIONS := [
 	{"label": "Any", "marker": ""},
@@ -33,9 +34,11 @@ const SORT_OPTIONS := [
 @onready var back_button: Button = $MarginContainer/Panel/VBoxContainer/Header/BackButton
 @onready var status_label: Label = $MarginContainer/Panel/VBoxContainer/StatusLabel
 @onready var detail_panel: WordDetailPanel = $MarginContainer/Panel/VBoxContainer/WordDetailPanel
+@onready var practice_container: Control = $PracticeContainer
 
 var entries: Array = []
 var visible_entries: Array = []
+var _practice_session: Node
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
@@ -44,6 +47,7 @@ func _ready() -> void:
 	jlpt_filter.item_selected.connect(_on_filter_changed)
 	sort_filter.item_selected.connect(_on_filter_changed)
 	results_list.item_selected.connect(_on_result_selected)
+	detail_panel.practice_requested.connect(_on_practice_requested)
 
 	_load_index()
 	_populate_filters()
@@ -102,6 +106,13 @@ func _populate_filters() -> void:
 func _on_back_pressed() -> void:
 	back_requested.emit()
 
+func _on_practice_requested(entry: Dictionary) -> void:
+	var entry_ids: Array = []
+	var entry_id := str(entry.get("id", ""))
+	if entry_id != "":
+		entry_ids.append(entry_id)
+	_open_practice_session(entry_ids, _build_practice_query())
+
 func _on_search_text_changed(_new_text: String) -> void:
 	_apply_filters()
 
@@ -143,6 +154,13 @@ func _apply_filters() -> void:
 		detail_panel.set_entry(visible_entries[0])
 	else:
 		detail_panel.clear()
+
+func _build_practice_query() -> Dictionary:
+	return {
+		"text": search_input.text.strip_edges(),
+		"frequency_marker": FREQUENCY_OPTIONS[frequency_filter.selected].marker,
+		"jlpt_level": JLPT_OPTIONS[jlpt_filter.selected].level,
+	}
 
 func _matches_filters(entry: Dictionary, query: String, frequency_marker: String, jlpt_level) -> bool:
 	if query != "":
@@ -215,3 +233,26 @@ func _on_result_selected(index: int) -> void:
 	if index < 0 or index >= visible_entries.size():
 		return
 	detail_panel.set_entry(visible_entries[index])
+
+func _open_practice_session(entry_ids: Array, query: Dictionary) -> void:
+	_clear_practice_session()
+	practice_container.visible = true
+	$MarginContainer.visible = false
+
+	var session_instance := PRACTICE_SESSION_SCENE.instantiate()
+	if session_instance.has_signal("back_requested"):
+		session_instance.back_requested.connect(_on_practice_back_requested)
+	practice_container.add_child(session_instance)
+	if session_instance.has_method("configure"):
+		session_instance.configure(entry_ids, query)
+	_practice_session = session_instance
+
+func _clear_practice_session() -> void:
+	for child in practice_container.get_children():
+		child.queue_free()
+	_practice_session = null
+
+func _on_practice_back_requested() -> void:
+	_clear_practice_session()
+	practice_container.visible = false
+	$MarginContainer.visible = true
