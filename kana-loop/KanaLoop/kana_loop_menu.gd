@@ -44,6 +44,8 @@ extends Control
 @onready var rya_row_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/RyaRowCheckBox
 @onready var custom_mix_toggle: CheckBox = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/RowToggles/CustomMixCheckBox
 @onready var custom_grid: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid
+@onready var kanji_week_filters: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection/KanjiWeekFilters
+@onready var kanji_day_filters: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection/KanjiDayFilters
 @onready var row_toggles: Array[CheckBox] = [
 	vowels_toggle,
 	k_row_toggle,
@@ -85,6 +87,8 @@ extends Control
 @onready var mic_device_selector: OptionButton = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/AudioOptions/InputDeviceRow/MicDeviceSelector
 
 var selected_kana: Array[String] = []
+var kanji_week_checkboxes: Array[CheckBox] = []
+var kanji_day_checkboxes: Array[CheckBox] = []
 
 const VISUAL_DELAY_SCENE := preload("res://KanaLoop/visual_delay.tscn")
 const RANDOM_CHAINS_SCENE := preload("res://KanaLoop/random_chains.tscn")
@@ -94,6 +98,7 @@ const SYMBOL_READING_SCENE := preload("res://KanaReadingPractice.tscn")
 const GUIDED_WRITING_SCENE := preload("res://KanaLoop/guided_writing.tscn")
 const CONTEXT_LATTICE_SCENE := preload("res://KanaLoop/context_lattice.tscn")
 const DICTIONARY_SCENE := preload("res://KanaLoop/dictionary_ui.tscn")
+const DICTIONARY_INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
 
 func _ready() -> void:
 	options_button.pressed.connect(_show_options)
@@ -137,10 +142,98 @@ func _ready() -> void:
 	_refresh_mic_devices()
 
 	_apply_custom_mix_state(custom_mix_toggle.button_pressed)
+	_build_kanji_filters()
 	_update_kana_selection()
 	_apply_highlight_color(highlight_picker.color)
 	_on_background_color_changed(background_picker.color)
 	_on_kana_color_changed(kana_picker.color)
+
+func _build_kanji_filters() -> void:
+	var entries := _load_dictionary_entries()
+	_clear_kanji_filters()
+
+	if entries.is_empty():
+		return
+
+	var selected_weeks := KanaState.get_selected_dictionary_weeks()
+	var selected_days := KanaState.get_selected_dictionary_days()
+
+	var week_numbers := _collect_tag_numbers(entries, "week_")
+	week_numbers.sort()
+	for week_number in week_numbers:
+		var checkbox := _create_filter_checkbox("Week %d" % week_number, week_number)
+		checkbox.button_pressed = selected_weeks.has(week_number)
+		kanji_week_filters.add_child(checkbox)
+		kanji_week_checkboxes.append(checkbox)
+
+	var day_numbers := _collect_tag_numbers(entries, "day_")
+	day_numbers.sort()
+	for day_number in day_numbers:
+		var checkbox := _create_filter_checkbox("Day %d" % day_number, day_number)
+		checkbox.button_pressed = selected_days.has(day_number)
+		kanji_day_filters.add_child(checkbox)
+		kanji_day_checkboxes.append(checkbox)
+
+	_sync_kanji_selection()
+
+func _clear_kanji_filters() -> void:
+	for child in kanji_week_filters.get_children():
+		child.queue_free()
+	for child in kanji_day_filters.get_children():
+		child.queue_free()
+	kanji_week_checkboxes.clear()
+	kanji_day_checkboxes.clear()
+
+func _create_filter_checkbox(label: String, value: int) -> CheckBox:
+	var checkbox := CheckBox.new()
+	checkbox.text = label
+	checkbox.set_meta("value", value)
+	checkbox.toggled.connect(_on_kanji_filter_changed)
+	return checkbox
+
+func _collect_tag_numbers(entries: Array, prefix: String) -> Array[int]:
+	var numbers: Array[int] = []
+	var seen: Dictionary = {}
+	for entry in entries:
+		for tag in entry.get("tags", []):
+			if not tag.begins_with(prefix):
+				continue
+			var value_string: String = String(tag).trim_prefix(prefix)
+			if not value_string.is_valid_int():
+				continue
+			var value := int(value_string)
+			if seen.has(value):
+				continue
+			seen[value] = true
+			numbers.append(value)
+	return numbers
+
+func _load_dictionary_entries() -> Array:
+	if not FileAccess.file_exists(DICTIONARY_INDEX_PATH):
+		return []
+
+	var file := FileAccess.open(DICTIONARY_INDEX_PATH, FileAccess.READ)
+	if file == null:
+		return []
+
+	var parse_result = JSON.parse_string(file.get_as_text())
+	if typeof(parse_result) != TYPE_ARRAY:
+		return []
+	return parse_result
+
+func _on_kanji_filter_changed(_pressed: bool) -> void:
+	_sync_kanji_selection()
+
+func _sync_kanji_selection() -> void:
+	KanaState.set_selected_dictionary_weeks(_selected_values(kanji_week_checkboxes))
+	KanaState.set_selected_dictionary_days(_selected_values(kanji_day_checkboxes))
+
+func _selected_values(checkboxes: Array[CheckBox]) -> Array[int]:
+	var selected: Array[int] = []
+	for checkbox in checkboxes:
+		if checkbox.button_pressed:
+			selected.append(int(checkbox.get_meta("value")))
+	return selected
 
 func _show_options() -> void:
 	_clear_practice_scene()
