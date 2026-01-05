@@ -99,7 +99,7 @@ func _collect_tag_numbers(prefix: String) -> Array[int]:
 		for tag in entry.get("tags", []):
 			if not tag.begins_with(prefix):
 				continue
-			var value_string := tag.trim_prefix(prefix)
+			var value_string: String = String(tag).trim_prefix(prefix)
 			if not value_string.is_valid_int():
 				continue
 			var value := int(value_string)
