@@ -59,6 +59,8 @@ var current_sentence: Dictionary = {}
 var last_word_id: String = ""
 var last_sentence_id: String = ""
 var current_audio_available: bool = false
+var prompt_started_msec: int = 0
+var prompt_pending: bool = false
 
 func _ready() -> void:
 	randomize()
@@ -190,6 +192,7 @@ func _load_sentence_corpus() -> void:
 		sentence_corpus[word_id].append(sentence)
 
 func _on_back_pressed() -> void:
+	_log_incomplete_if_pending()
 	back_requested.emit()
 
 func _on_replay_audio() -> void:
@@ -223,6 +226,7 @@ func _submit_response() -> void:
 	var normalized_response := _normalize_response(response)
 
 	var is_correct := normalized_response != "" and (normalized_response == expected_romaji or normalized_response == expected_kana)
+	_log_interaction("correct" if is_correct else "incorrect")
 	_record_attempt(is_correct)
 
 	if is_correct:
@@ -268,6 +272,7 @@ func _record_attempt(is_correct: bool) -> void:
 
 	var updated_stage := _evaluate_promotion(word_state, total_sentences)
 	if updated_stage > prior_stage:
+		_log_promotion_event(prior_stage, updated_stage)
 		word_state["stage"] = updated_stage
 		word_state["promotion_score"] = 0.0
 		word_state["context_exposures"] = 0
@@ -417,6 +422,7 @@ func _apply_sentence(word_id: String, sentence: Dictionary) -> void:
 		feedback_label.text = message
 
 	_prepare_audio(sentence)
+	_mark_prompt_started()
 
 func _prepare_audio(sentence: Dictionary) -> void:
 	current_audio_available = false
@@ -484,3 +490,66 @@ func _apply_dyslexia_mode(enabled: bool) -> void:
 			if enabled:
 				spacing = DYSLEXIA_LINE_SPACING
 			node.add_theme_constant_override("line_spacing", spacing)
+
+func _exit_tree() -> void:
+	_log_incomplete_if_pending()
+
+func _mark_prompt_started() -> void:
+	prompt_started_msec = Time.get_ticks_msec()
+	prompt_pending = true
+
+func _log_interaction(result: String) -> void:
+	if current_word_id == "" or current_sentence.is_empty():
+		return
+	var sentence_id := str(current_sentence.get("id", ""))
+	var scene_name := _get_scene_name()
+	var response_time_ms := _get_response_time_ms()
+	TelemetryLogger.log_event({
+		"event_type": "context_lattice_interaction",
+		"word_id": current_word_id,
+		"sentence_id": sentence_id,
+		"scene": scene_name,
+		"result": result,
+		"response_time_ms": response_time_ms,
+	})
+	prompt_pending = false
+
+func _log_incomplete_if_pending() -> void:
+	if not prompt_pending:
+		return
+	if current_word_id == "" or current_sentence.is_empty():
+		return
+	var sentence_id := str(current_sentence.get("id", ""))
+	var scene_name := _get_scene_name()
+	var response_time_ms := _get_response_time_ms()
+	TelemetryLogger.log_event({
+		"event_type": "context_lattice_interaction",
+		"word_id": current_word_id,
+		"sentence_id": sentence_id,
+		"scene": scene_name,
+		"result": "incomplete",
+		"response_time_ms": response_time_ms,
+	})
+	prompt_pending = false
+
+func _log_promotion_event(prior_stage: int, updated_stage: int) -> void:
+	var sentence_id := str(current_sentence.get("id", ""))
+	var scene_name := _get_scene_name()
+	TelemetryLogger.log_event({
+		"event_type": "context_lattice_promotion",
+		"word_id": current_word_id,
+		"sentence_id": sentence_id,
+		"scene": scene_name,
+		"from_stage": prior_stage,
+		"to_stage": updated_stage,
+	})
+
+func _get_response_time_ms() -> int:
+	if prompt_started_msec <= 0:
+		return 0
+	return max(0, Time.get_ticks_msec() - prompt_started_msec)
+
+func _get_scene_name() -> String:
+	if get_tree() != null and get_tree().current_scene != null:
+		return get_tree().current_scene.name
+	return name
