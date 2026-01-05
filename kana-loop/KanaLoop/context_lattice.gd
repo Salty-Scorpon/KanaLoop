@@ -345,15 +345,15 @@ func _build_candidates() -> Array:
 
 	var chosen_pool := stage_filtered if not stage_filtered.is_empty() else candidates
 	chosen_pool.sort_custom(func(a, b):
-		if a[\"needs_exposure\"] != b[\"needs_exposure\"]:
-			return a[\"needs_exposure\"]
-		if a[\"exposures\"] != b[\"exposures\"]:
-			return a[\"exposures\"] < b[\"exposures\"]
-		if a[\"repeat_penalty\"] != b[\"repeat_penalty\"]:
-			return a[\"repeat_penalty\"] < b[\"repeat_penalty\"]
-		if a[\"rank\"] != b[\"rank\"]:
-			return a[\"rank\"] < b[\"rank\"]
-		return a[\"tie\"] < b[\"tie\"]
+		if a["needs_exposure"] != b["needs_exposure"]:
+			return a["needs_exposure"]
+		if a["exposures"] != b["exposures"]:
+			return a["exposures"] < b["exposures"]
+		if a["repeat_penalty"] != b["repeat_penalty"]:
+			return a["repeat_penalty"] < b["repeat_penalty"]
+		if a["rank"] != b["rank"]:
+			return a["rank"] < b["rank"]
+		return a["tie"] < b["tie"]
 	)
 
 	return chosen_pool
