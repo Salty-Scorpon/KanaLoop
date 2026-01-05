@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://KanaLoop/context_lattice.gd" id="1_0x2g3"]
+
+[node name="ContextLattice" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_0x2g3")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "Context Lattice"
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "Use the surrounding sentence to respond to the highlighted word."
+horizontal_alignment = 1
+
+[node name="WordLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "水"
+theme_override_font_sizes/font_size = 64
+horizontal_alignment = 1
+
+[node name="SentencePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="SentenceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/SentencePanel"]
+size_flags_horizontal = 3
+
+[node name="SentenceJP" type="Label" parent="MarginContainer/VBoxContainer/SentencePanel/SentenceVBox"]
+text = "水をください。"
+horizontal_alignment = 1
+
+[node name="SentenceKana" type="Label" parent="MarginContainer/VBoxContainer/SentencePanel/SentenceVBox"]
+text = "みずをください。"
+horizontal_alignment = 1
+
+[node name="SentenceEN" type="Label" parent="MarginContainer/VBoxContainer/SentencePanel/SentenceVBox"]
+text = "Please give me water."
+horizontal_alignment = 1
+
+[node name="ResponseRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="ResponseInput" type="LineEdit" parent="MarginContainer/VBoxContainer/ResponseRow"]
+placeholder_text = "Type your response"
+size_flags_horizontal = 3
+
+[node name="SubmitButton" type="Button" parent="MarginContainer/VBoxContainer/ResponseRow"]
+text = "Submit (Enter)"
+
+[node name="FeedbackLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+text = "Type the response and submit."
+horizontal_alignment = 1
+
+[node name="ControlsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+alignment = 1
+
+[node name="ReplayAudioButton" type="Button" parent="MarginContainer/VBoxContainer/ControlsRow"]
+text = "Replay Audio (Ctrl+R)"
+
+[node name="KanaToggle" type="CheckBox" parent="MarginContainer/VBoxContainer/ControlsRow"]
+text = "Show Kana (Ctrl+K)"
+button_pressed = true
+
+[node name="DyslexiaToggle" type="CheckBox" parent="MarginContainer/VBoxContainer/ControlsRow"]
+text = "Dyslexia-Friendly Font"
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
+text = "Back to Main Menu"
+size_flags_horizontal = 3
