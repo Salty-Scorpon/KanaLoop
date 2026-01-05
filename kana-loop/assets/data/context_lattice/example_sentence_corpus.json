@@ -1,0 +1,20 @@
+[
+  {
+    "id": "mizu_1",
+    "word_id": "f77defe8-3ee5-55a6-991d-214576d33def",
+    "jp": "水をください。",
+    "kana": "みずをください。",
+    "en": "Please give me water.",
+    "audio": "res://assets/audio/context_lattice/mizu_1.ogg",
+    "difficulty": 1
+  },
+  {
+    "id": "mizu_2",
+    "word_id": "f77defe8-3ee5-55a6-991d-214576d33def",
+    "jp": "水は冷たいです。",
+    "kana": "みずはつめたいです。",
+    "en": "The water is cold.",
+    "audio": null,
+    "difficulty": 2
+  }
+]
