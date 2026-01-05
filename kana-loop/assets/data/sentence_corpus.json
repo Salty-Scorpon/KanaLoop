@@ -1,0 +1,66 @@
+[
+  {
+    "id": "mizu_1",
+    "word_id": "f77defe8-3ee5-55a6-991d-214576d33def",
+    "jp": "水をください。",
+    "kana": "みずをください。",
+    "en": "Please give me water.",
+    "audio": null
+  },
+  {
+    "id": "mizu_2",
+    "word_id": "f77defe8-3ee5-55a6-991d-214576d33def",
+    "jp": "水は冷たいです。",
+    "kana": "みずはつめたいです。",
+    "en": "The water is cold.",
+    "audio": null
+  },
+  {
+    "id": "iku_1",
+    "word_id": "e7030577-8634-516a-b4a6-4a516ff17331",
+    "jp": "学校へ行きます。",
+    "kana": "がっこうへいきます。",
+    "en": "I go to school.",
+    "audio": null
+  },
+  {
+    "id": "iku_2",
+    "word_id": "e7030577-8634-516a-b4a6-4a516ff17331",
+    "jp": "明日、友だちと行く。",
+    "kana": "あした、ともだちといく。",
+    "en": "Tomorrow, I will go with a friend.",
+    "audio": null
+  },
+  {
+    "id": "taberu_1",
+    "word_id": "bf5c4ce5-01c5-59b6-80e5-2c593cf78d1f",
+    "jp": "パンを食べます。",
+    "kana": "ぱんをたべます。",
+    "en": "I eat bread.",
+    "audio": null
+  },
+  {
+    "id": "taberu_2",
+    "word_id": "bf5c4ce5-01c5-59b6-80e5-2c593cf78d1f",
+    "jp": "朝ごはんを食べる。",
+    "kana": "あさごはんをたべる。",
+    "en": "I eat breakfast.",
+    "audio": null
+  },
+  {
+    "id": "miru_1",
+    "word_id": "126d84b4-84b0-52d8-99e6-42d9876f9ec0",
+    "jp": "映画を見る。",
+    "kana": "えいがをみる。",
+    "en": "I watch a movie.",
+    "audio": null
+  },
+  {
+    "id": "kuru_1",
+    "word_id": "88add422-3729-5d63-b913-1a9cc07db376",
+    "jp": "友だちが来る。",
+    "kana": "ともだちがくる。",
+    "en": "A friend is coming.",
+    "audio": null
+  }
+]
