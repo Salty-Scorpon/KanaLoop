@@ -4,6 +4,8 @@ var selected_kana: Array[String] = []
 var selected_voice: String = ""
 var selected_input_device: String = ""
 var highlight_color: Color = Color(0.85, 0.2, 0.2, 1)
+var selected_dictionary_weeks: Array[int] = []
+var selected_dictionary_days: Array[int] = []
 
 const DEFAULT_KANA: Array[String] = ["あ", "い", "う", "え", "お"]
 
@@ -39,3 +41,15 @@ func get_highlight_color() -> Color:
 
 func set_highlight_color(color: Color) -> void:
 	highlight_color = color
+
+func get_selected_dictionary_weeks() -> Array[int]:
+	return selected_dictionary_weeks.duplicate()
+
+func set_selected_dictionary_weeks(weeks: Array[int]) -> void:
+	selected_dictionary_weeks = weeks.duplicate()
+
+func get_selected_dictionary_days() -> Array[int]:
+	return selected_dictionary_days.duplicate()
+
+func set_selected_dictionary_days(days: Array[int]) -> void:
+	selected_dictionary_days = days.duplicate()

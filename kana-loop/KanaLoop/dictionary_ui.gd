@@ -6,8 +6,6 @@ const INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
 const MAX_RESULTS := 200
 
 @onready var search_input: LineEdit = $MarginContainer/Panel/VBoxContainer/SearchInput
-@onready var week_filter_container: GridContainer = $MarginContainer/Panel/VBoxContainer/ScheduleFilters/WeekFilters
-@onready var day_filter_container: GridContainer = $MarginContainer/Panel/VBoxContainer/ScheduleFilters/DayFilters
 @onready var results_list: ItemList = $MarginContainer/Panel/VBoxContainer/ResultsList
 @onready var results_count: Label = $MarginContainer/Panel/VBoxContainer/ResultsCount
 @onready var back_button: Button = $MarginContainer/Panel/VBoxContainer/Header/BackButton
@@ -16,8 +14,6 @@ const MAX_RESULTS := 200
 
 var entries: Array = []
 var visible_entries: Array = []
-var week_checkboxes: Array[CheckBox] = []
-var day_checkboxes: Array[CheckBox] = []
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
@@ -25,7 +21,6 @@ func _ready() -> void:
 	results_list.item_selected.connect(_on_result_selected)
 
 	_load_index()
-	_build_schedule_filters()
 	_apply_filters()
 	search_input.grab_focus()
 
@@ -61,61 +56,10 @@ func _load_index() -> void:
 	entries = parse_result
 	status_label.visible = false
 
-func _build_schedule_filters() -> void:
-	_clear_checkboxes(week_filter_container)
-	_clear_checkboxes(day_filter_container)
-	week_checkboxes.clear()
-	day_checkboxes.clear()
-
-	var week_numbers := _collect_tag_numbers("week_")
-	week_numbers.sort()
-	for week_number in week_numbers:
-		var checkbox := _create_filter_checkbox("Week %d" % week_number, week_number)
-		week_filter_container.add_child(checkbox)
-		week_checkboxes.append(checkbox)
-
-	var day_numbers := _collect_tag_numbers("day_")
-	day_numbers.sort()
-	for day_number in day_numbers:
-		var checkbox := _create_filter_checkbox("Day %d" % day_number, day_number)
-		day_filter_container.add_child(checkbox)
-		day_checkboxes.append(checkbox)
-
-func _clear_checkboxes(container: Container) -> void:
-	for child in container.get_children():
-		child.queue_free()
-
-func _create_filter_checkbox(label: String, value: int) -> CheckBox:
-	var checkbox := CheckBox.new()
-	checkbox.text = label
-	checkbox.set_meta("value", value)
-	checkbox.toggled.connect(_on_filter_changed)
-	return checkbox
-
-func _collect_tag_numbers(prefix: String) -> Array[int]:
-	var numbers: Array[int] = []
-	var seen: Dictionary = {}
-	for entry in entries:
-		for tag in entry.get("tags", []):
-			if not tag.begins_with(prefix):
-				continue
-			var value_string: String = String(tag).trim_prefix(prefix)
-			if not value_string.is_valid_int():
-				continue
-			var value := int(value_string)
-			if seen.has(value):
-				continue
-			seen[value] = true
-			numbers.append(value)
-	return numbers
-
 func _on_back_pressed() -> void:
 	back_requested.emit()
 
 func _on_search_text_changed(_new_text: String) -> void:
-	_apply_filters()
-
-func _on_filter_changed(_value) -> void:
 	_apply_filters()
 
 func _apply_filters() -> void:
@@ -128,8 +72,8 @@ func _apply_filters() -> void:
 		return
 
 	var query := search_input.text.strip_edges().to_lower()
-	var selected_weeks := _selected_values(week_checkboxes)
-	var selected_days := _selected_values(day_checkboxes)
+	var selected_weeks := KanaState.get_selected_dictionary_weeks()
+	var selected_days := KanaState.get_selected_dictionary_days()
 
 	var matched_entries: Array = []
 	for entry in entries:
@@ -164,13 +108,6 @@ func _matches_filters(entry: Dictionary, query: String, selected_weeks: Array[in
 		return false
 
 	return true
-
-func _selected_values(checkboxes: Array[CheckBox]) -> Array[int]:
-	var selected: Array[int] = []
-	for checkbox in checkboxes:
-		if checkbox.button_pressed:
-			selected.append(int(checkbox.get_meta("value")))
-	return selected
 
 func _has_tag(entry: Dictionary, prefix: String, selected_values: Array[int]) -> bool:
 	var tags: Array = entry.get("tags", [])

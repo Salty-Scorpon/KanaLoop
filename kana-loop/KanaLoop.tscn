@@ -783,6 +783,32 @@ layout_mode = 2
 disabled = true
 text = "りょ"
 
+[node name="KanjiSelection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="KanjiSelectionLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+text = "Kanji Selection"
+
+[node name="KanjiWeekLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+text = "Weeks"
+
+[node name="KanjiWeekFilters" type="GridContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 6
+
+[node name="KanjiDayLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+text = "Days"
+
+[node name="KanjiDayFilters" type="GridContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 7
+
 [node name="VisualOptions" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
 layout_mode = 2
 size_flags_horizontal = 3

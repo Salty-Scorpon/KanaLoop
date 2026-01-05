@@ -43,28 +43,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Search kana, kanji, romaji, or English..."
 
-[node name="ScheduleFilters" type="VBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="WeekLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
-layout_mode = 2
-text = "Weeks"
-
-[node name="WeekFilters" type="GridContainer" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
-layout_mode = 2
-size_flags_horizontal = 3
-columns = 6
-
-[node name="DayLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
-layout_mode = 2
-text = "Days"
-
-[node name="DayFilters" type="GridContainer" parent="MarginContainer/Panel/VBoxContainer/ScheduleFilters"]
-layout_mode = 2
-size_flags_horizontal = 3
-columns = 7
-
 [node name="StatusLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer"]
 layout_mode = 2
 visible = false
