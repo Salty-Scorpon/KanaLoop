@@ -127,3 +127,70 @@ Place a file like `assets/data/overrides/お.json` with a single kana entry:
 
 Whichever entry is loaded last for a given kana replaces the generated data, so you can
 quickly fix a single kana by dropping an override file in `assets/data/overrides/`.
+
+## Kanji vocabulary guided-writing import
+
+Phase-one kanji practice data is imported from Anki `.apkg` files into
+`assets/data/kanji_vocab_strokes.json`. The data shape is documented by
+`assets/data/kanji_vocab_schema.json`.
+
+Each imported practice entry represents one kanji in one vocabulary context:
+
+* `kanji` is the single character the learner writes.
+* `word` is the full vocabulary word from the Anki note.
+* `reading` is the pronunciation for the word.
+* `meaning` is the English definition shown above the writing box.
+* `sample_sentence.ja` and `sample_sentence.en` provide grammatical context.
+* `audio.word`, `audio.kanji`, `audio.sentence_ja`, and `audio.meaning_en` point to
+  imported or generated audio files when available.
+* `strokes` embeds the same normalized stroke format used by kana guided writing.
+
+Because one kanji can appear with multiple readings or in multiple words, the importer
+emits separate entries for each `kanji` + `word` + `reading` context. For example,
+`生` in `学生（がくせい）` and `生きる（いきる）` become separate practice entries while
+sharing the same underlying stroke geometry.
+
+**Import workflow**
+
+1. Place one or more `.apkg` files somewhere outside the Godot asset tree.
+2. Run the importer:
+   ```bash
+   python3 kana-loop/tools/import_anki_kanji_vocab.py \
+     --deck path/to/deck.apkg \
+     --output kana-loop/assets/data/kanji_vocab_strokes.json
+   ```
+3. If a deck uses nonstandard field names, provide a field-map config:
+   ```bash
+   python3 kana-loop/tools/import_anki_kanji_vocab.py \
+     --deck path/to/deck.apkg \
+     --config path/to/field_map.json
+   ```
+
+Example field-map config:
+
+```json
+{
+  "field_map": {
+    "word": ["Expression", "Word", "Japanese"],
+    "reading": ["Reading", "Kana", "Pronunciation"],
+    "meaning": ["Meaning", "English", "Definition"],
+    "sentence_ja": ["Sentence", "Example Japanese"],
+    "sentence_en": ["Sentence Meaning", "Example English"],
+    "kanji_audio": ["Kanji Audio", "Character Audio"],
+    "word_audio": ["Audio", "Word Audio"],
+    "sentence_audio": ["Sentence Audio"],
+    "meaning_audio": ["Meaning Audio", "English Audio"]
+  }
+}
+```
+
+Imported Anki audio is copied under `assets/audio/kanji_vocab/` and referenced with
+Godot `res://` paths. If a note lacks isolated kanji audio, the importer maps the word
+audio to both `audio.word` and `audio.kanji` so the future practice screen can play the
+best available pronunciation when a kanji is presented or Space is pressed.
+
+Kanji stroke geometry is pulled from KanjiVG-style SVG files in `assets/data/kanji/`,
+which are named by five-digit lowercase Unicode codepoint such as `0751f.svg` for `生`.
+When no SVG exists, the importer still writes the vocabulary entry with
+`missing_strokes: true`, `stroke_count: 0`, and an empty `strokes` array so the app can
+show the entry metadata and report that no guide is available.
