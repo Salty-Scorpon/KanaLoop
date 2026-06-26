@@ -12,6 +12,7 @@ extends Control
 @onready var practice_sequence_recall_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSequenceRecall
 @onready var practice_symbol_reading_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSymbolReading
 @onready var practice_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeGuidedWriting
+@onready var practice_kanji_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeKanjiGuidedWriting
 @onready var practice_context_lattice_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeContextLattice
 @onready var dictionary_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/DictionaryButton
 
@@ -96,6 +97,7 @@ const AUDIO_SYMBOL_SCENE := preload("res://KanaLoop/audio_symbol.tscn")
 const SEQUENCE_RECALL_SCENE := preload("res://KanaLoop/sequence_recall.tscn")
 const SYMBOL_READING_SCENE := preload("res://KanaReadingPractice.tscn")
 const GUIDED_WRITING_SCENE := preload("res://KanaLoop/guided_writing.tscn")
+const KANJI_GUIDED_WRITING_SCENE := preload("res://KanaLoop/kanji_guided_writing.tscn")
 const CONTEXT_LATTICE_SCENE := preload("res://KanaLoop/context_lattice.tscn")
 const DICTIONARY_SCENE := preload("res://KanaLoop/dictionary_ui.tscn")
 const DICTIONARY_INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
@@ -109,6 +111,7 @@ func _ready() -> void:
 	practice_sequence_recall_button.pressed.connect(_on_practice_sequence_recall)
 	practice_symbol_reading_button.pressed.connect(_on_practice_symbol_reading)
 	practice_guided_writing_button.pressed.connect(_on_practice_guided_writing)
+	practice_kanji_guided_writing_button.pressed.connect(_on_practice_kanji_guided_writing)
 	practice_context_lattice_button.pressed.connect(_on_practice_context_lattice)
 	dictionary_button.pressed.connect(_on_dictionary_open)
 
@@ -149,25 +152,22 @@ func _ready() -> void:
 	_on_kana_color_changed(kana_picker.color)
 
 func _build_kanji_filters() -> void:
-	var entries := _load_dictionary_entries()
 	_clear_kanji_filters()
-
-	if entries.is_empty():
-		return
 
 	var selected_weeks := KanaState.get_selected_dictionary_weeks()
 	var selected_days := KanaState.get_selected_dictionary_days()
+	var week_numbers := _collect_kanji_tag_numbers("week_")
+	var day_numbers := _collect_kanji_tag_numbers("day_")
 
-	var week_numbers := _collect_tag_numbers(entries, "week_")
-	week_numbers.sort()
+	if week_numbers.is_empty() and day_numbers.is_empty():
+		return
+
 	for week_number in week_numbers:
 		var checkbox := _create_filter_checkbox("Week %d" % week_number, week_number)
 		checkbox.button_pressed = selected_weeks.has(week_number)
 		kanji_week_filters.add_child(checkbox)
 		kanji_week_checkboxes.append(checkbox)
 
-	var day_numbers := _collect_tag_numbers(entries, "day_")
-	day_numbers.sort()
 	for day_number in day_numbers:
 		var checkbox := _create_filter_checkbox("Day %d" % day_number, day_number)
 		checkbox.button_pressed = selected_days.has(day_number)
@@ -175,6 +175,13 @@ func _build_kanji_filters() -> void:
 		kanji_day_checkboxes.append(checkbox)
 
 	_sync_kanji_selection()
+
+func _collect_kanji_tag_numbers(prefix: String) -> Array[int]:
+	var numbers := KanjiVocabData.get_available_tag_numbers(prefix)
+	if numbers.is_empty():
+		numbers = _collect_tag_numbers(_load_dictionary_entries(), prefix)
+	numbers.sort()
+	return numbers
 
 func _clear_kanji_filters() -> void:
 	for child in kanji_week_filters.get_children():
@@ -426,6 +433,9 @@ func _on_practice_symbol_reading() -> void:
 
 func _on_practice_guided_writing() -> void:
 	_open_practice_scene(GUIDED_WRITING_SCENE)
+
+func _on_practice_kanji_guided_writing() -> void:
+	_open_practice_scene(KANJI_GUIDED_WRITING_SCENE)
 
 func _on_practice_context_lattice() -> void:
 	_open_practice_scene(CONTEXT_LATTICE_SCENE)

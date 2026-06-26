@@ -1,0 +1,142 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://KanaLoop/kanji_guided_writing.gd" id="1_kanji"]
+
+[node name="KanjiGuidedWriting" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_kanji")
+
+[node name="TogglePanel" type="PanelContainer" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 120.0
+
+[node name="ToggleMargin" type="MarginContainer" parent="TogglePanel"]
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="ToggleVBox" type="VBoxContainer" parent="TogglePanel/ToggleMargin"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StrokeOutlineToggle" type="CheckBox" parent="TogglePanel/ToggleMargin/ToggleVBox"]
+text = "Stroke Outline"
+button_pressed = true
+
+[node name="BlackoutToggle" type="CheckBox" parent="TogglePanel/ToggleMargin/ToggleVBox"]
+text = "Blackout"
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="Title" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+text = "Kanji Guided Writing Practice"
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+text = "Trace guided kanji strokes. Space/click kanji plays kanji audio. Shift+Space/click meaning plays English audio. Click the Japanese sentence to hear it."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="PromptPanel" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="PromptVBox" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/PromptPanel"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="MeaningLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/PromptPanel/PromptVBox"]
+text = "Meaning"
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="EnglishSentenceLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/PromptPanel/PromptVBox"]
+text = "English sample sentence"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="JapaneseSentenceLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/PromptPanel/PromptVBox"]
+text = "日本語の例文"
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="WordLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/PromptPanel/PromptVBox"]
+text = "単語（よみ）"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+visible = false
+text = "Kanji vocabulary data not loaded."
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.8, 0.35, 0.2, 1)
+autowrap_mode = 3
+
+[node name="ProgressLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+text = "Stroke 1/5"
+horizontal_alignment = 1
+
+[node name="CompletionLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+visible = false
+text = "Completed!"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.2, 0.6, 0.3, 1)
+
+[node name="DrawingArea" type="PanelContainer" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(520, 520)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DrawingCanvas" type="Control" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+
+[node name="TargetContainer" type="CenterContainer" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="TargetKana" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas/TargetContainer"]
+text = "漢"
+modulate = Color(0.2, 0.2, 0.2, 0.15)
+theme_override_font_sizes/font_size = 190
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GhostLines" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+
+[node name="OutlineLines" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+
+[node name="Strokes" type="Node2D" parent="MarginContainer/ScrollContainer/VBoxContainer/DrawingArea/DrawingCanvas"]
+
+[node name="BackButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer"]
+text = "Back to Main Menu"
+size_flags_horizontal = 3
