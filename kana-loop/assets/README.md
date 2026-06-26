@@ -216,3 +216,22 @@ Useful runtime calls:
 If no imported kanji vocabulary file is present, the loader returns an empty list and keeps
 a human-readable `last_error`; existing settings UI falls back to the bundled dictionary
 week/day tags until imported kanji vocabulary data is available.
+
+## Kanji vocabulary audio helper
+
+`KanaLoop/vocab_audio.gd` is registered as the `VocabAudio` autoload for imported kanji
+vocabulary audio. It plays audio paths stored on each kanji vocabulary entry instead of
+using the fixed kana voice catalog.
+
+Useful runtime calls:
+
+* `VocabAudio.play_entry_kanji(entry)` plays `audio.kanji`, falling back to `audio.word`.
+* `VocabAudio.play_entry_word(entry)` plays `audio.word`, falling back to `audio.kanji`.
+* `VocabAudio.play_entry_sentence_ja(entry)` plays Japanese sentence audio.
+* `VocabAudio.play_entry_meaning_en(entry)` plays English definition audio.
+* `VocabAudio.play_entry_*_by_id(id)` variants fetch the entry from `KanjiVocabData` first.
+* `VocabAudio.has_entry_audio(entry, key)` and `get_preferred_audio_path(entry, keys)` let
+  practice scenes decide whether a click target should be enabled before attempting playback.
+
+Missing or unloadable audio paths use the same short placeholder-stream strategy as kana
+audio, so a bad media reference does not break the practice scene.
