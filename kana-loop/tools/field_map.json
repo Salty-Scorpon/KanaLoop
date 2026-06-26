@@ -1,0 +1,14 @@
+
+{
+  "field_map": {
+    "word": ["Vocabulary-Kanji", "Word", "Japanese"],
+    "reading": ["Vocabulary-Furigana", "Kana", "Pronunciation"],
+    "meaning": ["Meaning", "Vocabulary-English", "Definition"],
+    "sentence_ja": ["Sentence-Kana", "Example Japanese"],
+    "sentence_en": ["Sentence Meaning", "Sentence-English"],
+    "kanji_audio": ["Kanji Audio", "Vocabulary-Audio"],
+    "word_audio": ["Audio", "Word Audio"],
+    "sentence_audio": ["Sentence-Audio"],
+    "meaning_audio": ["Meaning Audio", "English Audio"]
+  }
+}
