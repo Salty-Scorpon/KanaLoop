@@ -149,25 +149,22 @@ func _ready() -> void:
 	_on_kana_color_changed(kana_picker.color)
 
 func _build_kanji_filters() -> void:
-	var entries := _load_dictionary_entries()
 	_clear_kanji_filters()
-
-	if entries.is_empty():
-		return
 
 	var selected_weeks := KanaState.get_selected_dictionary_weeks()
 	var selected_days := KanaState.get_selected_dictionary_days()
+	var week_numbers := _collect_kanji_tag_numbers("week_")
+	var day_numbers := _collect_kanji_tag_numbers("day_")
 
-	var week_numbers := _collect_tag_numbers(entries, "week_")
-	week_numbers.sort()
+	if week_numbers.is_empty() and day_numbers.is_empty():
+		return
+
 	for week_number in week_numbers:
 		var checkbox := _create_filter_checkbox("Week %d" % week_number, week_number)
 		checkbox.button_pressed = selected_weeks.has(week_number)
 		kanji_week_filters.add_child(checkbox)
 		kanji_week_checkboxes.append(checkbox)
 
-	var day_numbers := _collect_tag_numbers(entries, "day_")
-	day_numbers.sort()
 	for day_number in day_numbers:
 		var checkbox := _create_filter_checkbox("Day %d" % day_number, day_number)
 		checkbox.button_pressed = selected_days.has(day_number)
@@ -175,6 +172,13 @@ func _build_kanji_filters() -> void:
 		kanji_day_checkboxes.append(checkbox)
 
 	_sync_kanji_selection()
+
+func _collect_kanji_tag_numbers(prefix: String) -> Array[int]:
+	var numbers := KanjiVocabData.get_available_tag_numbers(prefix)
+	if numbers.is_empty():
+		numbers = _collect_tag_numbers(_load_dictionary_entries(), prefix)
+	numbers.sort()
+	return numbers
 
 func _clear_kanji_filters() -> void:
 	for child in kanji_week_filters.get_children():

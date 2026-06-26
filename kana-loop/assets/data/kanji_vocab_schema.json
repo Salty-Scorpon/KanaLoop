@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kanaloop.local/schemas/kanji_vocab_strokes.schema.json",
+  "title": "KanaLoop Kanji Vocabulary Stroke Entries",
+  "description": "Practice entries for kanji guided writing. Each entry represents one kanji in one vocabulary word/pronunciation context and embeds the same normalized stroke format used by kana guided writing.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "kanji",
+      "word",
+      "reading",
+      "meaning",
+      "sample_sentence",
+      "audio",
+      "stroke_count",
+      "strokes",
+      "tags",
+      "source"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Stable unique practice entry id, usually derived from deck/note/kanji/word/reading."
+      },
+      "kanji": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1,
+        "description": "The single kanji character the learner writes."
+      },
+      "word": {
+        "type": "string",
+        "description": "Full vocabulary word containing the kanji."
+      },
+      "reading": {
+        "type": "string",
+        "description": "Pronunciation/reading for the vocabulary word."
+      },
+      "pronunciation_key": {
+        "type": "string",
+        "description": "Filesystem-safe key derived from the reading or word, useful for generated audio names."
+      },
+      "meaning": {
+        "type": "string",
+        "description": "Primary English definition shown above the writing box."
+      },
+      "gloss": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "sample_sentence": {
+        "type": "object",
+        "required": ["ja", "en"],
+        "additionalProperties": false,
+        "properties": {
+          "ja": { "type": "string" },
+          "en": { "type": "string" }
+        }
+      },
+      "audio": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kanji": { "type": "string" },
+          "word": { "type": "string" },
+          "sentence_ja": { "type": "string" },
+          "meaning_en": { "type": "string" }
+        }
+      },
+      "tags": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "deck": { "type": "string" },
+      "note_id": { "type": "integer" },
+      "model": { "type": "string" },
+      "source": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": { "type": "string", "enum": ["anki"] },
+          "deck_path": { "type": "string" },
+          "note_id": { "type": "integer" },
+          "model": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "missing_strokes": {
+        "type": "boolean",
+        "description": "True when no KanjiVG/SVG stroke guide was available for this kanji."
+      },
+      "stroke_count": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "strokes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["id", "start_hint", "end_hint", "path_hint", "arrow_hints", "rules"],
+          "properties": {
+            "id": { "type": "integer" },
+            "start_hint": { "$ref": "#/$defs/point_hint" },
+            "end_hint": { "$ref": "#/$defs/point_hint" },
+            "path_hint": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/path_segment" }
+            },
+            "arrow_hints": { "type": "array" },
+            "rules": {
+              "type": "object",
+              "required": ["direction_enforced", "corridor_radius", "start_must_be_near", "end_must_be_near"],
+              "properties": {
+                "direction_enforced": { "type": "boolean" },
+                "corridor_radius": { "type": "number" },
+                "start_must_be_near": { "type": "number" },
+                "end_must_be_near": { "type": "number" }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "point_hint": {
+      "type": "object",
+      "required": ["x", "y", "radius"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "radius": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "path_segment": {
+      "type": "object",
+      "required": ["type", "points"],
+      "properties": {
+        "type": { "type": "string", "enum": ["Line", "Quad", "Cubic"] },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}
