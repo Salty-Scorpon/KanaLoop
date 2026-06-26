@@ -127,3 +127,146 @@ Place a file like `assets/data/overrides/お.json` with a single kana entry:
 
 Whichever entry is loaded last for a given kana replaces the generated data, so you can
 quickly fix a single kana by dropping an override file in `assets/data/overrides/`.
+
+## Kanji vocabulary guided-writing import
+
+Phase-one kanji practice data is imported from Anki `.apkg` files into
+`assets/data/kanji_vocab_strokes.json`. The data shape is documented by
+`assets/data/kanji_vocab_schema.json`.
+
+Each imported practice entry represents one kanji in one vocabulary context:
+
+* `kanji` is the single character the learner writes.
+* `word` is the full vocabulary word from the Anki note.
+* `reading` is the pronunciation for the word.
+* `meaning` is the English definition shown above the writing box.
+* `sample_sentence.ja` and `sample_sentence.en` provide grammatical context.
+* `audio.word`, `audio.kanji`, `audio.sentence_ja`, and `audio.meaning_en` point to
+  imported or generated audio files when available.
+* `strokes` embeds the same normalized stroke format used by kana guided writing.
+
+Because one kanji can appear with multiple readings or in multiple words, the importer
+emits separate entries for each `kanji` + `word` + `reading` context. For example,
+`生` in `学生（がくせい）` and `生きる（いきる）` become separate practice entries while
+sharing the same underlying stroke geometry.
+
+**Import workflow**
+
+1. Place one or more `.apkg` files somewhere outside the Godot asset tree.
+2. Run the importer:
+   ```bash
+   python3 kana-loop/tools/import_anki_kanji_vocab.py \
+     --deck path/to/deck.apkg \
+     --output kana-loop/assets/data/kanji_vocab_strokes.json
+   ```
+3. If a deck uses nonstandard field names, provide a field-map config:
+   ```bash
+   python3 kana-loop/tools/import_anki_kanji_vocab.py \
+     --deck path/to/deck.apkg \
+     --config path/to/field_map.json
+   ```
+
+Example field-map config:
+
+```json
+{
+  "field_map": {
+    "word": ["Expression", "Word", "Japanese"],
+    "reading": ["Reading", "Kana", "Pronunciation"],
+    "meaning": ["Meaning", "English", "Definition"],
+    "sentence_ja": ["Sentence", "Example Japanese"],
+    "sentence_en": ["Sentence Meaning", "Example English"],
+    "kanji_audio": ["Kanji Audio", "Character Audio"],
+    "word_audio": ["Audio", "Word Audio"],
+    "sentence_audio": ["Sentence Audio"],
+    "meaning_audio": ["Meaning Audio", "English Audio"]
+  }
+}
+```
+
+Imported Anki audio is copied under `assets/audio/kanji_vocab/` and referenced with
+Godot `res://` paths. If a note lacks isolated kanji audio, the importer maps the word
+audio to both `audio.word` and `audio.kanji` so the future practice screen can play the
+best available pronunciation when a kanji is presented or Space is pressed.
+
+Kanji stroke geometry is pulled from KanjiVG-style SVG files in `assets/data/kanji/`,
+which are named by five-digit lowercase Unicode codepoint such as `0751f.svg` for `生`.
+When no SVG exists, the importer still writes the vocabulary entry with
+`missing_strokes: true`, `stroke_count: 0`, and an empty `strokes` array so the app can
+show the entry metadata and report that no guide is available.
+
+## Kanji vocabulary runtime data loader
+
+`KanaLoop/kanji_vocab_data.gd` is registered as the `KanjiVocabData` autoload and is the
+runtime API for the kanji guided-writing dataset. It lazily reads
+`assets/data/kanji_vocab_strokes.json`, normalizes entries, indexes them by `id`, and
+exposes filtered copies so practice scenes can build a session without mutating the shared
+cache.
+
+Useful runtime calls:
+
+* `KanjiVocabData.load_entries()` loads and returns all normalized entries.
+* `KanjiVocabData.get_entry_by_id(id)` returns one entry by stable import id.
+* `KanjiVocabData.get_available_tag_numbers("week_")` and
+  `get_available_tag_numbers("day_")` drive settings UI filters from imported data.
+* `KanjiVocabData.get_active_practice_entries()` applies the current `KanaState` kanji
+  filters, including selected weeks/days, decks, tags, ids, kanji characters, and the
+  `require_strokes`, `require_audio`, and `require_sentences` toggles.
+
+If no imported kanji vocabulary file is present, the loader returns an empty list and keeps
+a human-readable `last_error`; existing settings UI falls back to the bundled dictionary
+week/day tags until imported kanji vocabulary data is available.
+
+## Kanji vocabulary audio helper
+
+`KanaLoop/vocab_audio.gd` is registered as the `VocabAudio` autoload for imported kanji
+vocabulary audio. It plays audio paths stored on each kanji vocabulary entry instead of
+using the fixed kana voice catalog.
+
+Useful runtime calls:
+
+* `VocabAudio.play_entry_kanji(entry)` plays `audio.kanji`, falling back to `audio.word`.
+* `VocabAudio.play_entry_word(entry)` plays `audio.word`, falling back to `audio.kanji`.
+* `VocabAudio.play_entry_sentence_ja(entry)` plays Japanese sentence audio.
+* `VocabAudio.play_entry_meaning_en(entry)` plays English definition audio.
+* `VocabAudio.play_entry_*_by_id(id)` variants fetch the entry from `KanjiVocabData` first.
+* `VocabAudio.has_entry_audio(entry, key)` and `get_preferred_audio_path(entry, keys)` let
+  practice scenes decide whether a click target should be enabled before attempting playback.
+
+Missing or unloadable audio paths use the same short placeholder-stream strategy as kana
+audio, so a bad media reference does not break the practice scene.
+
+## Kanji guided-writing scene
+
+`KanaLoop/kanji_guided_writing.tscn` is the phase-four practice scene for imported kanji
+vocabulary entries. Its script extends the existing kana guided-writing stroke validator so
+kanji practice reuses the same start-gate, end-gate, path-corridor, direction, ghost-line,
+and blackout behavior while replacing the symbol pool with `KanjiVocabData` entries.
+
+The scene displays the English meaning, English sample sentence, Japanese sample sentence,
+and full vocabulary word/reading above the drawing canvas. When an entry is presented it
+plays the entry's kanji audio through `VocabAudio`; Space or clicking the kanji repeats that
+audio, Shift+Space or clicking the meaning plays English definition audio, and clicking the
+Japanese sentence plays Japanese sentence audio.
+
+## Kanji guided-writing menu entry
+
+The main menu includes `Practice: Kanji Guided Writing (漢字書字誘導)`, which opens
+`KanaLoop/kanji_guided_writing.tscn` through the shared practice-scene loader. The scene
+uses the existing options/settings filters stored in `KanaState`, so selected week/day
+filters apply before the kanji practice pool is randomized.
+
+## Kanji vocabulary validation
+
+Use `kana-loop/tools/validate_kanji_vocab_strokes.py` after importing an Anki deck to check
+that `assets/data/kanji_vocab_strokes.json` is ready for runtime use:
+
+```bash
+python3 kana-loop/tools/validate_kanji_vocab_strokes.py
+```
+
+The validator checks unique ids, duplicate kanji/word/reading contexts, required vocabulary
+fields, bilingual sample sentences, audio path keys and file existence, tag/source metadata,
+`missing_strokes` consistency, stroke counts, start/end hints, path segment shape, and stroke
+rules. Use `--allow-missing-audio` when validating an intermediate dataset before generated
+or copied audio files are available.
