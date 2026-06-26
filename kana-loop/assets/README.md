@@ -235,3 +235,16 @@ Useful runtime calls:
 
 Missing or unloadable audio paths use the same short placeholder-stream strategy as kana
 audio, so a bad media reference does not break the practice scene.
+
+## Kanji guided-writing scene
+
+`KanaLoop/kanji_guided_writing.tscn` is the phase-four practice scene for imported kanji
+vocabulary entries. Its script extends the existing kana guided-writing stroke validator so
+kanji practice reuses the same start-gate, end-gate, path-corridor, direction, ghost-line,
+and blackout behavior while replacing the symbol pool with `KanjiVocabData` entries.
+
+The scene displays the English meaning, English sample sentence, Japanese sample sentence,
+and full vocabulary word/reading above the drawing canvas. When an entry is presented it
+plays the entry's kanji audio through `VocabAudio`; Space or clicking the kanji repeats that
+audio, Shift+Space or clicking the meaning plays English definition audio, and clicking the
+Japanese sentence plays Japanese sentence audio.
