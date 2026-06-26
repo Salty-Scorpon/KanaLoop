@@ -255,3 +255,18 @@ The main menu includes `Practice: Kanji Guided Writing (漢字書字誘導)`, wh
 `KanaLoop/kanji_guided_writing.tscn` through the shared practice-scene loader. The scene
 uses the existing options/settings filters stored in `KanaState`, so selected week/day
 filters apply before the kanji practice pool is randomized.
+
+## Kanji vocabulary validation
+
+Use `kana-loop/tools/validate_kanji_vocab_strokes.py` after importing an Anki deck to check
+that `assets/data/kanji_vocab_strokes.json` is ready for runtime use:
+
+```bash
+python3 kana-loop/tools/validate_kanji_vocab_strokes.py
+```
+
+The validator checks unique ids, duplicate kanji/word/reading contexts, required vocabulary
+fields, bilingual sample sentences, audio path keys and file existence, tag/source metadata,
+`missing_strokes` consistency, stroke counts, start/end hints, path segment shape, and stroke
+rules. Use `--allow-missing-audio` when validating an intermediate dataset before generated
+or copied audio files are available.
