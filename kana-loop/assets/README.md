@@ -248,3 +248,10 @@ and full vocabulary word/reading above the drawing canvas. When an entry is pres
 plays the entry's kanji audio through `VocabAudio`; Space or clicking the kanji repeats that
 audio, Shift+Space or clicking the meaning plays English definition audio, and clicking the
 Japanese sentence plays Japanese sentence audio.
+
+## Kanji guided-writing menu entry
+
+The main menu includes `Practice: Kanji Guided Writing (漢字書字誘導)`, which opens
+`KanaLoop/kanji_guided_writing.tscn` through the shared practice-scene loader. The scene
+uses the existing options/settings filters stored in `KanaState`, so selected week/day
+filters apply before the kanji practice pool is randomized.

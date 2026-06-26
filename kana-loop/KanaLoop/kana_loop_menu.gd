@@ -12,6 +12,7 @@ extends Control
 @onready var practice_sequence_recall_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSequenceRecall
 @onready var practice_symbol_reading_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeSymbolReading
 @onready var practice_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeGuidedWriting
+@onready var practice_kanji_guided_writing_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeKanjiGuidedWriting
 @onready var practice_context_lattice_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/PracticeContextLattice
 @onready var dictionary_button: Button = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/MainMenu/Menu/DictionaryButton
 
@@ -96,6 +97,7 @@ const AUDIO_SYMBOL_SCENE := preload("res://KanaLoop/audio_symbol.tscn")
 const SEQUENCE_RECALL_SCENE := preload("res://KanaLoop/sequence_recall.tscn")
 const SYMBOL_READING_SCENE := preload("res://KanaReadingPractice.tscn")
 const GUIDED_WRITING_SCENE := preload("res://KanaLoop/guided_writing.tscn")
+const KANJI_GUIDED_WRITING_SCENE := preload("res://KanaLoop/kanji_guided_writing.tscn")
 const CONTEXT_LATTICE_SCENE := preload("res://KanaLoop/context_lattice.tscn")
 const DICTIONARY_SCENE := preload("res://KanaLoop/dictionary_ui.tscn")
 const DICTIONARY_INDEX_PATH := "res://assets/data/dictionary_3000_common_words.json"
@@ -109,6 +111,7 @@ func _ready() -> void:
 	practice_sequence_recall_button.pressed.connect(_on_practice_sequence_recall)
 	practice_symbol_reading_button.pressed.connect(_on_practice_symbol_reading)
 	practice_guided_writing_button.pressed.connect(_on_practice_guided_writing)
+	practice_kanji_guided_writing_button.pressed.connect(_on_practice_kanji_guided_writing)
 	practice_context_lattice_button.pressed.connect(_on_practice_context_lattice)
 	dictionary_button.pressed.connect(_on_dictionary_open)
 
@@ -430,6 +433,9 @@ func _on_practice_symbol_reading() -> void:
 
 func _on_practice_guided_writing() -> void:
 	_open_practice_scene(GUIDED_WRITING_SCENE)
+
+func _on_practice_kanji_guided_writing() -> void:
+	_open_practice_scene(KANJI_GUIDED_WRITING_SCENE)
 
 func _on_practice_context_lattice() -> void:
 	_open_practice_scene(CONTEXT_LATTICE_SCENE)
