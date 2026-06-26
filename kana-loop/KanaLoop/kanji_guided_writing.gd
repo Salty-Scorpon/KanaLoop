@@ -21,6 +21,10 @@ var remaining_entry_pool: Array[Dictionary] = []
 var current_entry: Dictionary = {}
 
 const TARGET_KANJI_FONT_SIZE := 190
+const KANJI_MIN_DRAWN_LENGTH_RATIO := 0.20
+const KANJI_FINAL_T_THRESHOLD := 0.72
+const KANJI_CORRIDOR_RADIUS_SCALE := 1.6
+const KANJI_GATE_RADIUS_SCALE := 1.35
 
 func _ready() -> void:
 	rng.randomize()
@@ -28,9 +32,8 @@ func _ready() -> void:
 		push_error("Kanji guided writing UI nodes are missing. Check the KanjiGuidedWriting scene structure.")
 		return
 	if target_kana_label != null:
-		target_kana_label.visible = true
-		target_kana_label.mouse_filter = Control.MOUSE_FILTER_STOP
-		target_kana_label.gui_input.connect(_on_kanji_label_input)
+		target_kana_label.visible = false
+		target_kana_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_connect_prompt_audio_inputs()
 	_refill_remaining_pool()
 	call_deferred("_advance_to_next_kana")
@@ -70,6 +73,8 @@ func _update_target_kana() -> void:
 		return
 	var kanji := String(current_entry.get("kanji", "漢"))
 	target_kana_label.text = kanji
+	target_kana_label.visible = stroke_runtimes.is_empty()
+	target_kana_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	target_kana_label.add_theme_font_size_override("font_size", TARGET_KANJI_FONT_SIZE)
 
 func _load_guide_definition() -> void:
@@ -77,6 +82,9 @@ func _load_guide_definition() -> void:
 		return
 	_clear_strokes()
 	stroke_runtimes = _build_stroke_runtimes(current_entry)
+	if target_kana_label != null:
+		target_kana_label.visible = stroke_runtimes.is_empty()
+		target_kana_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	current_stroke_index = 0
 	debug_last_t_visible = false
 	if completion_label != null:
@@ -88,6 +96,18 @@ func _load_guide_definition() -> void:
 	_build_guides()
 	_update_guides_visibility()
 	queue_redraw()
+
+func _get_min_drawn_length_ratio() -> float:
+	return KANJI_MIN_DRAWN_LENGTH_RATIO
+
+func _get_final_t_threshold() -> float:
+	return KANJI_FINAL_T_THRESHOLD
+
+func _get_corridor_radius_scale() -> float:
+	return KANJI_CORRIDOR_RADIUS_SCALE
+
+func _get_gate_radius_scale() -> float:
+	return KANJI_GATE_RADIUS_SCALE
 
 func _play_current_kana() -> void:
 	if current_entry.is_empty():

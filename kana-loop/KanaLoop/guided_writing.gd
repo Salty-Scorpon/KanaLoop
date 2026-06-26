@@ -71,6 +71,7 @@ const GUIDE_SAMPLE_COUNT := 192
 const MIN_DRAWN_LENGTH_RATIO := 0.35
 const DIRECTION_JITTER := 1.0
 const FINAL_T_THRESHOLD := 0.85
+const DEFAULT_HINT_RADIUS := 0.08
 const DEBUG_PATH_COLOR := Color(0.9, 0.2, 0.9, 0.9)
 const DEBUG_START_COLOR := Color(0.2, 0.9, 0.4, 0.9)
 const DEBUG_END_COLOR := Color(0.9, 0.4, 0.2, 0.9)
@@ -244,6 +245,8 @@ func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
 		var end_hint: Dictionary = stroke.get("end_hint", {})
 		var start_point := _to_canvas_point(start_hint, glyph_origin, glyph_size)
 		var end_point := _to_canvas_point(end_hint, glyph_origin, glyph_size)
+		var start_radius := float(start_hint.get("radius", rules.get("start_must_be_near", DEFAULT_HINT_RADIUS)))
+		var end_radius := float(end_hint.get("radius", rules.get("end_must_be_near", DEFAULT_HINT_RADIUS)))
 		var path_segments: Array = stroke.get("path_hint", [])
 		var path_samples := _build_path_samples(path_segments, glyph_origin, glyph_size, GUIDE_SAMPLE_COUNT)
 		var cumulative_lengths := _build_cumulative_lengths(path_samples)
@@ -251,12 +254,12 @@ func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
 		var segment_vectors := _build_segment_vectors(path_samples)
 		var segment_length_squareds := _build_segment_length_squareds(segment_vectors)
 		var path_bounds := _build_path_bounds(path_samples)
-		var corridor_radius := float(rules.get("corridor_radius", 0.05)) * glyph_size
+		var corridor_radius := float(rules.get("corridor_radius", 0.05)) * glyph_size * _get_corridor_radius_scale()
 		runtimes.append({
 			"start_point": start_point,
 			"end_point": end_point,
-			"start_gate_radius": float(rules.get("start_must_be_near", 0.08)) * glyph_size,
-			"end_gate_radius": float(rules.get("end_must_be_near", 0.08)) * glyph_size,
+			"start_gate_radius": start_radius * glyph_size * _get_gate_radius_scale(),
+			"end_gate_radius": end_radius * glyph_size * _get_gate_radius_scale(),
 			"corridor_radius": corridor_radius,
 			"direction_enforced": bool(rules.get("direction_enforced", true)),
 			"path_samples": path_samples,
@@ -410,14 +413,26 @@ func _stroke_is_valid(stroke_points: PackedVector2Array, runtime: Dictionary) ->
 		return false
 	var drawn_length := _polyline_length(stroke_points)
 	var total_length: float = runtime.get("total_length", 0.0)
-	if total_length > 0.0 and drawn_length < total_length * MIN_DRAWN_LENGTH_RATIO:
+	if total_length > 0.0 and drawn_length < total_length * _get_min_drawn_length_ratio():
 		return false
 	if runtime.get("direction_enforced", true):
 		if stroke_direction_failed:
 			return false
-		if stroke_last_t < FINAL_T_THRESHOLD:
+		if stroke_last_t < _get_final_t_threshold():
 			return false
 	return true
+
+func _get_min_drawn_length_ratio() -> float:
+	return MIN_DRAWN_LENGTH_RATIO
+
+func _get_final_t_threshold() -> float:
+	return FINAL_T_THRESHOLD
+
+func _get_corridor_radius_scale() -> float:
+	return 1.0
+
+func _get_gate_radius_scale() -> float:
+	return 1.0
 
 func _distance_to_polyline_cached(
 	point: Vector2,
