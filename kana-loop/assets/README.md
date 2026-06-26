@@ -184,6 +184,26 @@ Example field-map config:
 }
 ```
 
+
+**Repair Japanese sample sentences from Anki Expression**
+
+If `sample_sentence.ja` was imported from the wrong Anki field, run the Expression-only
+repair parser against the original `.apkg` deck. It matches existing
+`kanji_vocab_strokes.json` entries by Anki `note_id` and replaces only
+`sample_sentence.ja` with the note's `Expression` field; all stroke, audio, meaning,
+and English sentence data is left untouched.
+
+```bash
+python3 kana-loop/tools/update_kanji_vocab_sentences_from_expression.py \
+  --deck path/to/deck.apkg \
+  --input kana-loop/assets/data/kanji_vocab_strokes.json \
+  --output kana-loop/assets/data/kanji_vocab_strokes.json
+```
+
+Use `--dry-run` first to preview how many entries would change, or
+`--expression-field SomeFieldName` if the deck uses a differently named expression
+field.
+
 Imported Anki audio is copied under `assets/audio/kanji_vocab/` and referenced with
 Godot `res://` paths. If a note lacks isolated kanji audio, the importer maps the word
 audio to both `audio.word` and `audio.kanji` so the future practice screen can play the
