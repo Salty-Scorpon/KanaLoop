@@ -142,7 +142,7 @@ func _load_guide_definition() -> void:
 	if stroke_runtimes.is_empty():
 		progress_label.text = "No guide available"
 	else:
-		progress_label.text = "Stroke 1/%d" % stroke_runtimes.size()
+		progress_label.text = _stroke_progress_text(0)
 	_build_guides()
 	_update_guides_visibility()
 	queue_redraw()
@@ -231,12 +231,13 @@ func _load_override_directory(directory_path: String) -> void:
 	dir.list_dir_end()
 
 func _build_stroke_runtimes(kana_def: Dictionary) -> Array[Dictionary]:
+	return _build_stroke_runtimes_with_layout(kana_def, _get_glyph_origin(), _get_glyph_size())
+
+func _build_stroke_runtimes_with_layout(kana_def: Dictionary, glyph_origin: Vector2, glyph_size: float) -> Array[Dictionary]:
 	var runtimes: Array[Dictionary] = []
 	if kana_def.is_empty():
 		return runtimes
 	var strokes: Array = kana_def.get("strokes", [])
-	var glyph_size := _get_glyph_size()
-	var glyph_origin := _get_glyph_origin()
 	for stroke in strokes:
 		if typeof(stroke) != TYPE_DICTIONARY:
 			continue
@@ -393,12 +394,15 @@ func _evaluate_stroke(finished_line: Line2D, stroke_points: PackedVector2Array) 
 		if current_stroke_index >= stroke_runtimes.size():
 			_handle_kana_completed()
 		else:
-			progress_label.text = "Stroke %d/%d" % [current_stroke_index + 1, stroke_runtimes.size()]
+			progress_label.text = _stroke_progress_text(current_stroke_index)
 		_update_guides_visibility()
 	else:
 		if finished_line != null:
 			finished_line.queue_free()
-		progress_label.text = "Try stroke %d/%d" % [current_stroke_index + 1, stroke_runtimes.size()]
+		progress_label.text = "Try %s" % _stroke_progress_text(current_stroke_index).to_lower()
+
+func _stroke_progress_text(stroke_index: int) -> String:
+	return "Stroke %d/%d" % [stroke_index + 1, stroke_runtimes.size()]
 
 func _stroke_is_valid(stroke_points: PackedVector2Array, runtime: Dictionary) -> bool:
 	if stroke_points.size() < 2:

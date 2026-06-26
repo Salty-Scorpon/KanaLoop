@@ -19,6 +19,7 @@ extends "res://KanaLoop/guided_writing.gd"
 var selected_entries: Array[Dictionary] = []
 var remaining_entry_pool: Array[Dictionary] = []
 var current_entry: Dictionary = {}
+var word_entry_lookup: Dictionary = {}
 
 const TARGET_KANJI_FONT_SIZE := 190
 const KANJI_MIN_DRAWN_LENGTH_RATIO := 0.20
@@ -35,6 +36,7 @@ func _ready() -> void:
 		target_kana_label.visible = false
 		target_kana_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_connect_prompt_audio_inputs()
+	_load_kana_outline_data()
 	_refill_remaining_pool()
 	call_deferred("_advance_to_next_kana")
 	if back_button != null:
@@ -71,17 +73,19 @@ func _unhandled_input(event: InputEvent) -> void:
 func _update_target_kana() -> void:
 	if target_kana_label == null:
 		return
-	var kanji := String(current_entry.get("kanji", "漢"))
-	target_kana_label.text = kanji
+	var word := String(current_entry.get("word", current_entry.get("kanji", "漢")))
+	if word == "":
+		word = "漢"
+	target_kana_label.text = word
 	target_kana_label.visible = stroke_runtimes.is_empty()
 	target_kana_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	target_kana_label.add_theme_font_size_override("font_size", TARGET_KANJI_FONT_SIZE)
+	target_kana_label.add_theme_font_size_override("font_size", _get_word_font_size(word))
 
 func _load_guide_definition() -> void:
 	if drawing_canvas != null and drawing_canvas.size == Vector2.ZERO:
 		return
 	_clear_strokes()
-	stroke_runtimes = _build_stroke_runtimes(current_entry)
+	stroke_runtimes = _build_word_stroke_runtimes()
 	if target_kana_label != null:
 		target_kana_label.visible = stroke_runtimes.is_empty()
 		target_kana_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -92,7 +96,7 @@ func _load_guide_definition() -> void:
 	if stroke_runtimes.is_empty():
 		progress_label.text = "No guide available"
 	else:
-		progress_label.text = "Stroke 1/%d" % stroke_runtimes.size()
+		progress_label.text = _stroke_progress_text(0)
 	_build_guides()
 	_update_guides_visibility()
 	queue_redraw()
@@ -136,7 +140,7 @@ func _on_drawing_canvas_resized() -> void:
 func _handle_kana_completed() -> void:
 	if completion_label != null:
 		completion_label.visible = true
-	progress_label.text = "Completed"
+	progress_label.text = "Word completed"
 	_play_current_kana()
 	call_deferred("_advance_to_next_kana")
 
@@ -147,7 +151,7 @@ func _advance_to_next_kana() -> void:
 	current_kana = ""
 	if not remaining_entry_pool.is_empty():
 		current_entry = remaining_entry_pool.pop_back()
-		current_kana = String(current_entry.get("kanji", ""))
+		current_kana = String(current_entry.get("word", current_entry.get("kanji", "")))
 	_update_prompt_labels()
 	_update_target_kana()
 	_load_guide_definition()
@@ -158,9 +162,25 @@ func _refill_remaining_pool() -> void:
 	selected_entries = KanjiVocabData.get_active_practice_entries()
 	if selected_entries.is_empty():
 		selected_entries = KanjiVocabData.get_entries()
+	word_entry_lookup = {}
 	remaining_entry_pool = []
+	var seen_words := {}
 	for entry in selected_entries:
-		remaining_entry_pool.append(entry.duplicate(true))
+		var word := String(entry.get("word", ""))
+		var kanji := String(entry.get("kanji", ""))
+		if word == "":
+			word = kanji
+		if word == "":
+			continue
+		if not word_entry_lookup.has(word):
+			word_entry_lookup[word] = {}
+		if kanji != "":
+			word_entry_lookup[word][kanji] = entry.duplicate(true)
+		if not seen_words.has(word):
+			var word_entry := entry.duplicate(true)
+			word_entry["word"] = word
+			remaining_entry_pool.append(word_entry)
+			seen_words[word] = true
 	_shuffle_remaining_entry_pool()
 
 func _shuffle_remaining_entry_pool() -> void:
@@ -201,3 +221,62 @@ func _on_japanese_sentence_label_input(event: InputEvent) -> void:
 
 func _is_primary_click(event: InputEvent) -> bool:
 	return event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
+
+func _build_word_stroke_runtimes() -> Array[Dictionary]:
+	var runtimes: Array[Dictionary] = []
+	if current_entry.is_empty() or drawing_canvas == null:
+		return runtimes
+	var word := String(current_entry.get("word", current_entry.get("kanji", "")))
+	if word == "":
+		return runtimes
+	var chars := _split_word_chars(word)
+	if chars.is_empty():
+		return runtimes
+	var canvas_size := drawing_canvas.size
+	var glyph_size: float = min(canvas_size.y, canvas_size.x / float(chars.size()))
+	glyph_size *= 0.92
+	var total_width := glyph_size * chars.size()
+	var start_x := (canvas_size.x - total_width) * 0.5
+	var start_y := (canvas_size.y - glyph_size) * 0.5
+	var word_lookup: Dictionary = word_entry_lookup.get(word, {})
+	for index in range(chars.size()):
+		var character: String = chars[index]
+		var definition := _definition_for_word_character(character, word_lookup)
+		if definition.is_empty():
+			continue
+		var origin := Vector2(start_x + glyph_size * index, start_y)
+		var char_runtimes := _build_stroke_runtimes_with_layout(definition, origin, glyph_size)
+		for runtime in char_runtimes:
+			runtime["character"] = character
+			runtime["word_index"] = index
+			runtimes.append(runtime)
+	return runtimes
+
+func _definition_for_word_character(character: String, word_lookup: Dictionary) -> Dictionary:
+	if kana_outline_data.has(character):
+		return kana_outline_data[character]
+	var entry: Dictionary = word_lookup.get(character, {})
+	if not entry.is_empty():
+		return entry
+	if String(current_entry.get("kanji", "")) == character:
+		return current_entry
+	return {}
+
+func _split_word_chars(word: String) -> Array[String]:
+	var chars: Array[String] = []
+	for index in range(word.length()):
+		chars.append(word.substr(index, 1))
+	return chars
+
+func _get_word_font_size(word: String) -> int:
+	if word.length() <= 1:
+		return TARGET_KANJI_FONT_SIZE
+	return max(72, int(TARGET_KANJI_FONT_SIZE / sqrt(float(word.length()))))
+
+func _stroke_progress_text(stroke_index: int) -> String:
+	if stroke_runtimes.is_empty():
+		return "No guide available"
+	var safe_index: int = clamp(stroke_index, 0, stroke_runtimes.size() - 1)
+	var runtime: Dictionary = stroke_runtimes[safe_index]
+	var character := String(runtime.get("character", ""))
+	return "Stroke %d/%d%s" % [safe_index + 1, stroke_runtimes.size(), " · %s" % character if character != "" else ""]
