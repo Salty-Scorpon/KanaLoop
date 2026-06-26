@@ -63,8 +63,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 		if event.shift_pressed:
 			_play_current_meaning_audio()
+		elif event.ctrl_pressed:
+			_play_current_reading_audio()
 		else:
-			_play_current_kana()
+			_play_current_meaning_then_reading_audio()
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_D:
 		debug_overlay_enabled = not debug_overlay_enabled
@@ -123,10 +125,33 @@ func _play_current_meaning_audio() -> void:
 		return
 	VocabAudio.play_entry_meaning_en(current_entry)
 
+func _play_current_reading_audio() -> void:
+	if current_entry.is_empty():
+		return
+	VocabAudio.play_entry_word(current_entry)
+
+func _play_current_meaning_then_reading_audio() -> void:
+	if current_entry.is_empty():
+		return
+	_play_meaning_then_reading_for_entry(current_entry)
+
 func _play_current_sentence_audio() -> void:
 	if current_entry.is_empty():
 		return
 	VocabAudio.play_entry_sentence_ja(current_entry)
+
+
+func _play_meaning_then_reading_for_entry(entry: Dictionary) -> void:
+	if entry.is_empty():
+		return
+	await _play_entry_audio_and_wait(entry, Callable(VocabAudio, "play_entry_meaning_en"))
+	await _play_entry_audio_and_wait(entry, Callable(VocabAudio, "play_entry_word"))
+
+func _play_entry_audio_and_wait(entry: Dictionary, play_callable: Callable) -> void:
+	if not play_callable.call(entry):
+		return
+	if VocabAudio.is_playing():
+		await VocabAudio.audio_player.finished
 
 func _on_drawing_canvas_resized() -> void:
 	if drawing_canvas == null:
@@ -141,7 +166,8 @@ func _handle_kana_completed() -> void:
 	if completion_label != null:
 		completion_label.visible = true
 	progress_label.text = "Word completed"
-	_play_current_kana()
+	var completed_entry := current_entry.duplicate(true)
+	await _play_meaning_then_reading_for_entry(completed_entry)
 	call_deferred("_advance_to_next_kana")
 
 func _advance_to_next_kana() -> void:
@@ -156,7 +182,7 @@ func _advance_to_next_kana() -> void:
 	_update_target_kana()
 	_load_guide_definition()
 	if not current_entry.is_empty():
-		VocabAudio.play_entry_kanji(current_entry)
+		_play_current_meaning_then_reading_audio()
 
 func _refill_remaining_pool() -> void:
 	selected_entries = KanjiVocabData.get_active_practice_entries()
