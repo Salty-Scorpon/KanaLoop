@@ -194,3 +194,25 @@ which are named by five-digit lowercase Unicode codepoint such as `0751f.svg` fo
 When no SVG exists, the importer still writes the vocabulary entry with
 `missing_strokes: true`, `stroke_count: 0`, and an empty `strokes` array so the app can
 show the entry metadata and report that no guide is available.
+
+## Kanji vocabulary runtime data loader
+
+`KanaLoop/kanji_vocab_data.gd` is registered as the `KanjiVocabData` autoload and is the
+runtime API for the kanji guided-writing dataset. It lazily reads
+`assets/data/kanji_vocab_strokes.json`, normalizes entries, indexes them by `id`, and
+exposes filtered copies so practice scenes can build a session without mutating the shared
+cache.
+
+Useful runtime calls:
+
+* `KanjiVocabData.load_entries()` loads and returns all normalized entries.
+* `KanjiVocabData.get_entry_by_id(id)` returns one entry by stable import id.
+* `KanjiVocabData.get_available_tag_numbers("week_")` and
+  `get_available_tag_numbers("day_")` drive settings UI filters from imported data.
+* `KanjiVocabData.get_active_practice_entries()` applies the current `KanaState` kanji
+  filters, including selected weeks/days, decks, tags, ids, kanji characters, and the
+  `require_strokes`, `require_audio`, and `require_sentences` toggles.
+
+If no imported kanji vocabulary file is present, the loader returns an empty list and keeps
+a human-readable `last_error`; existing settings UI falls back to the bundled dictionary
+week/day tags until imported kanji vocabulary data is available.
