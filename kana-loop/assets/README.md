@@ -156,14 +156,14 @@ sharing the same underlying stroke geometry.
 2. Run the importer:
    ```bash
    python3 kana-loop/tools/import_anki_kanji_vocab.py \
-     --deck path/to/deck.apkg \
-     --output kana-loop/assets/data/kanji_vocab_strokes.json
+	 --deck path/to/deck.apkg \
+	 --output kana-loop/assets/data/kanji_vocab_strokes.json
    ```
 3. If a deck uses nonstandard field names, provide a field-map config:
    ```bash
    python3 kana-loop/tools/import_anki_kanji_vocab.py \
-     --deck path/to/deck.apkg \
-     --config path/to/field_map.json
+	 --deck path/to/deck.apkg \
+	 --config path/to/field_map.json
    ```
 
 Example field-map config:
@@ -171,15 +171,15 @@ Example field-map config:
 ```json
 {
   "field_map": {
-    "word": ["Expression", "Word", "Japanese"],
-    "reading": ["Reading", "Kana", "Pronunciation"],
-    "meaning": ["Meaning", "English", "Definition"],
-    "sentence_ja": ["Sentence", "Example Japanese"],
-    "sentence_en": ["Sentence Meaning", "Example English"],
-    "kanji_audio": ["Kanji Audio", "Character Audio"],
-    "word_audio": ["Audio", "Word Audio"],
-    "sentence_audio": ["Sentence Audio"],
-    "meaning_audio": ["Meaning Audio", "English Audio"]
+	"word": ["Expression", "Word", "Japanese"],
+	"reading": ["Reading", "Kana", "Pronunciation"],
+	"meaning": ["Meaning", "English", "Definition"],
+	"sentence_ja": ["Sentence", "Example Japanese"],
+	"sentence_en": ["Sentence Meaning", "Example English"],
+	"kanji_audio": ["Kanji Audio", "Character Audio"],
+	"word_audio": ["Audio", "Word Audio"],
+	"sentence_audio": ["Sentence Audio"],
+	"meaning_audio": ["Meaning Audio", "English Audio"]
   }
 }
 ```
