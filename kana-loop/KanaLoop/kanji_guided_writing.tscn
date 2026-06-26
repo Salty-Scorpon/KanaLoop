@@ -59,7 +59,7 @@ theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 
 [node name="Description" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer"]
-text = "Trace guided kanji strokes. Space/click kanji plays kanji audio. Shift+Space/click meaning plays English audio. Click the Japanese sentence to hear it."
+text = "Trace guided kanji strokes. Space plays kanji audio. Shift+Space/click meaning plays English audio. Click the Japanese sentence to hear it."
 horizontal_alignment = 1
 autowrap_mode = 3
 
