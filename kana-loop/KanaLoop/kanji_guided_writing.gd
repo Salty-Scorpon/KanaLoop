@@ -21,6 +21,7 @@ var remaining_entry_pool: Array[Dictionary] = []
 var current_entry: Dictionary = {}
 var word_entry_lookup: Dictionary = {}
 var chronological_practice := false
+var word_completed := false
 
 const TARGET_KANJI_FONT_SIZE := 190
 const KANJI_MIN_DRAWN_LENGTH_RATIO := 0.20
@@ -87,6 +88,7 @@ func _update_target_kana() -> void:
 func _load_guide_definition() -> void:
 	if drawing_canvas != null and drawing_canvas.size == Vector2.ZERO:
 		return
+	word_completed = false
 	_clear_strokes()
 	stroke_runtimes = _build_word_stroke_runtimes()
 	if target_kana_label != null:
@@ -161,9 +163,12 @@ func _on_drawing_canvas_resized() -> void:
 		return
 	if current_entry.is_empty():
 		return
+	if word_completed:
+		return
 	_load_guide_definition()
 
 func _handle_kana_completed() -> void:
+	word_completed = true
 	if completion_label != null:
 		completion_label.visible = true
 	progress_label.text = "Word completed"
@@ -172,6 +177,7 @@ func _handle_kana_completed() -> void:
 	call_deferred("_advance_to_next_kana")
 
 func _advance_to_next_kana() -> void:
+	word_completed = false
 	if remaining_entry_pool.is_empty():
 		_refill_remaining_pool()
 	current_entry = {}
