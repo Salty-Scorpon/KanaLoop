@@ -22,12 +22,17 @@ var current_entry: Dictionary = {}
 var word_entry_lookup: Dictionary = {}
 var chronological_practice := false
 var word_completed := false
+var practice_input_enabled := true
+var assignment_sequence := 0
+var initial_word_preview_lines: Array[Line2D] = []
 
 const TARGET_KANJI_FONT_SIZE := 190
 const KANJI_MIN_DRAWN_LENGTH_RATIO := 0.20
 const KANJI_FINAL_T_THRESHOLD := 0.72
 const KANJI_CORRIDOR_RADIUS_SCALE := 1.6
 const KANJI_GATE_RADIUS_SCALE := 1.35
+const PLAYER_STROKE_COLOR := Color(0.2, 0.4, 0.9, 0.9)
+const INITIAL_WORD_PREVIEW_WIDTH := 6.0
 
 func _ready() -> void:
 	rng.randomize()
@@ -63,12 +68,14 @@ func _connect_prompt_audio_inputs() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
-		if event.shift_pressed:
+		if event.ctrl_pressed and event.shift_pressed:
+			_play_current_sentence_audio()
+		elif event.shift_pressed:
 			_play_current_meaning_audio()
 		elif event.ctrl_pressed:
 			_play_current_reading_audio()
 		else:
-			_play_current_meaning_then_reading_audio()
+			_play_current_reading_then_meaning_audio()
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_D:
 		debug_overlay_enabled = not debug_overlay_enabled
@@ -89,6 +96,7 @@ func _load_guide_definition() -> void:
 	if drawing_canvas != null and drawing_canvas.size == Vector2.ZERO:
 		return
 	word_completed = false
+	_clear_initial_word_preview()
 	_clear_strokes()
 	stroke_runtimes = _build_word_stroke_runtimes()
 	if target_kana_label != null:
@@ -105,6 +113,13 @@ func _load_guide_definition() -> void:
 	_build_guides()
 	_update_guides_visibility()
 	queue_redraw()
+
+
+func _update_guides_visibility() -> void:
+	super._update_guides_visibility()
+	if not practice_input_enabled:
+		for line in outline_lines:
+			line.visible = false
 
 func _get_min_drawn_length_ratio() -> float:
 	return KANJI_MIN_DRAWN_LENGTH_RATIO
@@ -133,10 +148,10 @@ func _play_current_reading_audio() -> void:
 		return
 	VocabAudio.play_entry_word(current_entry)
 
-func _play_current_meaning_then_reading_audio() -> void:
+func _play_current_reading_then_meaning_audio() -> void:
 	if current_entry.is_empty():
 		return
-	_play_meaning_then_reading_for_entry(current_entry)
+	_play_reading_then_meaning_for_entry(current_entry)
 
 func _play_current_sentence_audio() -> void:
 	if current_entry.is_empty():
@@ -144,11 +159,11 @@ func _play_current_sentence_audio() -> void:
 	VocabAudio.play_entry_sentence_ja(current_entry)
 
 
-func _play_meaning_then_reading_for_entry(entry: Dictionary) -> void:
+func _play_reading_then_meaning_for_entry(entry: Dictionary) -> void:
 	if entry.is_empty():
 		return
-	await _play_entry_audio_and_wait(entry, Callable(VocabAudio, "play_entry_meaning_en"))
 	await _play_entry_audio_and_wait(entry, Callable(VocabAudio, "play_entry_word"))
+	await _play_entry_audio_and_wait(entry, Callable(VocabAudio, "play_entry_meaning_en"))
 
 func _play_entry_audio_and_wait(entry: Dictionary, play_callable: Callable) -> void:
 	if not play_callable.call(entry):
@@ -173,7 +188,7 @@ func _handle_kana_completed() -> void:
 		completion_label.visible = true
 	progress_label.text = "Word completed"
 	var completed_entry := current_entry.duplicate(true)
-	await _play_meaning_then_reading_for_entry(completed_entry)
+	await _play_reading_then_meaning_for_entry(completed_entry)
 	call_deferred("_advance_to_next_kana")
 
 func _advance_to_next_kana() -> void:
@@ -188,8 +203,10 @@ func _advance_to_next_kana() -> void:
 	_update_prompt_labels()
 	_update_target_kana()
 	_load_guide_definition()
+	assignment_sequence += 1
+	var sequence := assignment_sequence
 	if not current_entry.is_empty():
-		_play_current_meaning_then_reading_audio()
+		_play_initial_assignment_audio(sequence)
 
 func _refill_remaining_pool() -> void:
 	var filters := KanaState.get_kanji_practice_filters()
@@ -323,3 +340,45 @@ func _stroke_progress_text(stroke_index: int) -> String:
 	var runtime: Dictionary = stroke_runtimes[safe_index]
 	var character := String(runtime.get("character", ""))
 	return "Stroke %d/%d%s" % [safe_index + 1, stroke_runtimes.size(), " · %s" % character if character != "" else ""]
+
+func _play_initial_assignment_audio(sequence: int) -> void:
+	practice_input_enabled = false
+	_show_initial_word_preview()
+	_update_guides_visibility()
+	var assigned_entry := current_entry.duplicate(true)
+	await _play_reading_then_meaning_for_entry(assigned_entry)
+	if sequence != assignment_sequence:
+		return
+	_clear_initial_word_preview()
+	practice_input_enabled = true
+	_update_guides_visibility()
+	if progress_label != null and not stroke_runtimes.is_empty():
+		progress_label.text = _stroke_progress_text(current_stroke_index)
+
+func _show_initial_word_preview() -> void:
+	_clear_initial_word_preview()
+	if strokes_layer == null:
+		return
+	for runtime in stroke_runtimes:
+		var preview_line := Line2D.new()
+		preview_line.width = INITIAL_WORD_PREVIEW_WIDTH
+		preview_line.default_color = PLAYER_STROKE_COLOR
+		preview_line.round_precision = 8
+		preview_line.joint_mode = Line2D.LINE_JOINT_ROUND
+		preview_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+		preview_line.end_cap_mode = Line2D.LINE_CAP_ROUND
+		preview_line.points = runtime.get("path_samples", PackedVector2Array())
+		strokes_layer.add_child(preview_line)
+		initial_word_preview_lines.append(preview_line)
+
+func _clear_initial_word_preview() -> void:
+	for line in initial_word_preview_lines:
+		if is_instance_valid(line):
+			line.queue_free()
+	initial_word_preview_lines.clear()
+
+func _is_practice_input_enabled() -> bool:
+	return practice_input_enabled
+
+func _get_player_stroke_color() -> Color:
+	return PLAYER_STROKE_COLOR

@@ -309,6 +309,8 @@ func _on_drawing_canvas_resized() -> void:
 	_load_guide_definition()
 
 func _start_stroke(point: Vector2) -> void:
+	if has_method("_is_practice_input_enabled") and not _is_practice_input_enabled():
+		return
 	if current_stroke_index >= stroke_runtimes.size():
 		return
 	if strokes_layer == null:
@@ -323,7 +325,7 @@ func _start_stroke(point: Vector2) -> void:
 		return
 	active_line = Line2D.new()
 	active_line.width = 6.0
-	active_line.default_color = Color(0.2, 0.4, 0.9, 0.9)
+	active_line.default_color = _get_player_stroke_color()
 	active_line.joint_mode = Line2D.LINE_JOINT_ROUND
 	active_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	active_line.end_cap_mode = Line2D.LINE_CAP_ROUND
@@ -362,7 +364,7 @@ func _add_point(point: Vector2) -> void:
 			)
 			if distance > corridor_radius:
 				stroke_has_red = true
-	active_line.default_color = Color(0.9, 0.2, 0.2, 0.9) if stroke_has_red else Color(0.2, 0.4, 0.9, 0.9)
+	active_line.default_color = Color(0.9, 0.2, 0.2, 0.9) if stroke_has_red else _get_player_stroke_color()
 	if not stroke_has_red and runtime.get("direction_enforced", true):
 		var t := _project_t_on_path(point, runtime)
 		if t + DIRECTION_JITTER < stroke_last_t:
@@ -437,6 +439,9 @@ func _get_corridor_radius_scale() -> float:
 
 func _get_gate_radius_scale() -> float:
 	return 1.0
+
+func _get_player_stroke_color() -> Color:
+	return Color(0.2, 0.4, 0.9, 0.9)
 
 func _distance_to_polyline_cached(
 	point: Vector2,
