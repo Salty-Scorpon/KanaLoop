@@ -2,11 +2,13 @@ extends Node
 
 const DATA_PATH := "res://assets/data/kanji_vocab_strokes.json"
 const STUDY_GROUPS_PATH := "res://assets/data/kanji_vocab_study_groups.json"
+const PIMSLEUR_STUDY_GROUPS_PATH := "res://assets/data/pimsleur_vocab_study_groups.json"
 const REQUIRED_TEXT_FIELDS := ["id", "kanji", "word", "reading", "meaning"]
 
 var entries: Array[Dictionary] = []
 var entries_by_id: Dictionary = {}
 var study_group_metadata_by_entry_id: Dictionary = {}
+var pimsleur_study_group_metadata_by_entry_id: Dictionary = {}
 var loaded := false
 var last_error := ""
 
@@ -18,6 +20,7 @@ func reload() -> Array[Dictionary]:
 	entries.clear()
 	entries_by_id.clear()
 	study_group_metadata_by_entry_id.clear()
+	pimsleur_study_group_metadata_by_entry_id.clear()
 	last_error = ""
 	return load_entries(true)
 
@@ -28,6 +31,7 @@ func load_entries(force: bool = false) -> Array[Dictionary]:
 	entries.clear()
 	entries_by_id.clear()
 	study_group_metadata_by_entry_id = _load_study_group_metadata()
+	pimsleur_study_group_metadata_by_entry_id = _load_pimsleur_study_group_metadata()
 	last_error = ""
 
 	if not FileAccess.file_exists(DATA_PATH):
@@ -117,6 +121,44 @@ func _load_study_group_metadata() -> Dictionary:
 					metadata_by_entry_id[entry_id_text] = metadata.duplicate(true)
 	return metadata_by_entry_id
 
+func _load_pimsleur_study_group_metadata() -> Dictionary:
+	var metadata_by_entry_id := {}
+	if not FileAccess.file_exists(PIMSLEUR_STUDY_GROUPS_PATH):
+		return metadata_by_entry_id
+	var file := FileAccess.open(PIMSLEUR_STUDY_GROUPS_PATH, FileAccess.READ)
+	if file == null:
+		push_warning("Unable to open Pimsleur vocabulary study groups at %s" % PIMSLEUR_STUDY_GROUPS_PATH)
+		return metadata_by_entry_id
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("Pimsleur vocabulary study groups must be a JSON object.")
+		return metadata_by_entry_id
+	var payload: Dictionary = parsed
+	for group_value in payload.get("groups", []):
+		if typeof(group_value) != TYPE_DICTIONARY:
+			continue
+		var group: Dictionary = group_value
+		var group_index := int(group.get("index", 0))
+		for record_value in group.get("records", []):
+			if typeof(record_value) != TYPE_DICTIONARY:
+				continue
+			var record: Dictionary = record_value
+			var metadata := {
+				"group_index": group_index,
+				"group_id": String(group.get("id", "")),
+				"group_label": String(group.get("label", "Pimsleur Group %03d" % group_index)),
+				"group_order": int(record.get("group_order", 0)),
+				"priority_key": String(record.get("priority_key", "")),
+				"deck_tag": String(record.get("deck_tag", "")),
+				"deck_index": int(record.get("deck_index", 0)),
+				"deck_position": int(record.get("deck_position", 0)),
+			}
+			for entry_id in record.get("entry_ids", []):
+				var entry_id_text := String(entry_id)
+				if entry_id_text != "":
+					metadata_by_entry_id[entry_id_text] = metadata.duplicate(true)
+	return metadata_by_entry_id
+
 func get_available_decks() -> Array[String]:
 	load_entries()
 	var decks: Array[String] = []
@@ -166,6 +208,18 @@ func get_available_study_group_numbers() -> Array[int]:
 	numbers.sort()
 	return numbers
 
+func get_available_pimsleur_study_group_numbers() -> Array[int]:
+	load_entries()
+	var numbers: Array[int] = []
+	var seen := {}
+	for entry in entries:
+		var group_index := _entry_pimsleur_study_group_number(entry)
+		if group_index > 0 and not seen.has(group_index):
+			seen[group_index] = true
+			numbers.append(group_index)
+	numbers.sort()
+	return numbers
+
 func get_active_practice_entries() -> Array[Dictionary]:
 	return get_filtered_entries(KanaState.get_kanji_practice_filters())
 
@@ -196,6 +250,8 @@ func _entry_matches_filters(entry: Dictionary, filters: Dictionary) -> bool:
 	if _filter_array_has_values(filters, "days") and not _has_any_tag_number(entry, "day_", filters["days"]):
 		return false
 	if _filter_array_has_values(filters, "study_groups") and not _has_study_group_number(entry, filters["study_groups"]):
+		return false
+	if _filter_array_has_values(filters, "pimsleur_study_groups") and not _has_pimsleur_study_group_number(entry, filters["pimsleur_study_groups"]):
 		return false
 	if bool(filters.get("require_strokes", false)) and bool(entry.get("missing_strokes", false)):
 		return false
@@ -235,6 +291,10 @@ func _has_study_group_number(entry: Dictionary, selected_values: Array) -> bool:
 		return true
 	return _has_any_tag_number(entry, "study_group_", selected_values)
 
+func _has_pimsleur_study_group_number(entry: Dictionary, selected_values: Array) -> bool:
+	var group_index := _entry_pimsleur_study_group_number(entry)
+	return group_index > 0 and selected_values.has(group_index)
+
 func _entry_study_group_number(entry: Dictionary) -> int:
 	var study: Dictionary = entry.get("study", {})
 	if study.has("group_index"):
@@ -247,6 +307,31 @@ func _entry_group_order(entry: Dictionary) -> int:
 		return int(study.get("group_order", 0))
 	return 0
 
+func _entry_pimsleur_study_group_number(entry: Dictionary) -> int:
+	var pimsleur_group := _entry_pimsleur_group(entry)
+	if pimsleur_group.has("group_index"):
+		return int(pimsleur_group.get("group_index", 0))
+	return 0
+
+func _entry_pimsleur_group_order(entry: Dictionary) -> int:
+	var pimsleur_group := _entry_pimsleur_group(entry)
+	if pimsleur_group.has("group_order"):
+		return int(pimsleur_group.get("group_order", 0))
+	return 0
+
+func _entry_pimsleur_priority_key(entry: Dictionary) -> String:
+	var pimsleur_group := _entry_pimsleur_group(entry)
+	if pimsleur_group.has("priority_key"):
+		return String(pimsleur_group.get("priority_key", ""))
+	var study: Dictionary = entry.get("study", {})
+	var pimsleur: Dictionary = study.get("pimsleur", {})
+	return String(pimsleur.get("priority_key", ""))
+
+func _entry_pimsleur_group(entry: Dictionary) -> Dictionary:
+	var study: Dictionary = entry.get("study", {})
+	var pimsleur_group: Dictionary = study.get("pimsleur_group", {})
+	return pimsleur_group
+
 func _entry_optimized_index(entry: Dictionary) -> int:
 	if entry.has("optimized_vocab_index"):
 		return int(entry.get("optimized_vocab_index", 0))
@@ -256,6 +341,22 @@ func _entry_optimized_index(entry: Dictionary) -> int:
 	return 0
 
 func _compare_practice_entries(left: Dictionary, right: Dictionary) -> bool:
+	var left_pimsleur_group := _entry_pimsleur_study_group_number(left)
+	var right_pimsleur_group := _entry_pimsleur_study_group_number(right)
+	if left_pimsleur_group != right_pimsleur_group:
+		if left_pimsleur_group == 0:
+			return false
+		if right_pimsleur_group == 0:
+			return true
+		return left_pimsleur_group < right_pimsleur_group
+	var left_pimsleur_order := _entry_pimsleur_group_order(left)
+	var right_pimsleur_order := _entry_pimsleur_group_order(right)
+	if left_pimsleur_order != right_pimsleur_order:
+		return left_pimsleur_order < right_pimsleur_order
+	var left_pimsleur_priority := _entry_pimsleur_priority_key(left)
+	var right_pimsleur_priority := _entry_pimsleur_priority_key(right)
+	if left_pimsleur_priority != right_pimsleur_priority:
+		return left_pimsleur_priority < right_pimsleur_priority
 	var left_group := _entry_study_group_number(left)
 	var right_group := _entry_study_group_number(right)
 	if left_group != right_group:
@@ -344,6 +445,9 @@ func _normalize_entry(raw_entry: Variant, index: int) -> Dictionary:
 		for key in entry["study"].keys():
 			merged_study[key] = entry["study"][key]
 		entry["study"] = merged_study
+	var pimsleur_study_metadata: Dictionary = pimsleur_study_group_metadata_by_entry_id.get(String(entry.get("id", "")), {})
+	if not pimsleur_study_metadata.is_empty():
+		entry["study"]["pimsleur_group"] = pimsleur_study_metadata.duplicate(true)
 	if entry.has("optimized_vocab_index"):
 		entry["optimized_vocab_index"] = int(entry.get("optimized_vocab_index", 0))
 	return entry
