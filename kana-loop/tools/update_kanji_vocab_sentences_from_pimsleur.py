@@ -83,6 +83,46 @@ def choose_sentence(word: str, candidates: list[dict]) -> dict | None:
     return sorted(matches, key=lambda s: (s["deck_index"], s["note_index"], len(s["front_normalized"])))[0]
 
 
+def pimsleur_deck_tag(sentence: dict) -> str:
+    return f"pimsleur_deck:{sentence['deck_name']}"
+
+
+def pimsleur_study_metadata(sentence: dict) -> dict:
+    deck_index = int(sentence["deck_index"])
+    note_index = int(sentence["note_index"])
+    return {
+        "deck_tag": pimsleur_deck_tag(sentence),
+        "deck_index": deck_index,
+        "deck_position": note_index + 1,
+        "priority_key": f"{deck_index + 1:02d}-{note_index + 1:04d}",
+    }
+
+
+def apply_pimsleur_study_grouping(entry: dict, sentence: dict) -> bool:
+    changed = False
+    tags = entry.setdefault("tags", [])
+    if not isinstance(tags, list):
+        tags = []
+        entry["tags"] = tags
+        changed = True
+    for tag in ("pimsleur", pimsleur_deck_tag(sentence)):
+        if tag not in tags:
+            tags.append(tag)
+            changed = True
+    tags.sort()
+
+    study = entry.setdefault("study", {})
+    if not isinstance(study, dict):
+        study = {}
+        entry["study"] = study
+        changed = True
+    metadata = pimsleur_study_metadata(sentence)
+    if study.get("pimsleur") != metadata:
+        study["pimsleur"] = metadata
+        changed = True
+    return changed
+
+
 def res_path_to_file(asset_root: Path, value: str) -> Path | None:
     prefix = "res://"
     if not value.startswith(prefix):
@@ -186,8 +226,13 @@ def update_entries(args: argparse.Namespace) -> int:
             "deck_path": str(sentence["deck_path"]),
             "deck_name": sentence["deck_name"],
             "note_id": sentence["note_id"],
+            "deck_tag": pimsleur_deck_tag(sentence),
+            "deck_index": sentence["deck_index"],
+            "deck_position": sentence["note_index"] + 1,
             "matched_word": word,
         }
+        if apply_pimsleur_study_grouping(entry, sentence):
+            changed = True
         if changed:
             updated += 1
         else:
