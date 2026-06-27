@@ -178,7 +178,7 @@ func _on_drawing_canvas_resized() -> void:
 		return
 	if current_entry.is_empty():
 		return
-	if word_completed:
+	if word_completed or not practice_input_enabled:
 		return
 	_load_guide_definition()
 
@@ -202,10 +202,12 @@ func _advance_to_next_kana() -> void:
 		current_kana = String(current_entry.get("word", current_entry.get("kanji", "")))
 	_update_prompt_labels()
 	_update_target_kana()
-	_load_guide_definition()
 	assignment_sequence += 1
 	var sequence := assignment_sequence
-	if not current_entry.is_empty():
+	practice_input_enabled = current_entry.is_empty()
+	if current_entry.is_empty():
+		_load_guide_definition()
+	else:
 		_begin_initial_assignment_when_ready(sequence)
 
 func _refill_remaining_pool() -> void:
@@ -342,17 +344,18 @@ func _stroke_progress_text(stroke_index: int) -> String:
 	return "Stroke %d/%d%s" % [safe_index + 1, stroke_runtimes.size(), " · %s" % character if character != "" else ""]
 
 func _begin_initial_assignment_when_ready(sequence: int) -> void:
+	_clear_initial_word_preview()
+	_clear_strokes()
 	if drawing_canvas != null and drawing_canvas.size == Vector2.ZERO:
 		await drawing_canvas.resized
 		if sequence != assignment_sequence:
 			return
-		_load_guide_definition()
+	_load_guide_definition()
 	if stroke_runtimes.is_empty():
 		await get_tree().process_frame
 		if sequence != assignment_sequence:
 			return
-		if stroke_runtimes.is_empty():
-			_load_guide_definition()
+		_load_guide_definition()
 	await _play_initial_assignment_audio(sequence)
 
 func _play_initial_assignment_audio(sequence: int) -> void:
