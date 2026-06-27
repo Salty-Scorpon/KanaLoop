@@ -206,7 +206,7 @@ func _advance_to_next_kana() -> void:
 	assignment_sequence += 1
 	var sequence := assignment_sequence
 	if not current_entry.is_empty():
-		_play_initial_assignment_audio(sequence)
+		_begin_initial_assignment_when_ready(sequence)
 
 func _refill_remaining_pool() -> void:
 	var filters := KanaState.get_kanji_practice_filters()
@@ -341,10 +341,27 @@ func _stroke_progress_text(stroke_index: int) -> String:
 	var character := String(runtime.get("character", ""))
 	return "Stroke %d/%d%s" % [safe_index + 1, stroke_runtimes.size(), " · %s" % character if character != "" else ""]
 
+func _begin_initial_assignment_when_ready(sequence: int) -> void:
+	if drawing_canvas != null and drawing_canvas.size == Vector2.ZERO:
+		await drawing_canvas.resized
+		if sequence != assignment_sequence:
+			return
+		_load_guide_definition()
+	if stroke_runtimes.is_empty():
+		await get_tree().process_frame
+		if sequence != assignment_sequence:
+			return
+		if stroke_runtimes.is_empty():
+			_load_guide_definition()
+	await _play_initial_assignment_audio(sequence)
+
 func _play_initial_assignment_audio(sequence: int) -> void:
 	practice_input_enabled = false
 	_show_initial_word_preview()
 	_update_guides_visibility()
+	await get_tree().process_frame
+	if sequence != assignment_sequence:
+		return
 	var assigned_entry := current_entry.duplicate(true)
 	await _play_reading_then_meaning_for_entry(assigned_entry)
 	if sequence != assignment_sequence:
