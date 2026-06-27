@@ -814,6 +814,15 @@ layout_mode = 2
 size_flags_horizontal = 3
 columns = 7
 
+[node name="KanjiStudyGroupLabel" type="Label" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+text = "Study Groups"
+
+[node name="KanjiStudyGroupFilters" type="GridContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 5
+
 [node name="VisualOptions" type="VBoxContainer" parent="MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout"]
 layout_mode = 2
 size_flags_horizontal = 3

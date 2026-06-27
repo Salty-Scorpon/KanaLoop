@@ -47,6 +47,7 @@ extends Control
 @onready var custom_grid: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanaSelection/CustomMixGrid
 @onready var kanji_week_filters: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection/KanjiWeekFilters
 @onready var kanji_day_filters: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection/KanjiDayFilters
+@onready var kanji_study_group_filters: GridContainer = $MarginContainer/VBoxContainer/PanelContainer/PageContainer/Options/ScrollContainer/OptionsLayout/KanjiSelection/KanjiStudyGroupFilters
 @onready var row_toggles: Array[CheckBox] = [
 	vowels_toggle,
 	k_row_toggle,
@@ -90,6 +91,7 @@ extends Control
 var selected_kana: Array[String] = []
 var kanji_week_checkboxes: Array[CheckBox] = []
 var kanji_day_checkboxes: Array[CheckBox] = []
+var kanji_study_group_checkboxes: Array[CheckBox] = []
 
 const VISUAL_DELAY_SCENE := preload("res://KanaLoop/visual_delay.tscn")
 const RANDOM_CHAINS_SCENE := preload("res://KanaLoop/random_chains.tscn")
@@ -156,10 +158,12 @@ func _build_kanji_filters() -> void:
 
 	var selected_weeks := KanaState.get_selected_dictionary_weeks()
 	var selected_days := KanaState.get_selected_dictionary_days()
+	var selected_study_groups := KanaState.get_selected_kanji_study_groups()
 	var week_numbers := _collect_kanji_tag_numbers("week_")
 	var day_numbers := _collect_kanji_tag_numbers("day_")
+	var study_group_numbers := KanjiVocabData.get_available_study_group_numbers()
 
-	if week_numbers.is_empty() and day_numbers.is_empty():
+	if week_numbers.is_empty() and day_numbers.is_empty() and study_group_numbers.is_empty():
 		return
 
 	for week_number in week_numbers:
@@ -173,6 +177,12 @@ func _build_kanji_filters() -> void:
 		checkbox.button_pressed = selected_days.has(day_number)
 		kanji_day_filters.add_child(checkbox)
 		kanji_day_checkboxes.append(checkbox)
+
+	for group_number in study_group_numbers:
+		var checkbox := _create_filter_checkbox("Group %03d" % group_number, group_number)
+		checkbox.button_pressed = selected_study_groups.has(group_number)
+		kanji_study_group_filters.add_child(checkbox)
+		kanji_study_group_checkboxes.append(checkbox)
 
 	_sync_kanji_selection()
 
@@ -188,8 +198,11 @@ func _clear_kanji_filters() -> void:
 		child.queue_free()
 	for child in kanji_day_filters.get_children():
 		child.queue_free()
+	for child in kanji_study_group_filters.get_children():
+		child.queue_free()
 	kanji_week_checkboxes.clear()
 	kanji_day_checkboxes.clear()
+	kanji_study_group_checkboxes.clear()
 
 func _create_filter_checkbox(label: String, value: int) -> CheckBox:
 	var checkbox := CheckBox.new()
@@ -234,6 +247,7 @@ func _on_kanji_filter_changed(_pressed: bool) -> void:
 func _sync_kanji_selection() -> void:
 	KanaState.set_selected_dictionary_weeks(_selected_values(kanji_week_checkboxes))
 	KanaState.set_selected_dictionary_days(_selected_values(kanji_day_checkboxes))
+	KanaState.set_selected_kanji_study_groups(_selected_values(kanji_study_group_checkboxes))
 
 func _selected_values(checkboxes: Array[CheckBox]) -> Array[int]:
 	var selected: Array[int] = []
