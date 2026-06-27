@@ -1,10 +1,12 @@
 extends Node
 
 const DATA_PATH := "res://assets/data/kanji_vocab_strokes.json"
+const STUDY_GROUPS_PATH := "res://assets/data/kanji_vocab_study_groups.json"
 const REQUIRED_TEXT_FIELDS := ["id", "kanji", "word", "reading", "meaning"]
 
 var entries: Array[Dictionary] = []
 var entries_by_id: Dictionary = {}
+var study_group_metadata_by_entry_id: Dictionary = {}
 var loaded := false
 var last_error := ""
 
@@ -15,6 +17,7 @@ func reload() -> Array[Dictionary]:
 	loaded = false
 	entries.clear()
 	entries_by_id.clear()
+	study_group_metadata_by_entry_id.clear()
 	last_error = ""
 	return load_entries(true)
 
@@ -24,6 +27,7 @@ func load_entries(force: bool = false) -> Array[Dictionary]:
 	loaded = true
 	entries.clear()
 	entries_by_id.clear()
+	study_group_metadata_by_entry_id = _load_study_group_metadata()
 	last_error = ""
 
 	if not FileAccess.file_exists(DATA_PATH):
@@ -72,6 +76,47 @@ func get_entry_by_id(entry_id: String) -> Dictionary:
 func get_last_error() -> String:
 	return last_error
 
+func _load_study_group_metadata() -> Dictionary:
+	var metadata_by_entry_id := {}
+	if not FileAccess.file_exists(STUDY_GROUPS_PATH):
+		return metadata_by_entry_id
+	var file := FileAccess.open(STUDY_GROUPS_PATH, FileAccess.READ)
+	if file == null:
+		push_warning("Unable to open kanji vocabulary study groups at %s" % STUDY_GROUPS_PATH)
+		return metadata_by_entry_id
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("Kanji vocabulary study groups must be a JSON object.")
+		return metadata_by_entry_id
+	var payload: Dictionary = parsed
+	for group_value in payload.get("groups", []):
+		if typeof(group_value) != TYPE_DICTIONARY:
+			continue
+		var group: Dictionary = group_value
+		var group_index := int(group.get("index", 0))
+		for record_value in group.get("records", []):
+			if typeof(record_value) != TYPE_DICTIONARY:
+				continue
+			var record: Dictionary = record_value
+			var metadata := {
+				"group_index": group_index,
+				"group_id": String(group.get("id", "")),
+				"group_label": String(group.get("label", "Group %03d" % group_index)),
+				"group_order": int(record.get("group_order", 0)),
+				"sentence_ok_for_group": bool(record.get("sentence_ok_for_group", true)),
+				"word_kanji": _normalize_string_array(record.get("word_kanji", [])),
+				"sentence_kanji": _normalize_string_array(record.get("sentence_kanji", [])),
+				"collateral_kanji": _normalize_string_array(record.get("collateral_kanji", [])),
+				"unlearned_sentence_kanji": _normalize_string_array(record.get("unlearned_sentence_kanji", [])),
+			}
+			if record.has("optimized_vocab_index"):
+				metadata["optimized_vocab_index"] = int(record.get("optimized_vocab_index", 0))
+			for entry_id in record.get("entry_ids", []):
+				var entry_id_text := String(entry_id)
+				if entry_id_text != "":
+					metadata_by_entry_id[entry_id_text] = metadata.duplicate(true)
+	return metadata_by_entry_id
+
 func get_available_decks() -> Array[String]:
 	load_entries()
 	var decks: Array[String] = []
@@ -104,18 +149,20 @@ func get_available_tag_numbers(prefix: String) -> Array[int]:
 	var numbers: Array[int] = []
 	var seen := {}
 	for entry in entries:
-		for tag in entry.get("tags", []):
-			var tag_text := String(tag)
-			if not tag_text.begins_with(prefix):
-				continue
-			var value_string := tag_text.trim_prefix(prefix)
-			if not value_string.is_valid_int():
-				continue
-			var value := int(value_string)
-			if seen.has(value):
-				continue
-			seen[value] = true
-			numbers.append(value)
+		_add_tag_numbers(entry, prefix, numbers, seen)
+	numbers.sort()
+	return numbers
+
+func get_available_study_group_numbers() -> Array[int]:
+	load_entries()
+	var numbers: Array[int] = []
+	var seen := {}
+	for entry in entries:
+		var group_index := _entry_study_group_number(entry)
+		if group_index > 0 and not seen.has(group_index):
+			seen[group_index] = true
+			numbers.append(group_index)
+		_add_tag_numbers(entry, "study_group_", numbers, seen)
 	numbers.sort()
 	return numbers
 
@@ -129,6 +176,7 @@ func get_filtered_entries(filters: Dictionary = {}) -> Array[Dictionary]:
 		if not _entry_matches_filters(entry, filters):
 			continue
 		filtered.append(entry.duplicate(true))
+	filtered.sort_custom(_compare_practice_entries)
 	return filtered
 
 func _entry_matches_filters(entry: Dictionary, filters: Dictionary) -> bool:
@@ -146,6 +194,8 @@ func _entry_matches_filters(entry: Dictionary, filters: Dictionary) -> bool:
 	if _filter_array_has_values(filters, "weeks") and not _has_any_tag_number(entry, "week_", filters["weeks"]):
 		return false
 	if _filter_array_has_values(filters, "days") and not _has_any_tag_number(entry, "day_", filters["days"]):
+		return false
+	if _filter_array_has_values(filters, "study_groups") and not _has_study_group_number(entry, filters["study_groups"]):
 		return false
 	if bool(filters.get("require_strokes", false)) and bool(entry.get("missing_strokes", false)):
 		return false
@@ -170,10 +220,83 @@ func _has_any_tag(entry: Dictionary, selected_tags: Array) -> bool:
 
 func _has_any_tag_number(entry: Dictionary, prefix: String, selected_values: Array) -> bool:
 	var tags: Array = entry.get("tags", [])
-	for value in selected_values:
-		if tags.has("%s%d" % [prefix, int(value)]):
+	for tag in tags:
+		var tag_text := String(tag)
+		if not tag_text.begins_with(prefix):
+			continue
+		var value_string := tag_text.trim_prefix(prefix)
+		if value_string.is_valid_int() and selected_values.has(int(value_string)):
 			return true
 	return false
+
+func _has_study_group_number(entry: Dictionary, selected_values: Array) -> bool:
+	var group_index := _entry_study_group_number(entry)
+	if group_index > 0 and selected_values.has(group_index):
+		return true
+	return _has_any_tag_number(entry, "study_group_", selected_values)
+
+func _entry_study_group_number(entry: Dictionary) -> int:
+	var study: Dictionary = entry.get("study", {})
+	if study.has("group_index"):
+		return int(study.get("group_index", 0))
+	return _first_tag_number(entry, "study_group_")
+
+func _entry_group_order(entry: Dictionary) -> int:
+	var study: Dictionary = entry.get("study", {})
+	if study.has("group_order"):
+		return int(study.get("group_order", 0))
+	return 0
+
+func _entry_optimized_index(entry: Dictionary) -> int:
+	if entry.has("optimized_vocab_index"):
+		return int(entry.get("optimized_vocab_index", 0))
+	var study: Dictionary = entry.get("study", {})
+	if study.has("optimized_vocab_index"):
+		return int(study.get("optimized_vocab_index", 0))
+	return 0
+
+func _compare_practice_entries(left: Dictionary, right: Dictionary) -> bool:
+	var left_group := _entry_study_group_number(left)
+	var right_group := _entry_study_group_number(right)
+	if left_group != right_group:
+		return left_group < right_group
+	var left_order := _entry_group_order(left)
+	var right_order := _entry_group_order(right)
+	if left_order != right_order:
+		return left_order < right_order
+	var left_index := _entry_optimized_index(left)
+	var right_index := _entry_optimized_index(right)
+	if left_index != right_index:
+		return left_index < right_index
+	var left_note := int(left.get("note_id", 0))
+	var right_note := int(right.get("note_id", 0))
+	if left_note != right_note:
+		return left_note < right_note
+	return String(left.get("id", "")) < String(right.get("id", ""))
+
+func _first_tag_number(entry: Dictionary, prefix: String) -> int:
+	for tag in entry.get("tags", []):
+		var tag_text := String(tag)
+		if not tag_text.begins_with(prefix):
+			continue
+		var value_string := tag_text.trim_prefix(prefix)
+		if value_string.is_valid_int():
+			return int(value_string)
+	return 0
+
+func _add_tag_numbers(entry: Dictionary, prefix: String, numbers: Array[int], seen: Dictionary) -> void:
+	for tag in entry.get("tags", []):
+		var tag_text := String(tag)
+		if not tag_text.begins_with(prefix):
+			continue
+		var value_string := tag_text.trim_prefix(prefix)
+		if not value_string.is_valid_int():
+			continue
+		var value := int(value_string)
+		if seen.has(value):
+			continue
+		seen[value] = true
+		numbers.append(value)
 
 func _audio_paths(entry: Dictionary) -> Array[String]:
 	var paths: Array[String] = []
@@ -214,6 +337,15 @@ func _normalize_entry(raw_entry: Variant, index: int) -> Dictionary:
 	entry["strokes"] = strokes
 	entry["missing_strokes"] = bool(entry.get("missing_strokes", strokes.is_empty()))
 	entry["source"] = _normalize_dictionary(entry.get("source", {}))
+	entry["study"] = _normalize_dictionary(entry.get("study", {}))
+	var study_metadata: Dictionary = study_group_metadata_by_entry_id.get(String(entry.get("id", "")), {})
+	if not study_metadata.is_empty():
+		var merged_study: Dictionary = study_metadata.duplicate(true)
+		for key in entry["study"].keys():
+			merged_study[key] = entry["study"][key]
+		entry["study"] = merged_study
+	if entry.has("optimized_vocab_index"):
+		entry["optimized_vocab_index"] = int(entry.get("optimized_vocab_index", 0))
 	return entry
 
 func _normalize_dictionary(value: Variant) -> Dictionary:

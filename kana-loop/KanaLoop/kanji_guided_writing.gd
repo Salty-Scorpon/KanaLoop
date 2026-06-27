@@ -20,6 +20,7 @@ var selected_entries: Array[Dictionary] = []
 var remaining_entry_pool: Array[Dictionary] = []
 var current_entry: Dictionary = {}
 var word_entry_lookup: Dictionary = {}
+var chronological_practice := false
 
 const TARGET_KANJI_FONT_SIZE := 190
 const KANJI_MIN_DRAWN_LENGTH_RATIO := 0.20
@@ -176,7 +177,7 @@ func _advance_to_next_kana() -> void:
 	current_entry = {}
 	current_kana = ""
 	if not remaining_entry_pool.is_empty():
-		current_entry = remaining_entry_pool.pop_back()
+		current_entry = remaining_entry_pool.pop_front() if chronological_practice else remaining_entry_pool.pop_back()
 		current_kana = String(current_entry.get("word", current_entry.get("kanji", "")))
 	_update_prompt_labels()
 	_update_target_kana()
@@ -185,9 +186,12 @@ func _advance_to_next_kana() -> void:
 		_play_current_meaning_then_reading_audio()
 
 func _refill_remaining_pool() -> void:
-	selected_entries = KanjiVocabData.get_active_practice_entries()
+	var filters := KanaState.get_kanji_practice_filters()
+	chronological_practice = _filter_has_values(filters, "study_groups")
+	selected_entries = KanjiVocabData.get_filtered_entries(filters)
 	if selected_entries.is_empty():
 		selected_entries = KanjiVocabData.get_entries()
+		chronological_practice = false
 	word_entry_lookup = {}
 	remaining_entry_pool = []
 	var seen_words := {}
@@ -207,7 +211,14 @@ func _refill_remaining_pool() -> void:
 			word_entry["word"] = word
 			remaining_entry_pool.append(word_entry)
 			seen_words[word] = true
-	_shuffle_remaining_entry_pool()
+	if not chronological_practice:
+		_shuffle_remaining_entry_pool()
+
+func _filter_has_values(filters: Dictionary, key: String) -> bool:
+	if not filters.has(key):
+		return false
+	var value: Variant = filters[key]
+	return typeof(value) == TYPE_ARRAY and not value.is_empty()
 
 func _shuffle_remaining_entry_pool() -> void:
 	for index in range(remaining_entry_pool.size() - 1, 0, -1):
