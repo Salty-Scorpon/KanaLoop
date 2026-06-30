@@ -7,6 +7,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_02qph")
 
+
 [node name="TogglePanel" type="PanelContainer" parent="."]
 anchor_left = 1.0
 anchor_right = 1.0
@@ -102,4 +103,21 @@ vertical_alignment = 1
 
 [node name="BackButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer"]
 text = "Back to Main Menu"
+size_flags_horizontal = 3
+
+[node name="SelectionPanel" type="PanelContainer" parent="."]
+z_index = 20
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 220.0
+offset_bottom = 70.0
+
+[node name="SelectionMargin" type="MarginContainer" parent="SelectionPanel"]
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="ChooseButton" type="Button" parent="SelectionPanel/SelectionMargin"]
+text = "Choose Kana"
 size_flags_horizontal = 3

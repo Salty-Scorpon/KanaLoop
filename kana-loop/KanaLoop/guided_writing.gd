@@ -32,6 +32,9 @@ signal back_requested
 @onready var blackout_toggle: CheckBox = _find_node_with_fallback([
 	"TogglePanel/ToggleMargin/ToggleVBox/BlackoutToggle",
 ]) as CheckBox
+@onready var choose_assignment_button: Button = _find_node_with_fallback([
+	"SelectionPanel/SelectionMargin/ChooseButton",
+]) as Button
 @onready var progress_label: Label = _find_node_with_fallback([
 	"MarginContainer/ScrollContainer/VBoxContainer/ProgressLabel",
 	"MarginContainer/VBoxContainer/ProgressLabel",
@@ -43,6 +46,7 @@ signal back_requested
 
 var selected_kana: Array[String] = []
 var remaining_kana_pool: Array[String] = []
+var manual_kana_queue: Array[String] = []
 var current_kana := ""
 var active_line: Line2D
 var current_stroke_points: PackedVector2Array = PackedVector2Array()
@@ -105,6 +109,8 @@ func _ready() -> void:
 	if blackout_toggle != null:
 		blackout_toggle.button_pressed = blackout_enabled
 		blackout_toggle.toggled.connect(_on_blackout_toggled)
+	if choose_assignment_button != null:
+		choose_assignment_button.pressed.connect(_on_choose_assignment_pressed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
@@ -727,6 +733,183 @@ func _apply_target_kana_font_size(kana: String) -> void:
 	var font_size := TARGET_KANA_FONT_SIZE if kana.length() <= 1 else TARGET_KANA_MULTI_FONT_SIZE
 	target_kana_label.add_theme_font_size_override("font_size", font_size)
 
+func _on_choose_assignment_pressed() -> void:
+	_show_assignment_picker(_get_assignment_picker_items(), _get_assignment_picker_title())
+
+func _get_assignment_picker_title() -> String:
+	return "Choose Kana"
+
+func _get_assignment_picker_items() -> Array[Dictionary]:
+	var items: Array[Dictionary] = []
+	for kana in selected_kana:
+		items.append({
+			"label": kana,
+			"search": kana,
+			"value": kana,
+		})
+	return items
+
+func _apply_assignment_selection(selection: Array) -> void:
+	if selection.is_empty():
+		return
+	manual_kana_queue.clear()
+	current_kana = String(selection[0])
+	for index in range(1, selection.size()):
+		manual_kana_queue.append(String(selection[index]))
+	_clear_strokes()
+	current_stroke_runtime = {}
+	current_stroke_index = 0
+	_update_target_kana()
+	_load_guide_definition()
+
+func _show_assignment_picker(items: Array[Dictionary], title: String) -> void:
+	var existing_overlay := get_node_or_null("AssignmentPickerOverlay")
+	if existing_overlay != null:
+		existing_overlay.queue_free()
+	var overlay := PanelContainer.new()
+	overlay.name = "AssignmentPickerOverlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.add_theme_stylebox_override("panel", _picker_panel_style(Color(0.0, 0.0, 0.0, 0.45)))
+	add_child(overlay)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var dialog := PanelContainer.new()
+	dialog.custom_minimum_size = Vector2(760, 520)
+	dialog.add_theme_stylebox_override("panel", _picker_panel_style(Color(0.12, 0.12, 0.12, 0.98)))
+	center.add_child(dialog)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_bottom", 16)
+	dialog.add_child(margin)
+
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", 10)
+	margin.add_child(rows)
+
+	var title_label := Label.new()
+	title_label.text = title
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_font_size_override("font_size", 24)
+	rows.add_child(title_label)
+
+	var body := HBoxContainer.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 12)
+	rows.add_child(body)
+
+	var left := VBoxContainer.new()
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(left)
+
+	var search_box := LineEdit.new()
+	search_box.placeholder_text = "Search"
+	left.add_child(search_box)
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.add_child(scroll)
+
+	var results := VBoxContainer.new()
+	results.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(results)
+
+	var queue_panel := PanelContainer.new()
+	queue_panel.custom_minimum_size = Vector2(180, 0)
+	body.add_child(queue_panel)
+	var queue_box := VBoxContainer.new()
+	queue_box.add_theme_constant_override("separation", 6)
+	queue_panel.add_child(queue_box)
+	var queue_title := Label.new()
+	queue_title.text = "Queue"
+	queue_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	queue_box.add_child(queue_title)
+	var queue_list := VBoxContainer.new()
+	queue_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	queue_box.add_child(queue_list)
+
+	var actions := HBoxContainer.new()
+	actions.alignment = BoxContainer.ALIGNMENT_END
+	rows.add_child(actions)
+	var cancel_button := Button.new()
+	cancel_button.text = "Cancel"
+	actions.add_child(cancel_button)
+	var apply_button := Button.new()
+	apply_button.text = "Use Selection"
+	actions.add_child(apply_button)
+
+	var selected_values: Array = []
+	var selected_labels: Array[String] = []
+	var refresh_queue := func() -> void:
+		for child in queue_list.get_children():
+			child.queue_free()
+		if selected_labels.is_empty():
+			var empty_label := Label.new()
+			empty_label.text = "No selections yet"
+			empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			queue_list.add_child(empty_label)
+			return
+		for index in range(selected_labels.size()):
+			var label := Label.new()
+			label.text = "%d. %s" % [index + 1, selected_labels[index]]
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			queue_list.add_child(label)
+	var refresh_results := func(filter_text: String) -> void:
+		for child in results.get_children():
+			child.queue_free()
+		var normalized_filter := filter_text.strip_edges().to_lower()
+		var added := 0
+		for item in items:
+			var label_text := String(item.get("label", ""))
+			var search_text := String(item.get("search", label_text)).to_lower()
+			if normalized_filter != "" and not search_text.contains(normalized_filter):
+				continue
+			var item_button := Button.new()
+			item_button.text = label_text
+			item_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			item_button.pressed.connect(func() -> void:
+				selected_values.append(item.get("value"))
+				selected_labels.append(label_text)
+				refresh_queue.call()
+			)
+			results.add_child(item_button)
+			added += 1
+		if added == 0:
+			var empty_results := Label.new()
+			empty_results.text = "No matching assignments"
+			empty_results.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			results.add_child(empty_results)
+
+	search_box.text_changed.connect(func(new_text: String) -> void:
+		refresh_results.call(new_text)
+	)
+	cancel_button.pressed.connect(func() -> void:
+		overlay.queue_free()
+	)
+	apply_button.pressed.connect(func() -> void:
+		_apply_assignment_selection(selected_values)
+		overlay.queue_free()
+	)
+	refresh_queue.call()
+	refresh_results.call("")
+	search_box.grab_focus()
+
+func _picker_panel_style(color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	return style
+
 func _on_back_pressed() -> void:
 	back_requested.emit()
 
@@ -738,11 +921,14 @@ func _handle_kana_completed() -> void:
 	call_deferred("_advance_to_next_kana")
 
 func _advance_to_next_kana() -> void:
-	if remaining_kana_pool.is_empty():
-		_refill_remaining_pool()
 	current_kana = ""
-	if not remaining_kana_pool.is_empty():
-		current_kana = remaining_kana_pool.pop_back()
+	if not manual_kana_queue.is_empty():
+		current_kana = manual_kana_queue.pop_front()
+	else:
+		if remaining_kana_pool.is_empty():
+			_refill_remaining_pool()
+		if not remaining_kana_pool.is_empty():
+			current_kana = remaining_kana_pool.pop_back()
 	_update_target_kana()
 	_load_guide_definition()
 

@@ -18,6 +18,7 @@ extends "res://KanaLoop/guided_writing.gd"
 
 var selected_entries: Array[Dictionary] = []
 var remaining_entry_pool: Array[Dictionary] = []
+var manual_entry_queue: Array[Dictionary] = []
 var current_entry: Dictionary = {}
 var word_entry_lookup: Dictionary = {}
 var chronological_practice := false
@@ -57,6 +58,8 @@ func _ready() -> void:
 	if blackout_toggle != null:
 		blackout_toggle.button_pressed = blackout_enabled
 		blackout_toggle.toggled.connect(_on_blackout_toggled)
+	if choose_assignment_button != null:
+		choose_assignment_button.pressed.connect(_on_choose_assignment_pressed)
 
 func _connect_prompt_audio_inputs() -> void:
 	if meaning_label != null:
@@ -193,13 +196,16 @@ func _handle_kana_completed() -> void:
 
 func _advance_to_next_kana() -> void:
 	word_completed = false
-	if remaining_entry_pool.is_empty():
-		_refill_remaining_pool()
 	current_entry = {}
 	current_kana = ""
-	if not remaining_entry_pool.is_empty():
-		current_entry = remaining_entry_pool.pop_front() if chronological_practice else remaining_entry_pool.pop_back()
-		current_kana = String(current_entry.get("word", current_entry.get("kanji", "")))
+	if not manual_entry_queue.is_empty():
+		current_entry = manual_entry_queue.pop_front()
+	else:
+		if remaining_entry_pool.is_empty():
+			_refill_remaining_pool()
+		if not remaining_entry_pool.is_empty():
+			current_entry = remaining_entry_pool.pop_front() if chronological_practice else remaining_entry_pool.pop_back()
+	current_kana = String(current_entry.get("word", current_entry.get("kanji", "")))
 	_update_prompt_labels()
 	_update_target_kana()
 	assignment_sequence += 1
@@ -209,6 +215,67 @@ func _advance_to_next_kana() -> void:
 		_load_guide_definition()
 	else:
 		_begin_initial_assignment_when_ready(sequence)
+
+func _get_assignment_picker_title() -> String:
+	return "Choose Word"
+
+func _get_assignment_picker_items() -> Array[Dictionary]:
+	if selected_entries.is_empty():
+		_refill_remaining_pool()
+	var items: Array[Dictionary] = []
+	var seen_words := {}
+	for entry in selected_entries:
+		var word := String(entry.get("word", ""))
+		var kanji := String(entry.get("kanji", ""))
+		if word == "":
+			word = kanji
+		if word == "" or seen_words.has(word):
+			continue
+		var reading := String(entry.get("reading", ""))
+		var meaning := String(entry.get("meaning", ""))
+		var label := word
+		if reading != "":
+			label = "%s（%s）" % [label, reading]
+		if meaning != "":
+			label = "%s — %s" % [label, meaning]
+		var value := entry.duplicate(true)
+		value["word"] = word
+		items.append({
+			"label": label,
+			"search": "%s %s %s %s" % [word, kanji, reading, meaning],
+			"value": value,
+		})
+		seen_words[word] = true
+	return items
+
+func _apply_assignment_selection(selection: Array) -> void:
+	if selection.is_empty():
+		return
+	manual_entry_queue.clear()
+	current_entry = _selection_value_to_entry(selection[0])
+	for index in range(1, selection.size()):
+		manual_entry_queue.append(_selection_value_to_entry(selection[index]))
+	current_kana = String(current_entry.get("word", current_entry.get("kanji", "")))
+	word_completed = false
+	practice_input_enabled = current_entry.is_empty()
+	assignment_sequence += 1
+	var sequence := assignment_sequence
+	_clear_initial_word_preview()
+	_clear_strokes()
+	current_stroke_runtime = {}
+	current_stroke_index = 0
+	_update_prompt_labels()
+	_update_target_kana()
+	if current_entry.is_empty():
+		_load_guide_definition()
+	else:
+		_begin_initial_assignment_when_ready(sequence)
+
+func _selection_value_to_entry(value: Variant) -> Dictionary:
+	if typeof(value) != TYPE_DICTIONARY:
+		return {}
+	var entry: Dictionary = value
+	return entry.duplicate(true)
 
 func _refill_remaining_pool() -> void:
 	var filters := KanaState.get_kanji_practice_filters()
