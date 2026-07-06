@@ -742,12 +742,25 @@ func _get_assignment_picker_title() -> String:
 func _get_assignment_picker_items() -> Array[Dictionary]:
 	var items: Array[Dictionary] = []
 	for kana in selected_kana:
+		var romaji := _get_kana_romaji(kana)
+		var label := kana
+		if romaji != "":
+			label = "%s — %s" % [kana, romaji]
 		items.append({
-			"label": kana,
-			"search": kana,
+			"label": label,
+			"search": _build_assignment_search_text(kana, romaji),
 			"value": kana,
 		})
 	return items
+
+func _get_kana_romaji(kana: String) -> String:
+	var kana_entry: Dictionary = kana_outline_data.get(kana, {})
+	return String(kana_entry.get("romaji", "")).strip_edges()
+
+func _build_assignment_search_text(kana: String, romaji: String) -> String:
+	if romaji == "":
+		return kana
+	return "%s %s" % [kana, romaji]
 
 func _apply_assignment_selection(selection: Array) -> void:
 	if selection.is_empty():
@@ -810,7 +823,7 @@ func _show_assignment_picker(items: Array[Dictionary], title: String) -> void:
 	body.add_child(left)
 
 	var search_box := LineEdit.new()
-	search_box.placeholder_text = "Search"
+	search_box.placeholder_text = "Search kana or romaji"
 	left.add_child(search_box)
 
 	var scroll := ScrollContainer.new()
